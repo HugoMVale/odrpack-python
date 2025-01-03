@@ -1,0 +1,8 @@
+meson
+meson-python
+ninja
+pybind11
+pybind11_stubgen
+numpy
+pytest
+pytest-cov
