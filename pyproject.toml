@@ -37,6 +37,10 @@ requires = ["meson-python>=0.15.0", "pybind11", "pybind11-stubgen"]
 norecursedirs = "extern"
 addopts = "-v -s"
 
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
 [tool.cibuildwheel]
 build = ["cp310-*", "cp311-*", "cp312-*"]
 skip = ["*-win32"]
