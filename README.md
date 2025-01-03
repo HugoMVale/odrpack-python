@@ -1,5 +1,5 @@
 # odrpack
 
-[![Latest Commit](https://img.shields.io/github/last-commit/HugoMVale/odrpack-pyython)](https://img.shields.io/github/last-commit/HugoMVale/odrpack-pyython)
+[![Latest Commit](https://img.shields.io/github/last-commit/HugoMVale/odrpack-python)](https://img.shields.io/github/last-commit/HugoMVale/odrpack-python)
 
 Python interface for `odrpack`.
