@@ -1,0 +1,42 @@
+[project]
+name = "odrpack"
+dynamic = ["version"]
+description = "Package for weighted orthogonal distance regression (ODR)."
+requires-python = ">= 3.10"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Hugo Vale", email = "57530119+HugoMVale@users.noreply.github.com" },
+]
+urls = { Repository = "https://github.com/HugoMVale/odrpack95" }
+keywords = ["regression", "statistics", "mathematics"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = ['numpy']
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+
+[build-system]
+build-backend = "mesonpy"
+requires = ["meson-python>=0.15.0", "pybind11", "pybind11-stubgen"]
+
+[tool.pytest.ini_options]
+norecursedirs = "extern"
+addopts = "-v -s"
+
+[tool.cibuildwheel]
+build = ["cp310-*", "cp311-*", "cp312-*"]
+skip = ["*-win32"]
