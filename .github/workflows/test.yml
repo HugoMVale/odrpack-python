@@ -1,0 +1,59 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / ${{ matrix.python-version }}
+    runs-on: ${{ matrix.image }}
+    strategy:
+      matrix:
+        #        os: [Ubuntu, Windows, macOS]
+        os: [Ubuntu]
+        python-version: ["3.10", "3.11", "3.12"]
+        include:
+          - os: Ubuntu
+            image: ubuntu-latest
+      #          - os: Windows
+      #            image: windows-2022
+      #          - os: macOS
+      #            image: macos-12
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Get full Python version
+        id: full-python-version
+        run: echo version=$(python -c "import sys; print('-'.join(str(v) for v in sys.version_info))") >> $GITHUB_OUTPUT
+
+      - name: Install Ubuntu-build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev gfortran python3-dev
+          
+      - name: Install PyPi-build dependencies
+        run: |
+          pip install -r requirements-build.txt 
+     
+      - name: Run tests and collect coverage
+        continue-on-error: true
+        run: |
+          pytest --cov -v -s --cov-report=xml
+          coverage report --omit="tests/*"
+          
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.python-version == '3.10' }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: false
