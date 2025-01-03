@@ -19,28 +19,28 @@ python_dep = python.dependency()
 openblas_dep = dependency('openblas', required: true)
 # pybind11_dep = dependency('pybind11', required: true)
 
-# # odrpack fortran
-# base_path = join_paths(meson.current_source_dir(), '..')
-# source_files = [
-#   'src/linpack.f',
-#   'src/blas_interfaces.f90',
-#   'src/odrpack_kinds.F90',
-#   'src/odrpack_core.f90',
-#   'src/odrpack.f90',
-#   'src/odrpack_reports.f90',
-#   'c/odrpack_capi.f90'
-# ]
+# odrpack fortran
+odrpack_path = join_paths(meson.current_source_dir(), 'extern/odrpack95')
+odrpack_files = [
+  'src/linpack.f',
+  'src/blas_interfaces.f90',
+  'src/odrpack_kinds.F90',
+  'src/odrpack_core.f90',
+  'src/odrpack.f90',
+  'src/odrpack_reports.f90',
+  'c/odrpack_capi.f90'
+]
 
-# odrpack_source = []
-# foreach f : source_files
-#   odrpack_source += files(join_paths(base_path, f))
-# endforeach
+odrpack_source = []
+foreach f : odrpack_files
+  odrpack_source += files(join_paths(odrpack_path, f))
+endforeach
 
-# odrpack_lib = static_library(
-#   meson.project_name(),
-#   sources: odrpack_source,
-#   dependencies: [openblas_dep],
-# )
+odrpack_lib = static_library(
+  meson.project_name(),
+  sources: odrpack_source,
+  dependencies: [openblas_dep],
+)
 
 # # extension module
 # pybind_ext = python.extension_module(
