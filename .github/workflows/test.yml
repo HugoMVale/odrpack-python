@@ -53,12 +53,16 @@ jobs:
           
       - name: Run tests and collect coverage
         run: |
-          pytest --cov
+          python3 -m pytest --cov=src
           pytest --cov -v -s --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
           ls -l
           coverage report 
           # coverage report --omit="tests/*"
-          
+
+      - name: Run example
+        run: |
+          python3 ./tests/example5.py
+
       - name: Upload coverage to Codecov
         if: ${{ matrix.python-version == '3.10' }}
         uses: codecov/codecov-action@v4
