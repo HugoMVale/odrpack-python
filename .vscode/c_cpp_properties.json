@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/extern/pybind11/include/pybind11",
+                "${workspaceFolder}/extern/odrpack95/c/include/odrpack",
+                //"${workspaceFolder}/extern/nanobind/include/nanobind",
+                "/usr/include/python3.10"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "mesonbuild.mesonbuild"
+        }
+    ],
+    "version": 4
+}
