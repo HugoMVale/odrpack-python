@@ -53,6 +53,7 @@ jobs:
           
       - name: Run tests and collect coverage
         run: |
+          pytest --cov
           pytest --cov -v -s --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
           ls -l
           coverage report 
