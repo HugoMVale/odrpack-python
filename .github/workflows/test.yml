@@ -53,7 +53,7 @@ jobs:
           
       - name: Run tests and collect coverage
         run: |
-          pytest --cov -v -s --cov-report=xml
+          pytest --cov -v -s --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
           coverage report --omit="tests/*"
           
       - name: Upload coverage to Codecov
@@ -62,3 +62,9 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: false
+          
+      - name: Upload test results to Codecov
+        if: ${{ matrix.python-version == '3.10' && !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
