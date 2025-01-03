@@ -40,13 +40,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libopenblas-dev gfortran python3-dev
+          gfortran --version
+          gcc --version
           
       - name: Install PyPi-build dependencies
         run: |
           pip install -r requirements-build.txt 
-     
+      
+      - name: Build package
+        run: |
+          pip install . 
+          
       - name: Run tests and collect coverage
-        continue-on-error: true
         run: |
           pytest --cov -v -s --cov-report=xml
           coverage report --omit="tests/*"
