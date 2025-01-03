@@ -10,16 +10,17 @@ project(
   ],
 )
 
+# compilers
 cpp = meson.get_compiler('cpp')
 ff = meson.get_compiler('fortran')
 
-
+# python and dependencies
 python = import('python').find_installation(pure: false)
 python_dep = python.dependency()
 openblas_dep = dependency('openblas', required: true)
-# pybind11_dep = dependency('pybind11', required: true)
+pybind11_dep = dependency('pybind11', required: true)
 
-# odrpack fortran
+# buid odrpack fortran
 odrpack_path = join_paths(meson.current_source_dir(), 'extern/odrpack95')
 odrpack_files = [
   'src/linpack.f',
@@ -42,16 +43,16 @@ odrpack_lib = static_library(
   dependencies: [openblas_dep],
 )
 
-# # extension module
-# pybind_ext = python.extension_module(
-#  '__odrpack',
-# './src/odrpack/__odrpack.py.cpp',
-#  dependencies : [python_dep],
-#  link_with: odrpack_lib,
-#  include_directories: include_directories('../c/include/odrpack', 'extern/pybind11/include/'),
-#  install : true,
-#  subdir: 'odrpack'
-# )
+# build extension module
+pybind_ext = python.extension_module(
+ '__odrpack',
+'src/odrpack/__odrpack.py.cpp',
+ dependencies : [python_dep, pybind11_dep],
+ link_with: odrpack_lib,
+ include_directories: include_directories('extern/odrpack95/c/include/odrpack'),
+ install : true,
+ subdir: 'odrpack'
+)
 
 python.install_sources(
   [
