@@ -1,0 +1,15 @@
+comment:
+  layout: header, changes, diff, sunburst
+coverage:
+  round: down
+  precision: 2
+  ignore:
+  - tests
+  - docs
+  status:
+    patch:
+      default:
+        target: 20%
+    project:
+      default:
+        target: 70%
