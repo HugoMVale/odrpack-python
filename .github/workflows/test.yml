@@ -52,11 +52,11 @@ jobs:
       
       - name: Build package
         run: |
-          python3 -m pip install . 
+          python -m pip install -e . 
           
       - name: Run tests and collect coverage
         run: |
-          python3 -m pytest --cov=src
+          python -m pytest --cov=src
           pytest --cov -v -s --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
           ls -l
           coverage report 
@@ -64,7 +64,7 @@ jobs:
 
       - name: Run example
         run: |
-          python3 ./tests/example5.py
+          python ./tests/example5.py
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.python-version == '3.10' }}
