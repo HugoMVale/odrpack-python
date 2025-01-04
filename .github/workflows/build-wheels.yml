@@ -29,17 +29,19 @@ jobs:
 
       - name: Set up Fortran
         uses: fortran-lang/setup-fortran@v1
-        #id: setup-fortran
         with:
-          version: 12 # should be available on all runners
+          version: 11
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
+          CIBW_SKIP: "*-win32 *-manylinux_i686 pp3*"
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
-        #  CIBW_BEFORE_ALL_LINUX: |
-        #     yum install -y openblas-devel
+          CIBW_BEFORE_ALL_MACOS: |
+            echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+       #  CIBW_BEFORE_ALL_LINUX: |
+       #    yum install -y openblas-devel
 
       - name: List wheels
         run: |

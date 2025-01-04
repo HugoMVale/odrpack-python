@@ -40,13 +40,3 @@ addopts = "-v -s"
 [tool.coverage.run]
 source = ["src"]
 branch = true
-
-[tool.cibuildwheel]
-skip = ["*-win32", "*_i686", "pp3*"]
-# free-threaded-support = true
-
-# [tool.cibuildwheel.macos]
-# before-build = "bash {project}/cibw-scripts/cibw_before_build_macos.sh {project}"
-
-# [tool.cibuildwheel.macos.environment]
-# PKG_CONFIG_PATH = "{project}"
