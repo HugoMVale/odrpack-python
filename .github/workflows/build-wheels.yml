@@ -29,6 +29,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
+          CIBW_SKIP: "pp3*"
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
         #  CIBW_BEFORE_ALL_LINUX: |
@@ -44,19 +45,23 @@ jobs:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
-  # build_sdist:
-  #   name: Build source distribution
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-  #     - name: Build sdist
-  #       run: pipx run build --sdist
+      - name: Build sdist
+        run: pipx run build --sdist
 
-  #     - uses: actions/upload-artifact@v4
-  #       with:
-  #         name: cibw-sdist
-  #         path: dist/*.tar.gz
+      - name: Upload wheels 
+        uses: actions/upload-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
 
   # upload_pypi:
   #   needs: [build_wheels, build_sdist]
