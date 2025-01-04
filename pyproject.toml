@@ -34,7 +34,6 @@ build-backend = "mesonpy"
 requires = ["meson-python>=0.15.0", "pybind11", "pybind11-stubgen"]
 
 [tool.pytest.ini_options]
-pythonpath = "."
 norecursedirs = "extern"
 addopts = "-v -s"
 
@@ -43,5 +42,4 @@ source = ["src"]
 branch = true
 
 [tool.cibuildwheel]
-build = ["cp310-*", "cp311-*", "cp312-*"]
 skip = ["*-win32"]
