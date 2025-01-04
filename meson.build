@@ -17,8 +17,8 @@ ff = meson.get_compiler('fortran')
 # python and dependencies
 python = import('python').find_installation(pure: false)
 python_dep = python.dependency()
-#openblas_dep = dependency('openblas', required: true)
-openblas_dep = dependency('scipy-openblas64', required: true)
+openblas_dep = dependency('openblas', required: true)
+#openblas_dep = dependency('scipy-openblas64', required: true)
 pybind11_dep = dependency('pybind11', required: true)
 
 # buid odrpack fortran
