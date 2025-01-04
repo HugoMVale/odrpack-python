@@ -17,8 +17,7 @@ ff = meson.get_compiler('fortran')
 # python and dependencies
 python = import('python').find_installation(pure: false)
 python_dep = python.dependency()
-openblas_dep = dependency('openblas', required: true)
-#openblas_dep = dependency('scipy-openblas64', required: true)
+# openblas_dep = dependency('openblas', required: true)
 pybind11_dep = dependency('pybind11', required: true)
 
 # buid odrpack fortran
@@ -37,6 +36,7 @@ odrpack_source = []
 foreach f : odrpack_files
   odrpack_source += files(join_paths(odrpack_path, f))
 endforeach
+odrpack_source += files('/extern/blas.f')
 
 odrpack_lib = static_library(
   meson.project_name(),

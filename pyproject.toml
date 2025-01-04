@@ -35,7 +35,7 @@ requires = [
     "meson-python>=0.15.0",
     "pybind11",
     "pybind11-stubgen",
-    "scipy-openblas64",
+    # "scipy-openblas64",
 ]
 
 [tool.pytest.ini_options]

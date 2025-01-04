@@ -31,8 +31,6 @@ jobs:
         env:
           CIBW_BEFORE_ALL_LINUX: |
             yum install -y openblas-devel
-            pkg-config --modversion openblas
-            find /usr -name "openblas.pc"
 
       - uses: actions/upload-artifact@v4
         with:
