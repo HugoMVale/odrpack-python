@@ -28,12 +28,18 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
-        # env:
-        #   CIBW_SKIP: "*-musllinux*"
-        #   CIBW_BEFORE_ALL_LINUX: |
+        env:
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: "pytest {project}/tests"
+        #  CIBW_BEFORE_ALL_LINUX: |
         #     yum install -y openblas-devel
 
-      - uses: actions/upload-artifact@v4
+      - name: List wheels
+        run: |
+          ls -al wheelhouse
+
+      - name: Upload wheels 
+        uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
