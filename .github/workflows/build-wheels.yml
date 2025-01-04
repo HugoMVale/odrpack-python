@@ -32,6 +32,12 @@ jobs:
         with:
           version: 14
 
+      - name: Set macOS deployment target
+        if: runner.os == "macOS"
+        run: |
+          echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+        # echo "Deployment target version is ${{ env.MACOSX_DEPLOYMENT_TARGET }} / ${MACOSX_DEPLOYMENT_TARGET}"
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
@@ -40,8 +46,9 @@ jobs:
           CIBW_TEST_COMMAND: "pytest {project}/tests"
           #CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14.0" # works
           #CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" # does not work
-          CIBW_BEFORE_ALL_MACOS: |
-            echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          # CIBW_BEFORE_ALL_MACOS: |
+          #   echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          #   echo "Deployment target version is ${{ env.MACOSX_DEPLOYMENT_TARGET }} / ${MACOSX_DEPLOYMENT_TARGET}"
             
           # echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           # CIBW_BEFORE_ALL_LINUX: |
