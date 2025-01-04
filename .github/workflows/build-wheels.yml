@@ -17,8 +17,9 @@ jobs:
     strategy:
       matrix:
         # macos-13 is an intel runner, macos-14 is apple silicon
+        os: [macos-13]
         # os: [ubuntu-latest, windows-latest, macos-13, macos-14]
-        os: [ubuntu-latest]
+        # os: [ubuntu-latest]
 
     steps:
       - name: Checkout code
@@ -29,7 +30,6 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
-          CIBW_SKIP: "pp3*"
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
         #  CIBW_BEFORE_ALL_LINUX: |

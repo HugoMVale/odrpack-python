@@ -47,4 +47,4 @@ source = ["src"]
 branch = true
 
 [tool.cibuildwheel]
-skip = ["*-win32"]
+skip = ["*-win32", "*_i686", "pp3*"]
