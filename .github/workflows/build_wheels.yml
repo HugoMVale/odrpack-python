@@ -28,9 +28,9 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
-        env:
-          CIBW_BEFORE_ALL_LINUX: |
-            yum install -y openblas-devel
+        # env:
+        #   CIBW_BEFORE_ALL_LINUX: |
+        #     yum install -y openblas-devel
 
       - uses: actions/upload-artifact@v4
         with:
