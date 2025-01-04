@@ -4,5 +4,6 @@ ninja
 pybind11
 pybind11-stubgen
 numpy
+scipy-openblas64
 pytest
 pytest-cov
