@@ -1,12 +1,13 @@
 project(
   'odrpack',
-  ['fortran', 'cpp'],
+  ['fortran', 'c', 'cpp'],
   version : '0.0.1',
   meson_version: '>=1.5.0',
   default_options: [
     'buildtype=debugoptimized',
     'b_ndebug=if-release',
-    'cpp_std=c++17'
+    'cpp_std=c++17',
+    'c_std=c99'
   ],
 )
 
