@@ -28,8 +28,8 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
-        env:
-          CIBW_SKIP: "*-musllinux*"
+        # env:
+        #   CIBW_SKIP: "*-musllinux*"
         #   CIBW_BEFORE_ALL_LINUX: |
         #     yum install -y openblas-devel
 
