@@ -128,12 +128,11 @@ int odr_wrapper(int n, int m, int npar, int nq,
              const double xplusd[], const int ifixb[], const int ifixx[],
              const int *ldifx, const int *ideval, double f[], double fjacb[],
              double fjacd[], int *istop) {
-        *istop = 0;
-
         // Create NumPy arrays that wrap the input C-style arrays, without copying the data
         py::array_t<double> beta_ndarray(*npar, beta, py::none());
         py::array_t<double> xplusd_ndarray(shape_x, xplusd, py::none());
 
+        *istop = 0;
         try {
             // Evaluate model function
             if (*ideval % 10 > 0) {
@@ -172,7 +171,7 @@ int odr_wrapper(int n, int m, int npar, int nq,
             // temporary solution: need to figure out how to do this the right way
             std::string ewhat = e.what();
             if (ewhat.find("OdrStop") != std::string::npos) {
-                std::cout << e.value() << std::endl;
+                std::cerr << e.value() << std::endl;
                 *istop = 1;
             } else {
                 throw;
