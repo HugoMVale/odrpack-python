@@ -27,6 +27,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up Fortran
+        uses: fortran-lang/setup-fortran@v1
+        #id: setup-fortran
+        with:
+          version: 12 # should be available on all runners
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
