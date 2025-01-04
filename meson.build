@@ -41,7 +41,7 @@ odrpack_source += files('/extern/blas.f')
 odrpack_lib = static_library(
   meson.project_name(),
   sources: odrpack_source,
-  dependencies: [openblas_dep],
+  # dependencies: [openblas_dep],
 )
 
 # build extension module
