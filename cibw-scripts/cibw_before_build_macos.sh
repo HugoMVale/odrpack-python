@@ -56,6 +56,8 @@ if [[ $PLATFORM == "arm64" ]]; then
   type -p gfortran
 fi
 
+gfortran --version
+
 # Install Openblas
 python -m pip install "scipy-openblas32==0.3.28.0.2"
 python -c "import scipy_openblas32; print(scipy_openblas32.get_pkg_config())" > $PROJECT_DIR/scipy-openblas.pc
