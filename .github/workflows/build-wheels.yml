@@ -38,12 +38,14 @@ jobs:
           CIBW_SKIP: "*-win32 *-manylinux_i686 pp3*"
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
-          CIBW_BEFORE_BUILD_MACOS: |
-            echo "MACOSX_DEPLOYMENT_TARGET=14" >> $GITHUB_ENV
+          CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=14"
+
+          # CIBW_BEFORE_BUILD_MACOS: |
+          #   echo "MACOSX_DEPLOYMENT_TARGET=14" >> $GITHUB_ENV
             
-       # echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
-       #  CIBW_BEFORE_ALL_LINUX: |
-       #    yum install -y openblas-devel
+          # echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          # CIBW_BEFORE_ALL_LINUX: |
+          # yum install -y openblas-devel
 
       - name: List wheels
         run: |
