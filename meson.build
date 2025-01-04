@@ -36,11 +36,12 @@ odrpack_source = []
 foreach f : odrpack_files
   odrpack_source += files(join_paths(odrpack_path, f))
 endforeach
-odrpack_source += files('/extern/blas.f')
+
+blas_source = join_paths(meson.current_source_dir(), 'extern/blas.f')
 
 odrpack_lib = static_library(
   meson.project_name(),
-  sources: odrpack_source,
+  sources: [odrpack_source, blas_source],
   # dependencies: [openblas_dep],
 )
 
