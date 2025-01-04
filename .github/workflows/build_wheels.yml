@@ -30,8 +30,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.22.0
         env:
           CIBW_BEFORE_ALL_LINUX: |
-            sudo apt-get update
-            sudo apt-get install -y libopenblas-dev
+            yum install -y openblas-devel
 
       - uses: actions/upload-artifact@v4
         with:
