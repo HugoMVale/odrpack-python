@@ -29,4 +29,4 @@ def fjacd(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
 res = odr(f, beta0, y, x, lower=lower, upper=upper, fjacb=fjacb, fjacd=fjacd,
           job=20, iprint=1001)
 
-print("\n success:", res.success)
+print("\n Success:", res.success)
