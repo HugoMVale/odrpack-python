@@ -31,12 +31,7 @@ test = ["pytest", "pytest-cov"]
 
 [build-system]
 build-backend = "mesonpy"
-requires = [
-    "meson-python>=0.15.0",
-    "pybind11",
-    "pybind11-stubgen",
-    # "scipy-openblas64",
-]
+requires = ["meson-python>=0.15.0", "pybind11", "pybind11-stubgen"]
 
 [tool.pytest.ini_options]
 norecursedirs = "extern"
@@ -48,3 +43,10 @@ branch = true
 
 [tool.cibuildwheel]
 skip = ["*-win32", "*_i686", "pp3*"]
+# free-threaded-support = true
+
+[tool.cibuildwheel.macos]
+before-build = "bash {project}/cibw-scripts/cibw_before_build_macos.sh {project}"
+
+[tool.cibuildwheel.macos.environment]
+PKG_CONFIG_PATH = "{project}"
