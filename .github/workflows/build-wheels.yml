@@ -52,7 +52,7 @@ jobs:
           CIBW_BEFORE_BUILD_WINDOWS: |
             bash {project}/cibw-scripts/cibw_before_build_windows.sh {project}
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
-            bash {project}/cibw-scripts/cibw_repair_wheel_command_windows.sh {project}
+            bash ./cibw-scripts/cibw_repair_wheel_command_windows.sh {wheel} {dest_dir}
             
           # delvewheel show {wheel}
           # delvewheel repair -w {dest_dir} {wheel} --no-mangle-all
