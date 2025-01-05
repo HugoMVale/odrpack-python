@@ -442,21 +442,17 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
     work_idx: dict[str, int] = dwinf(n, m, npar, nq, ldwe, ld2we, isodr)
 
     # Return the result
-    # i0_xplus = work_idx['xplus']
-    # xplus = np.reshape(work[i0_xplus:i0_xplus+x.size], x.shape, copy=True)
-
-    # i0_fn = work_idx['fn']
-    # yest = np.reshape(work[i0_fn:i0_fn+y.size], y.shape, copy=True)
-
+    # Extract results without messing up the original work arrays
     i0_eps = work_idx['eps']
-    eps = np.reshape(work[i0_eps:i0_eps+y.size], y.shape, copy=True)
+    eps = work[i0_eps:i0_eps+y.size].copy()
+    eps = np.reshape(eps, y.shape)
 
     i0_sd = work_idx['sd']
     sd_beta = work[i0_sd:i0_sd+beta.size].copy()
 
     i0_vcv = work_idx['vcv']
-    cov_beta = np.reshape(work[i0_vcv:i0_vcv+beta.size**2],
-                          (beta.size, beta.size), copy=True)
+    cov_beta = work[i0_vcv:i0_vcv+beta.size**2].copy()
+    cov_beta = np.reshape(cov_beta, (beta.size, beta.size))
 
     result = OdrResult(
         beta=beta,
