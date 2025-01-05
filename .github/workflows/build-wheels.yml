@@ -16,10 +16,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # macos-13 is an intel runner, macos-14 is apple silicon
-        os: [macos-13, macos-14]
+        # os: [macos-13, macos-14]
         # os: [ubuntu-latest, windows-latest, macos-13, macos-14]
-        # os: [ubuntu-latest]
+        os: [windows-latest]
 
     steps:
       - name: Checkout code
@@ -44,11 +43,7 @@ jobs:
           CIBW_SKIP: "*-win32 *-manylinux_i686 pp3*"
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
-            
-          # echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
-          # CIBW_BEFORE_ALL_LINUX: |
-          # yum install -y openblas-devel
-
+           
       - name: List wheels
         run: |
           ls -al wheelhouse
