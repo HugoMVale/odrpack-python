@@ -29,7 +29,7 @@ jobs:
       - name: Set up Fortran
         uses: fortran-lang/setup-fortran@v1
         with:
-          version: 14
+          version: 13 # 14 not supported yet in Windows
 
       # This can't be placed in the cibuildwheel action
       - name: Set macOS deployment target
