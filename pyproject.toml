@@ -8,12 +8,14 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Hugo Vale", email = "57530119+HugoMVale@users.noreply.github.com" },
 ]
-urls = { Repository = "https://github.com/HugoMVale/odrpack95" }
+urls = { Repository = "https://github.com/HugoMVale/odrpack-python" }
 keywords = ["regression", "statistics", "mathematics"]
 classifiers = [
     "Development Status :: 1 - Planning",
     "Intended Audience :: Science/Research",
-    "Operating System :: OS Independent",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
