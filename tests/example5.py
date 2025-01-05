@@ -1,8 +1,5 @@
-from pprint import pprint
-
-import numpy as np
-
 from odrpack import odr
+import numpy as np
 
 beta0 = np.array([2., 0.5])
 lower = np.array([0., 0.])
@@ -26,7 +23,9 @@ def fjacd(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
     return beta[0] * beta[1] * np.exp(beta[1]*x)
 
 
-res = odr(f, beta0, y, x, lower=lower, upper=upper, fjacb=fjacb, fjacd=fjacd,
+sol = odr(f, beta0, y, x, lower=lower, upper=upper,
+          fjacb=fjacb, fjacd=fjacd,
           job=20, iprint=1001)
 
-print("\n Success:", res.success)
+print("\n beta:", sol.beta)
+print("\n delta:", sol.delta)
