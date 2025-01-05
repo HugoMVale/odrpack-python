@@ -1,15 +1,17 @@
 project(
   'odrpack',
-  ['fortran', 'c', 'cpp'],
+  ['cpp'],
   version : '0.0.1',
   meson_version: '>=1.5.0',
   default_options: [
-    'buildtype=debugoptimized',
+    'buildtype=release',
     'b_ndebug=if-release',
     'cpp_std=c++17',
-    'c_std=c99'
   ],
 )
+
+# Compilers
+add_languages('fortran', native: false)
 
 # compilers
 cpp = meson.get_compiler('cpp')
@@ -18,8 +20,8 @@ ff = meson.get_compiler('fortran')
 # python and dependencies
 python = import('python').find_installation(pure: false)
 python_dep = python.dependency()
-# openblas_dep = dependency('openblas', required: true)
 pybind11_dep = dependency('pybind11', required: true)
+# openblas_dep = dependency('openblas', required: true)
 
 # buid odrpack fortran
 odrpack_path = join_paths(meson.current_source_dir(), 'extern/odrpack95')
