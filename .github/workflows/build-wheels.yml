@@ -34,7 +34,7 @@ jobs:
 
       # This can't be placed in the cibuildwheel action
       - name: Set macOS deployment target
-        if: runner.os == "macOS"
+        if: runner.os == 'macOS'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
 
