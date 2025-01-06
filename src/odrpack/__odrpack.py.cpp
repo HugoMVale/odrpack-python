@@ -59,10 +59,14 @@ int odr_wrapper(int n, int m, int npar, int nq,
                 std::optional<py::array_t<double, py::array::c_style>> upper,
                 std::optional<py::array_t<double, py::array::c_style>> work,
                 std::optional<py::array_t<int, py::array::c_style>> iwork,
-                std::optional<int> job, std::optional<int> ndigit,
-                std::optional<double> taufac, std::optional<double> sstol,
-                std::optional<double> partol, std::optional<int> maxit,
-                std::optional<int> iprint, std::optional<std::string> errfile,
+                std::optional<int> job,
+                std::optional<int> ndigit,
+                std::optional<double> taufac,
+                std::optional<double> sstol,
+                std::optional<double> partol,
+                std::optional<int> maxit,
+                std::optional<int> iprint,
+                std::optional<std::string> errfile,
                 std::optional<std::string> rptfile)
 
 {
@@ -191,7 +195,7 @@ int odr_wrapper(int n, int m, int npar, int nq,
     }
 
     if (errfile) {
-        if (errfile.value() != rptfile.value()) {
+        if (!((rptfile) && (errfile.value() == rptfile.value()))) {
             lunerr = 0;
             open_file(errfile.value().c_str(), &lunerr, &ierr);
             if (ierr != 0) throw std::runtime_error("Error opening error file.");
