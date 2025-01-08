@@ -37,9 +37,17 @@ Fortran code automatically interprets `nullptr` as an absent optional argument.
 This approach avoids the redundant definition of default values in multiple
 places.
 */
-int odr_wrapper(int n, int m, int npar, int nq,
-                int ldwe, int ld2we, int ldwd,
-                int ld2wd, int ldifx, int ldstpd, int ldscld,
+int odr_wrapper(int n,
+                int m,
+                int npar,
+                int nq,
+                int ldwe,
+                int ld2we,
+                int ldwd,
+                int ld2wd,
+                int ldifx,
+                int ldstpd,
+                int ldscld,
                 const py::function fcn_f,
                 const py::function fcn_fjacb,
                 const py::function fcn_fjacd,
