@@ -122,9 +122,6 @@ int odr_wrapper(int n, int m, int npar, int nq,
     fcn_fjacd_holder = std::move(fcn_fjacd);
     auto cleaner_3 = SelfCleaningPyObject(fcn_fjacd_holder);
 
-    static std::vector<ssize_t> shape_x{n};
-    if (m != 1) shape_x.insert(shape_x.begin(), m);
-
     // Define the overall user-supplied model function 'fcn'
     odrpack_fcn_t fcn = nullptr;
     fcn = [](const int *n, const int *m, const int *npar, const int *nq,
@@ -134,7 +131,12 @@ int odr_wrapper(int n, int m, int npar, int nq,
              double fjacd[], int *istop) {
         // Create NumPy arrays that wrap the input C-style arrays, without copying the data
         py::array_t<double> beta_ndarray(*npar, beta, py::none());
-        py::array_t<double> xplusd_ndarray(shape_x, xplusd, py::none());
+        py::array_t<double> xplusd_ndarray;
+        if (*m == 1) {
+            xplusd_ndarray = py::array_t<double>(*n, xplusd, py::none());
+        } else {
+            xplusd_ndarray = py::array_t<double>({*m, *n}, xplusd, py::none());
+        }
 
         *istop = 0;
         try {
