@@ -100,11 +100,13 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         the parameter is held fixed, and one means it is adjustable. By default,
         `ifixb` is set to one for all elements of `beta`.
     ifixx : Int32Array | None
-        Array of shape `(m,)` or `(m, n)`, containing the values designating
-        which elements of `x` are to be held fixed. Zero means the element is
-        held fixed and one means it is free. By default, in orthogonal distance
-        regression mode, `ifixx` is set to one for all elements of `x`. In
-        ordinary least squares mode, the `x` values are intrinsically fixed.
+        Array with the same shape as `x`, containing the values designating
+        which elements of `x` are to be held fixed. Alternatively, it can be a
+        rank-1 array of shape `(m,)` or `(n,)`, in which case it will be broadcast
+        along the other axis. Zero means the element is held fixed and one means
+        it is free. By default, in orthogonal distance regression mode, `ifixx`
+        is set to one for all elements of `x`. In ordinary least squares mode,
+        the `x` values are intrinsically fixed.
     delta0 : Float64Array | None
         Array with the same shape as `x`, containing the initial guesses of the
         errors in the explanatory variable. To activate this option, `job` must
@@ -172,13 +174,13 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         the value of `ndigit` and the type of finite differences used. For
         additional details, refer to pages 31 and 78 of the ODRPACK95 guide.
     stpd : Float64Array | None
-        Array containing the _relative_ step sizes used to compute the finite
-        difference derivatives with respect to the errors in the explanatory
-        variable. It must be a rank-1 array of shape `(m,)` or a rank-2 array
-        of shape `(m, ldstpd)`, where `ldstpd ∈ {1, n}`. By default, `stpd` is
-        set internally based on the value of `ndigit` and the type of finite
-        differences used. For additional details, refer to pages 31 and 78 of
-        the ODRPACK95 guide.
+        Array with the same shape as `x`, containing the _relative_ step sizes
+        used to compute the finite difference derivatives with respect to the
+        errors in the explanatory variable. Alternatively, it can be a rank-1
+        array of shape `(m,)` or `(n,)`, in which case it will be broadcast along
+        the other axis. By default, `stpd` is set internally based on the value
+        of `ndigit` and the type of finite differences used. For additional
+        details, refer to pages 31 and 78 of the ODRPACK95 guide.
     sclb : Float64Vector | None
         Rank-1 array with the same shape as `beta0` containing the scale values
         of the model parameters. Scaling is used to improve the numerical stability
@@ -188,14 +190,14 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         `beta`. For further details, refer to page 32 and 84 of the ODRPACK95
         guide.
     scld : Float64Array | None
-        Array containing the scale values of the errors in the explanatory
-        variable. It must be a rank-1 array of shape `(m,)` or a rank-2 array
-        of shape `(m, ldscld)`, where `ldscld ∈ {1, n}`. Scaling is used to
-        improve the numerical stability of the regression, but does not affect
-        the problem specification. Scaling should not be confused with the 
-        weighting matrices `we` and `wd`. By default, `scld` is set internally
-        based on the relative magnitudes of `x`. For further details, refer to
-        page 32 and 85 of the ODRPACK95 guide.
+        Array with the same shape as `x`, containing the scale values of the
+        errors in the explanatory variable. Alternatively, it can be a rank-1
+        array of shape `(m,)` or `(n,)`, in which case it will be broadcast along
+        the other axis. Scaling is used to improve the numerical stability of
+        the regression, but does not affect the problem specification. Scaling
+        should not be confused with the weighting matrices `we` and `wd`. By
+        default, `scld` is set internally based on the relative magnitudes of
+        `x`. For further details, refer to page 32 and 85 of the ODRPACK95 guide.
     work : Float64Vector | None
         Array containing the real-valued internal state of the odrpack solver.
         It is only required for a restart (see `job`), in which case it must be
@@ -258,11 +260,17 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         raise ValueError(
             f"`beta0` must be a rank-1 array of shape `(npar,)`, but has shape {beta0.shape}.")
 
-    if lower is not None and lower.shape != beta0.shape:
-        raise ValueError("`lower` must have the same shape as `beta0`.")
+    if lower is not None:
+        if lower.shape != beta0.shape:
+            raise ValueError("`lower` must have the same shape as `beta0`.")
+        if np.any(lower >= beta0):
+            raise ValueError("`lower` must be less than `beta0`.")
 
-    if upper is not None and upper.shape != beta0.shape:
-        raise ValueError("`upper` must have the same shape as `beta0`.")
+    if upper is not None:
+        if upper.shape != beta0.shape:
+            raise ValueError("`upper` must have the same shape as `beta0`.")
+        if np.any(upper <= beta0):
+            raise ValueError("`upper` must be greater than `beta0`.")
 
     if ifixb is not None and ifixb.shape != beta0.shape:
         raise ValueError("`ifixb` must have the same shape as `beta0`.")
@@ -285,45 +293,46 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
 
     # Check ifixx
     if ifixx is not None:
-        if ifixx.shape[0] == m and ifixx.ndim == 1:
+        if ifixx.shape == x.shape:
+            ldifx = n
+        elif ifixx.shape == (m,) and m > 1 and n != m:
             ldifx = 1
-        elif ifixx.shape[0] == m and ifixx.ndim == 2:
-            ldifx = ifixx.shape[1]
-            if not ((ldifx == 1) or (ldifx == n)):
-                raise ValueError(
-                    f"When `ifixx` is a rank-2 array, its shape must be `(m, 1)` or `(m, n)`. See page 26 of the ODRPACK95 User Guide.")
+        elif ifixx.shape == (n,) and m > 1 and n != m:
+            ldifx = n
+            ifixx = np.tile(ifixx, (m, 1))
         else:
             raise ValueError(
-                r"`ifixx` must either be a rank-1 array of shape `(m,)` or a rank-2 array of shape `(m, ldifx)`, where ldifx ∈ {1, n}. See page 26 of the ODRPACK95 User Guide.")
+                "`ifixx` must either have the same shape as `x` or be a rank-1 array of shape `(m,)` or `(n,)`. See page 26 of the ODRPACK95 User Guide.")
     else:
         ldifx = 1
 
-    # Check stpd and scld
+    # Check stpd
     if stpd is not None:
-        if stpd.shape[0] == m and stpd.ndim == 1:
+        if stpd.shape == x.shape:
+            ldstpd = n
+        elif stpd.shape == (m,) and m > 1 and n != m:
             ldstpd = 1
-        elif stpd.shape[0] == m and stpd.ndim == 2:
-            ldstpd = stpd.shape[1]
-            if not ((ldstpd == 1) or (ldstpd == n)):
-                raise ValueError(
-                    f"When `stpd` is a rank-2 array, its shape must be `(m, 1)` or `(m, n)`. See page 31 of the ODRPACK95 User Guide.")
+        elif stpd.shape == (n,) and m > 1 and n != m:
+            ldstpd = n
+            stpd = np.tile(stpd, (m, 1))
         else:
             raise ValueError(
-                r"`stpd` must be a rank-1 array of shape `(m,)` or a rank-2 array of shape `(m, ldstpd)`, where ldstpd ∈ {1, n}. See page 31 of the ODRPACK95 User Guide.")
+                "`stpd` must either have the same shape as `x` or be a rank-1 array of shape `(m,)` or `(n,)`. See page 31 of the ODRPACK95 User Guide.")
     else:
         ldstpd = 1
 
+    # Check scld
     if scld is not None:
-        if scld.shape[0] == m and scld.ndim == 1:
+        if scld.shape == x.shape:
+            ldscld = n
+        elif scld.shape == (m,) and m > 1 and n != m:
             ldscld = 1
-        elif scld.shape[0] == m and scld.ndim == 2:
-            ldscld = scld.shape[1]
-            if not ((ldscld == 1) or (ldscld == n)):
-                raise ValueError(
-                    f"When `scld` is a rank-2 array, its shape must be `(m, 1)` or `(m, n)`. See page 32 of the ODRPACK95 User Guide.")
+        elif scld.shape == (n,) and m > 1 and n != m:
+            ldscld = n
+            scld = np.tile(scld, (m, 1))
         else:
             raise ValueError(
-                r"`scld` must be a rank-1 array of shape `(m,)` or a rank-2 array of shape `(m, ldscld)`, where ldscld ∈ {1, n}. See page 32 of the ODRPACK95 User Guide.")
+                "`scld` must either have the same shape as `x` or be a rank-1 array of shape `(m,)` or `(n,)`. See page 32 of the ODRPACK95 User Guide.")
     else:
         ldscld = 1
 
