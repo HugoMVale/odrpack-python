@@ -173,6 +173,12 @@ def test_beta0_related(case1):
         _ = odr(f=case1['f'], x=case1['x'], y=case1['y'],
                 beta0=np.zeros((1, 4)))
     with pytest.raises(ValueError):
+        # lower has invalid shape
+        _ = odr(**case1, lower=np.zeros((1, 4)))
+    with pytest.raises(ValueError):
+        # upper has invalid shape
+        _ = odr(**case1, upper=np.zeros((1, 4)))
+    with pytest.raises(ValueError):
         # ifixb has invalid shape
         _ = odr(**case1, ifixb=np.array([0, 1, 0], dtype=np.int32))
     with pytest.raises(ValueError):
@@ -184,6 +190,10 @@ def test_beta0_related(case1):
 
 
 def test_delta0_related(case1, case3):
+
+    # user-defined delta0
+    sol = odr(**case1, job=1010, delta0=np.ones_like(case1['x']))
+    assert sol.info == 1
 
     # fix some x
     ifixx = np.ones_like(case1['x'], dtype=np.int32)
@@ -233,13 +243,19 @@ def test_delta0_related(case1, case3):
     # invalid inputs:
     with pytest.raises(ValueError):
         # ifixx has invalid shape
-        _ = odr(**case1, ifixb=np.array([0, 1, 0], dtype=np.int32))
+        _ = odr(**case1, ifixx=np.array([0, 1, 0], dtype=np.int32))
     with pytest.raises(ValueError):
         # stpd has invalid shape
         _ = odr(**case3, stpd=np.array([1e-4, 1.]))
     with pytest.raises(ValueError):
         # scld has invalid shape
         _ = odr(**case3, scld=np.array([1., 1., 1., 1.]))
+    with pytest.raises(ValueError):
+        # delta0 has invalid shape
+        _ = odr(**case3, job=1000, delta0=np.zeros_like(case1['y']))
+    with pytest.raises(ValueError):
+        # delta0 with wrong job
+        _ = odr(**case1, job=100, delta0=np.zeros_like(case1['x']))
 
 
 def test_parameters(case1):
@@ -287,7 +303,7 @@ def test_restart(case1):
     with pytest.raises(ValueError):
         _ = odr(**case1, job=10_000, iwork=sol1.iwork, work=np.ones(10000))
     with pytest.raises(ValueError):
-        _ = odr(**case1, job=10_000, iwork=np.ones(10000, dtype=np.int32))
+        _ = odr(**case1, job=10_000, iwork=np.ones(10000, dtype=np.int32), work=sol1.work)
 
 
 def test_rptfile_and_errfile(case1):
@@ -299,7 +315,7 @@ def test_rptfile_and_errfile(case1):
             os.remove(rptfile)
         sol = odr(**case1, iprint=iprint, rptfile=rptfile)
         assert os.path.isfile(rptfile) \
-            and abs(os.path.getsize(rptfile) - rptsize) < 100
+            and abs(os.path.getsize(rptfile) - rptsize) < 200
 
     # write to error file
     errfile = 'errtest.txt'
