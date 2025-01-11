@@ -9,7 +9,7 @@ solve the ordinary least squares problem where all of the errors are attributed
 to the observations of the dependent variable.
 """
 
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 
 from odrpack.driver import *
 from odrpack.exceptions import *
