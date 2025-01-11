@@ -259,7 +259,7 @@ def test_delta0_related(case1, case3):
         _ = odr(**case1, job=100, delta0=np.zeros_like(case1['x']))
 
 
-def test_wd(case1, case2, case3):
+def test_wd(case1, case3):
 
     # wd scalar
     sol = odr(**case1, wd=1e10)
@@ -322,6 +322,93 @@ def test_wd(case1, case2, case3):
     assert np.allclose(sol.delta, sol1.delta)
     assert np.allclose(sol.eps, sol1.eps)
 
+    # wd has invalid shape
+    wd = np.ones((1, 1, 1))
+    with pytest.raises(ValueError):
+        _ = odr(**case3, wd=wd)
+
+    # wd has invalid tye
+    with pytest.raises(TypeError):
+        _ = odr(**case3, wd=[1., 1., 1.])
+
+
+def test_we(case1, case3):
+
+    ATOL = 1e-6
+
+    # we scalar
+    sol = odr(**case1, we=1e10)
+    assert np.allclose(sol.eps, np.zeros_like(sol.eps))
+
+    # we (n,) and nq==1
+    we = np.ones_like(case1['y'])
+    fix = (4, 7)
+    we[fix,] = 1e10
+    sol = odr(**case1, we=we)
+    assert np.allclose(sol.eps[fix,], np.zeros_like(sol.eps[fix,]), atol=ATOL)
+
+    # we (nq, n)
+    we = np.ones_like(case3['y'])
+    fix = (4, 13)
+    we[:, fix,] = 1e10
+    sol = odr(**case3, we=we)
+    sol1 = deepcopy(sol)
+    assert np.allclose(sol.eps[:, fix,], np.zeros((sol.eps.shape[0], len(fix))),
+                       atol=ATOL)
+
+    # we (nq, 1, n)
+    we = np.expand_dims(we, axis=1)
+    sol = odr(**case3, we=we)
+    assert np.allclose(sol.delta, sol1.delta)
+    assert np.allclose(sol.eps, sol1.eps)
+
+    # we (nq,)
+    we = np.ones(case3['y'].shape[0])
+    fix = (1,)
+    we[fix,] = 1e10
+    sol = odr(**case3, we=we)
+    sol1 = deepcopy(sol)
+    assert np.allclose(sol.eps[fix, :], np.zeros((len(fix), sol.eps.shape[-1])),
+                       atol=ATOL)
+
+    # we (nq, 1, 1)
+    we = we[..., np.newaxis, np.newaxis]
+    sol = odr(**case3, we=we)
+    assert np.allclose(sol.delta, sol1.delta)
+    assert np.allclose(sol.eps, sol1.eps)
+
+    # we (nq, nq)
+    nq = case3['y'].shape[0]
+    we = np.zeros((nq, nq))
+    np.fill_diagonal(we, 1.)
+    fix = (1,)
+    we[fix, fix] = 1e10
+    sol = odr(**case3, we=we)
+    sol1 = deepcopy(sol)
+    assert np.allclose(sol.eps[fix, :], np.zeros((len(fix), sol.eps.shape[-1])),
+                       atol=ATOL)
+
+    # we (nq, nq, 1)
+    we = we[..., np.newaxis]
+    sol = odr(**case3, we=we)
+    assert np.allclose(sol.delta, sol1.delta)
+    assert np.allclose(sol.eps, sol1.eps)
+
+    # we (nq, nq, n)
+    we = np.tile(we, (1, 1, case3['y'].shape[-1]))
+    sol = odr(**case3, we=we)
+    assert np.allclose(sol.delta, sol1.delta)
+    assert np.allclose(sol.eps, sol1.eps)
+
+    # we has invalid shape
+    we = np.ones((1, 1, 1))
+    with pytest.raises(ValueError):
+        _ = odr(**case3, we=we)
+
+    # we has invalid tye
+    with pytest.raises(TypeError):
+        _ = odr(**case3, we=[1., 1., 1.])
+
 
 def test_parameters(case1):
     # maxit
@@ -380,7 +467,7 @@ def test_rptfile_and_errfile(case1):
     for iprint, rptsize in zip([0, 1001], [0, 2600]):
         if os.path.isfile(rptfile):
             os.remove(rptfile)
-        sol = odr(**case1, iprint=iprint, rptfile=rptfile)
+        _ = odr(**case1, iprint=iprint, rptfile=rptfile)
         assert os.path.isfile(rptfile) \
             and abs(os.path.getsize(rptfile) - rptsize) < 200
 
@@ -388,8 +475,8 @@ def test_rptfile_and_errfile(case1):
     errfile = 'errtest.txt'
     if os.path.isfile(errfile):
         os.remove(errfile)
-    sol = odr(**case1, iprint=1001,
-              errfile=errfile)
+    _ = odr(**case1, iprint=1001,
+            errfile=errfile)
     assert os.path.isfile(errfile)  # and os.path.getsize(errfile) > 0
 
     # write to report and error file
@@ -397,9 +484,9 @@ def test_rptfile_and_errfile(case1):
         os.remove(rptfile)
     if os.path.isfile(errfile):
         os.remove(errfile)
-    sol = odr(**case1, job=10, iprint=1001,
-              rptfile=rptfile,
-              errfile=errfile)
+    _ = odr(**case1, job=10, iprint=1001,
+            rptfile=rptfile,
+            errfile=errfile)
     assert os.path.isfile(rptfile) and os.path.getsize(rptfile) > 2500
     assert os.path.isfile(errfile)  # and os.path.getsize(errfile) > 0
 
