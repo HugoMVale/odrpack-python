@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pytest
+from copy import deepcopy
 
 from odrpack import odr
 from odrpack.__odrpack import diwinf, dwinf, workspace_dimensions
@@ -256,6 +257,70 @@ def test_delta0_related(case1, case3):
     with pytest.raises(ValueError):
         # delta0 with wrong job
         _ = odr(**case1, job=100, delta0=np.zeros_like(case1['x']))
+
+
+def test_wd(case1, case2, case3):
+
+    # wd scalar
+    sol = odr(**case1, wd=1e10)
+    assert np.allclose(sol.delta, np.zeros_like(sol.delta))
+
+    # wd (n,) and m==1
+    wd = np.ones_like(case1['x'])
+    fix = (4, 7)
+    wd[fix,] = 1e10
+    sol = odr(**case1, wd=wd)
+    assert np.allclose(sol.delta[fix,], np.zeros_like(sol.delta[fix,]))
+
+    # wd (m, n)
+    wd = np.ones_like(case3['x'])
+    fix = (4, 13)
+    wd[:, fix,] = 1e10
+    sol = odr(**case3, wd=wd)
+    sol1 = deepcopy(sol)
+    assert np.allclose(sol.delta[:, fix,], np.zeros((sol.delta.shape[0], len(fix))))
+
+    # wd (m, 1, n)
+    wd = np.expand_dims(wd, axis=1)
+    sol = odr(**case3, wd=wd)
+    assert np.allclose(sol.delta, sol1.delta)
+    assert np.allclose(sol.eps, sol1.eps)
+
+    # wd (m,)
+    wd = np.ones(case3['x'].shape[0])
+    fix = (1,)
+    wd[fix,] = 1e10
+    sol = odr(**case3, wd=wd)
+    sol1 = deepcopy(sol)
+    assert np.allclose(sol.delta[fix, :], np.zeros((len(fix), sol.delta.shape[-1])))
+
+    # wd (m, 1, 1)
+    wd = wd[..., np.newaxis, np.newaxis]
+    sol = odr(**case3, wd=wd)
+    assert np.allclose(sol.delta, sol1.delta)
+    assert np.allclose(sol.eps, sol1.eps)
+
+    # wd (m, m)
+    m = case3['x'].shape[0]
+    wd = np.zeros((m, m))
+    np.fill_diagonal(wd, 1.)
+    fix = (1,)
+    wd[fix, fix] = 1e10
+    sol = odr(**case3, wd=wd)
+    sol1 = deepcopy(sol)
+    assert np.allclose(sol.delta[fix, :], np.zeros((len(fix), sol.delta.shape[-1])))
+
+    # wd (m, m, 1)
+    wd = wd[..., np.newaxis]
+    sol = odr(**case3, wd=wd)
+    assert np.allclose(sol.delta, sol1.delta)
+    assert np.allclose(sol.eps, sol1.eps)
+
+    # wd (m, m, n)
+    wd = np.tile(wd, (1, 1, case3['x'].shape[-1]))
+    sol = odr(**case3, wd=wd)
+    assert np.allclose(sol.delta, sol1.delta)
+    assert np.allclose(sol.eps, sol1.eps)
 
 
 def test_parameters(case1):
