@@ -1,5 +1,6 @@
-from odrpack import odr
 import numpy as np
+
+from odrpack import odr
 
 beta0 = np.array([2., 0.5])
 lower = np.array([0., 0.])
