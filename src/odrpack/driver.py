@@ -338,48 +338,56 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
 
     # Check we
     if we is not None:
-        if isinstance(we, float):
+        if isinstance(we, (float, int)):
             ldwe = 1
             ld2we = 1
             we = np.full((nq,), we, dtype=np.float64)
         elif isinstance(we, np.ndarray):
-            if we.shape[0] == nq and we.ndim == 1:
+            if we.shape == (nq,):
                 ldwe = 1
                 ld2we = 1
-            elif we.shape[0] == nq and we.ndim == 3:
+            elif we.shape == (nq, nq):
+                ldwe = 1
+                ld2we = nq
+            elif we.shape == (nq, n) or (we.shape == (n,) and nq == 1):
+                ldwe = n
+                ld2we = 1
+            elif we.shape in ((nq, 1, 1), (nq, 1, n), (nq, nq, 1), (nq, nq, n)):
                 ldwe = we.shape[2]
                 ld2we = we.shape[1]
-                if not ((ldwe == 1 and ld2we == 1) or (ldwe == n and ld2we == 1) or (ldwe == 1 and ld2we == nq) or (ldwe == n and ld2we == nq)):
-                    raise ValueError(
-                        "When `we` is a rank-3 array, its shape must be `(nq, 1, 1)`, `(nq, n, 1)`, `(nq, 1, nq)` or `(nq, n, nq)`. See page 25 of the ODRPACK95 User Guide.")
             else:
                 raise ValueError(
-                    r"`we` must be a rank-1 array of shape `(nq,)` or a rank-3 array of shape `(nq, ld2we, ldwe)`, where ldwe ∈ {1, n} and ld2we ∈ {1, nq}. See page 25 of the ODRPACK95 User Guide.")
+                    r"`we` must be a array of shape `(nq,)`, `(n,)`, `(nq, nq)`, `(nq, n)`, `(nq, 1, 1)`, `(nq, 1, n)`, `(nq, nq, 1)`, or `(nq, nq, n)`. See page 25 of the ODRPACK95 User Guide.")
         else:
-            raise TypeError("`we` must be a float or an array")
+            raise TypeError("`we` must be a float or an array.")
     else:
         ldwe = 1
         ld2we = 1
 
     # Check wd
     if wd is not None:
-        if isinstance(wd, float):
+        if isinstance(wd, (float, int)):
             ldwd = 1
             ld2wd = 1
             wd = np.full((m,), wd, dtype=np.float64)
-        elif isinstance(wd, np.ndarray) and wd.shape[0] == m:
-            if wd.ndim == 1:
+        elif isinstance(wd, np.ndarray):
+            if wd.shape == (m,):
                 ldwd = 1
                 ld2wd = 1
-            elif wd.ndim == 3:
+            elif wd.shape == (m, m):
+                ldwd = 1
+                ld2wd = m
+            elif wd.shape == (m, n) or (wd.shape == (n,) and m == 1):
+                ldwd = n
+                ld2wd = 1
+            elif wd.shape in ((m, 1, 1), (m, 1, n), (m, m, 1), (m, m, n)):
                 ldwd = wd.shape[2]
                 ld2wd = wd.shape[1]
-                if not ((ldwd == 1 and ld2wd == 1) or (ldwd == n and ld2wd == 1) or (ldwd == 1 and ld2wd == m) or (ldwd == n and ld2wd == m)):
-                    raise ValueError(
-                        "When `wd` is a rank-3 array, its shape must be `(m, 1, 1)`, `(m, n, 1)`, `(m, 1, m)` or `(m, n, m)`. See page 26 of the ODRPACK95 User Guide.")
             else:
                 raise ValueError(
-                    r"`wd` must be a rank-1 array of shape `(m,)` or a rank-3 array of shape `(m, ld2wd, ldwd)`, where ldwd ∈ {1, n} and ld2wd ∈ {1, m}. See page 26 of the ODRPACK95 User Guide.")
+                    r"`wd` must be a array of shape `(m,)`, `(n,)`, `(m, m)`, `(m, n)`, `(m, 1, 1)`, `(m, 1, n)`, `(m, m, 1)`, or `(m, m, n)`. See page 26 of the ODRPACK95 User Guide.")
+        else:
+            raise TypeError("`wd` must be a float or an array.")
     else:
         ldwd = 1
         ld2wd = 1
@@ -390,7 +398,7 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         raise ValueError(
             "Function `f` must return an array with the same shape as `y`.")
 
-    def fdummy(beta, x): return np.array([np.nan])
+    def fdummy(beta, x): return np.array([np.nan])  # should never be called
 
     if isjac and fjacb is not None:
         fjacb0 = fjacb(beta0, x)
