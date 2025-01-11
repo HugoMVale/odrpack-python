@@ -54,9 +54,9 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         Function to be fitted, with the signature `f(beta, x)`. It must return
         an array with the same shape as `y`.
     beta0 : Float64Vector
-        Rank-1 array of shape `(npar,)` with the initial guesses of the model
-        parameters, within the bounds specified by `lower` and `upper` (if the
-        bounds are specified).
+        Array of shape `(npar,)` with the initial guesses of the model parameters,
+        within the bounds specified by arguments `lower` and `upper` (if they are
+        specified).
     y : Float64Array
         Array of shape `(n,)` or `(nq, n)` containing the values of the response
         variable(s). When the model is explicit, the user must specify a value
@@ -70,18 +70,32 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         variable(s).
     we : float | Float64Array | None
         Scalar or array specifying how the errors on `y` are to be weighted.
-        If `we` is an array, then it must be a rank-1 array of shape `(nq,)` or
-        a rank-3 array of shape `(nq, ld2we, ldwe)`, where `ldwe ∈ {1, n}` and
-        `ld2we ∈ {1, nq}`. For a comprehensive description of the options, refer
-        to page 25 of the ODRPACK95 guide. By default, `we` is set to one for
-        all `y` data points.
+        If `we` is a scalar, then it is used for all data points. If `we` is
+        an array of shape `(n,)` and `nq==1`, then `we[i]` represents the weight
+        for `y[i]`. If `we` is an array of shape `(nq)`, then it represents the
+        diagonal of the covariant weighting matrix for all data points. If `we`        
+        is an array of shape `(nq, nq)`, then it represents the full covariant
+        weighting matrix for all data points. If `we` is an array of shape 
+        `(nq, n)`, then `we[:, i]` represents the diagonal of the covariant
+        weighting matrix for `y[:, i]`. If `we` is an array of shape `(nq, nq, n)`,
+        then `we[:, :, i]` represents the full covariant weighting matrix for
+        `y[:, i]`. For a comprehensive description of the options, refer to page
+        25 of the ODRPACK95 guide. By default, `we` is set to one for all `y`
+        data points.
     wd : float | Float64Array | None
         Scalar or array specifying how the errors on `x` are to be weighted.
-        If `wd` is an array, then it must be a rank-1 array of shape `(m,)` or
-        a rank-3 array of shape `(m, ld2wd, ldwd)`, where `ldwd ∈ {1, n}` and
-        `ld2wd ∈ {1, m}`. For a comprehensive description of the options, refer
-        to page 26 of the ODRPACK95 guide. By default, `wd` is set to one for
-        all `x` data points.
+        If `wd` is a scalar, then it is used for all data points. If `wd` is
+        an array of shape `(n,)` and `m==1`, then `wd[i]` represents the weight
+        for `x[i]`. If `wd` is an array of shape `(m)`, then it represents the
+        diagonal of the covariant weighting matrix for all data points. If `wd`        
+        is an array of shape `(m, m)`, then it represents the full covariant
+        weighting matrix for all data points. If `wd` is an array of shape 
+        `(m, n)`, then `wd[:, i]` represents the diagonal of the covariant
+        weighting matrix for `x[:, i]`. If `wd` is an array of shape `(m, m, n)`,
+        then `wd[:, :, i]` represents the full covariant weighting matrix for
+        `x[:, i]`. For a comprehensive description of the options, refer to page
+        26 of the ODRPACK95 guide. By default, `wd` is set to one for all `x`
+        data points.
     fjacb : Callable[[Float64Vector, Float64Array], Float64Array] | None
         Jacobian of the function to be fitted with respect to `beta`, with the
         signature `fjacb(beta, x)`. It must return an array with shape 
@@ -95,10 +109,10 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         set accordingly. By default, the Jacobian is evaluated numerically
         according to the finite difference scheme defined in `job`.
     ifixb : Int32Vector | None
-        Rank-1 array with the same shape as `beta0`, containing the values
-        designating which elements of `beta` are to be held fixed. Zero means
-        the parameter is held fixed, and one means it is adjustable. By default,
-        `ifixb` is set to one for all elements of `beta`.
+        Array with the same shape as `beta0`, containing the values designating
+        which elements of `beta` are to be held fixed. Zero means the parameter
+        is held fixed, and one means it is adjustable. By default, `ifixb` is
+        set to one for all elements of `beta`.
     ifixx : Int32Array | None
         Array with the same shape as `x`, containing the values designating
         which elements of `x` are to be held fixed. Alternatively, it can be a
@@ -113,13 +127,13 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         be set accordingly. By default, `delta0` is set to zero for all elements
         of `x`.
     lower : Float64Vector | None
-        Rank-1 array with the same shape as `beta0`, containing the lower bounds
-        of the model parameters. By default, `lower` is set to negative infinity
-        for all elements of `beta`.
+        Array with the same shape as `beta0`, containing the lower bounds of the
+        model parameters. By default, `lower` is set to negative infinity for
+        all elements of `beta`.
     upper : Float64Vector | None
-        Rank-1 array with the same shape as `beta0`, containing the upper bounds
-        of the model parameters. By default, `upper` is set to positive infinity
-        for all elements of `beta`.
+        Array with the same shape as `beta0`, containing the upper bounds of the
+        model parameters. By default, `upper` is set to positive infinity for
+        all elements of `beta`.
     job : Variable controlling problem initialization and computational method.
         The default value is 0, corresponding to an explicit orthogonal distance
         regression, with `delta0` initialized to zero, derivatives computed by
@@ -168,8 +182,8 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         Maximum number of allowed iterations. The default value is 50 for a
         (normal) first run and 10 for a restart (see `job`).
     stpb : Float64Vector | None
-        Rank-1 array with the same shape as `beta0` containing the _relative_
-        step sizes used to compute the finite difference derivatives with respect
+        Array with the same shape as `beta0` containing the _relative_ step
+        sizes used to compute the finite difference derivatives with respect
         to the model parameters. By default, `stpb` is set internally based on
         the value of `ndigit` and the type of finite differences used. For
         additional details, refer to pages 31 and 78 of the ODRPACK95 guide.
@@ -182,8 +196,8 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         of `ndigit` and the type of finite differences used. For additional
         details, refer to pages 31 and 78 of the ODRPACK95 guide.
     sclb : Float64Vector | None
-        Rank-1 array with the same shape as `beta0` containing the scale values
-        of the model parameters. Scaling is used to improve the numerical stability
+        Array with the same shape as `beta0` containing the scale values of the
+        model parameters. Scaling is used to improve the numerical stability
         of the regression, but does not affect the problem specification. Scaling
         should not be confused with the weighting matrices `we` and `wd`. By
         default, `sclb` is set internally based on the relative magnitudes of 
@@ -224,10 +238,10 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
     """
 
     # Interpret job
-    isodr = _getdigit(job, 1) < 2
-    isjac = _getdigit(job, 2) > 1
-    isdelta0 = _getdigit(job, 4) > 0
-    isrestart = _getdigit(job, 5) > 0
+    is_odr = _get_digit(job, 1) < 2
+    has_jac = _get_digit(job, 2) > 1
+    has_delta0 = _get_digit(job, 4) > 0
+    is_restart = _get_digit(job, 5) > 0
 
     # Check x and y
     if x.ndim == 1:
@@ -282,11 +296,11 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         raise ValueError("`sclb` must have the same shape as `beta0`.")
 
     # Check delta0
-    if isdelta0 and delta0 is not None:
+    if has_delta0 and delta0 is not None:
         if delta0.shape != x.shape:
             raise ValueError("`delta0` must have the same shape as `x`.")
         delta = delta0.copy()
-    elif not isdelta0 and delta0 is None:
+    elif not has_delta0 and delta0 is None:
         delta = np.zeros_like(x)
     else:
         raise ValueError("Inconsistent arguments for `job` and `delta0`.")
@@ -398,34 +412,34 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         raise ValueError(
             "Function `f` must return an array with the same shape as `y`.")
 
-    def fdummy(beta, x): return np.array([np.nan])  # should never be called
+    def fdummy(beta, x): return np.array([np.nan])  # will never be called
 
-    if isjac and fjacb is not None:
+    if has_jac and fjacb is not None:
         fjacb0 = fjacb(beta0, x)
         if fjacb0.shape[-1] != n or fjacb0.size != n*npar*nq:
             raise ValueError(
                 "Function `fjacb` must return an array with shape `(n, npar, nq)` or compatible.")
-    elif not isjac and fjacb is None:
+    elif not has_jac and fjacb is None:
         fjacb = fdummy
     else:
         raise ValueError("Inconsistent arguments for `job` and `fjacb`.")
 
-    if isjac and fjacd is not None:
+    if has_jac and fjacd is not None:
         fjacd0 = fjacd(beta0, x)
         if fjacd0.shape[-1] != n or fjacd0.size != n*m*nq:
             raise ValueError(
                 "Function `fjacd` must return an array with shape `(n, m, nq)` or compatible.")
-    elif not isjac and fjacd is None:
+    elif not has_jac and fjacd is None:
         fjacd = fdummy
     else:
         raise ValueError("Inconsistent arguments for `job` and `fjacd`.")
 
     # Check/allocate work arrays
-    lwork, liwork = workspace_dimensions(n, m, npar, nq, isodr)
-    if (not isrestart) and (work is None) and (iwork is None):
+    lwork, liwork = workspace_dimensions(n, m, npar, nq, is_odr)
+    if (not is_restart) and (work is None) and (iwork is None):
         work = np.zeros(lwork, dtype=np.float64)
         iwork = np.zeros(liwork, dtype=np.int32)
-    elif isrestart and (work is not None) and (iwork is not None):
+    elif is_restart and (work is not None) and (iwork is not None):
         if work.size != lwork:
             raise ValueError(
                 "Work array `work` does not have the correct length.")
@@ -456,7 +470,7 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
 
     # Indexes of integer and real work arrays
     iwork_idx: dict[str, int] = diwinf(m, npar, nq)
-    work_idx: dict[str, int] = dwinf(n, m, npar, nq, ldwe, ld2we, isodr)
+    work_idx: dict[str, int] = dwinf(n, m, npar, nq, ldwe, ld2we, is_odr)
 
     # Return the result
     # Extract results without messing up the original work arrays
@@ -498,7 +512,7 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
     return result
 
 
-def _getdigit(number: int, ndigit: int) -> int:
+def _get_digit(number: int, ndigit: int) -> int:
     """Return the `ndigit`-th digit from the right of `number`."""
     return (number // 10**(ndigit-1)) % 10
 
