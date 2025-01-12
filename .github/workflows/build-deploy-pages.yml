@@ -35,11 +35,11 @@ jobs:
 
       - name: Install project dependencies
         run: |
-          poetry install .[docs]
+          pip install .[docs]
 
       - name: Build docs with MkDocs
         run: |
-          python -m mkdocs build -d _site
+          mkdocs build -d _site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
