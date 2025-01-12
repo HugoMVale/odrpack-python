@@ -2,6 +2,7 @@ from typing import Callable
 
 import numpy as np
 from numpy.typing import NDArray
+
 from odrpack.__odrpack import diwinf, dwinf
 from odrpack.__odrpack import odr as _odr
 from odrpack.__odrpack import workspace_dimensions
@@ -73,9 +74,9 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         If `we` is a scalar, then it is used for all data points. If `we` is
         an array of shape `(n,)` and `nq==1`, then `we[i]` represents the weight
         for `y[i]`. If `we` is an array of shape `(nq)`, then it represents the
-        diagonal of the covariant weighting matrix for all data points. If `we`        
+        diagonal of the covariant weighting matrix for all data points. If `we`
         is an array of shape `(nq, nq)`, then it represents the full covariant
-        weighting matrix for all data points. If `we` is an array of shape 
+        weighting matrix for all data points. If `we` is an array of shape
         `(nq, n)`, then `we[:, i]` represents the diagonal of the covariant
         weighting matrix for `y[:, i]`. If `we` is an array of shape `(nq, nq, n)`,
         then `we[:, :, i]` represents the full covariant weighting matrix for
@@ -87,9 +88,9 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         If `wd` is a scalar, then it is used for all data points. If `wd` is
         an array of shape `(n,)` and `m==1`, then `wd[i]` represents the weight
         for `x[i]`. If `wd` is an array of shape `(m)`, then it represents the
-        diagonal of the covariant weighting matrix for all data points. If `wd`        
+        diagonal of the covariant weighting matrix for all data points. If `wd`
         is an array of shape `(m, m)`, then it represents the full covariant
-        weighting matrix for all data points. If `wd` is an array of shape 
+        weighting matrix for all data points. If `wd` is an array of shape
         `(m, n)`, then `wd[:, i]` represents the diagonal of the covariant
         weighting matrix for `x[:, i]`. If `wd` is an array of shape `(m, m, n)`,
         then `wd[:, :, i]` represents the full covariant weighting matrix for
@@ -134,7 +135,8 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         Array with the same shape as `beta0`, containing the upper bounds of the
         model parameters. By default, `upper` is set to positive infinity for
         all elements of `beta`.
-    job : Variable controlling problem initialization and computational method.
+    job : int
+        Variable controlling problem initialization and computational method.
         The default value is 0, corresponding to an explicit orthogonal distance
         regression, with `delta0` initialized to zero, derivatives computed by
         forward finite difference, and covariance matrix computed using Jacobian
@@ -174,13 +176,13 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         where `eps` is the machine precision in `float64`.
     partol : float | None
         Factor comprised between 0 and 1 specifying the stopping tolerance for
-        parameter (`beta` and `delta`) convergence. When the model is explicit, 
-        the default value is `eps**(2/3)`, and when the model is implicit, the
-        default value is `eps**(1/3)`, where `eps` is the machine precision in
-        `float64`.
+        parameter convergence (i.e., `beta` and `delta`). When the model is
+        explicit, the default value is `eps**(2/3)`, and when the model is
+        implicit, the default value is `eps**(1/3)`, where `eps` is the machine
+        precision in `float64`.
     maxit : int | None
         Maximum number of allowed iterations. The default value is 50 for a
-        (normal) first run and 10 for a restart (see `job`).
+        first run and 10 for a restart (see `job`).
     stpb : Float64Vector | None
         Array with the same shape as `beta0` containing the _relative_ step
         sizes used to compute the finite difference derivatives with respect
@@ -201,7 +203,7 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         of the regression, but does not affect the problem specification. Scaling
         should not be confused with the weighting matrices `we` and `wd`. By
         default, `sclb` is set internally based on the relative magnitudes of 
-        `beta`. For further details, refer to page 32 and 84 of the ODRPACK95
+        `beta`. For further details, refer to pages 32 and 84 of the ODRPACK95
         guide.
     scld : Float64Array | None
         Array with the same shape as `x`, containing the scale values of the
@@ -211,7 +213,7 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
         the regression, but does not affect the problem specification. Scaling
         should not be confused with the weighting matrices `we` and `wd`. By
         default, `scld` is set internally based on the relative magnitudes of
-        `x`. For further details, refer to page 32 and 85 of the ODRPACK95 guide.
+        `x`. For further details, refer to pages 32 and 85 of the ODRPACK95 guide.
     work : Float64Vector | None
         Array containing the real-valued internal state of the odrpack solver.
         It is only required for a restart (see `job`), in which case it must be
