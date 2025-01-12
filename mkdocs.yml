@@ -1,19 +1,15 @@
-# Project information
 site_name: odrpack
 site_url: https://hugomvale.github.io/odrpack-python/
 site_author: Hugo Vale
 site_description: >-
   A package for weighted orthogonal distance regression (ODR).
 
-# Repository
 repo_name: HugoMVale/odrpack-python
 repo_url: https://github.com/HugoMVale/odrpack-python
 edit_uri: "" #disables edit button
 
-# Copyright
 copyright: Copyright &copy; 2024 Hugo Vale
 
-# Configuration
 theme:
   name: material
   language: en
@@ -50,15 +46,14 @@ watch:
   - docs/examples
   - docs/reference
 
-# Plugins
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
           paths: [src]
-          #        import:
-          #          - https://docs.python.org/3/objects.inv
+          import:
+            - https://docs.python.org/3/objects.inv
           options:
             modernize_annotations: true
             docstring_section_style: spacy
@@ -80,7 +75,6 @@ plugins:
       include_source: false
       ignore_h1_titles: true
 
-# Extensions
 markdown_extensions:
   - admonition
   - attr_list
@@ -119,11 +113,7 @@ extra_css:
   - css/mkdocstrings.css
   - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css
 
-# Customization
 extra:
-  analytics:
-    provider: google
-    property: !ENV GOOGLE_ANALYTICS_KEY
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/HugoMVale
