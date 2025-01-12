@@ -47,7 +47,7 @@ theme:
 
 watch:
   - src/odrpack
-  - docs/tutorials
+  - docs/examples
   - docs/reference
 
 # Plugins
@@ -135,5 +135,6 @@ extra:
 nav:
   - Home:
       - index.md
-  # - Tutorials: tutorials/
+  - Examples: 
+      - examples/explicit.ipynb
   - API Reference: reference/index.md
