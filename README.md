@@ -49,8 +49,8 @@ def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
 
 sol = odr(f, beta0, y, x, lower=lower, upper=upper, iprint=1001)
 
-print("\n beta:", sol.beta)
-print("\n delta:", sol.delta)
+print("beta:", sol.beta)
+print("delta:", sol.delta)
 ```
 
 ```sh
