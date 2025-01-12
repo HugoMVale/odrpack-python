@@ -30,6 +30,7 @@ dependencies = ['numpy']
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
+docs = ["mkdocs-material", "mkdocstrings-python", "mkdocs-jupyter", "black"]
 
 [build-system]
 build-backend = "mesonpy"

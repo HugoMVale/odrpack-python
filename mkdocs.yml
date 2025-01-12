@@ -1,0 +1,139 @@
+# Project information
+site_name: odrpack
+site_url: https://hugomvale.github.io/odrpack-python/
+site_author: Hugo Vale
+site_description: >-
+  A package for weighted orthogonal distance regression (ODR).
+
+# Repository
+repo_name: HugoMVale/odrpack-python
+repo_url: https://github.com/HugoMVale/odrpack-python
+edit_uri: "" #disables edit button
+
+# Copyright
+copyright: Copyright &copy; 2024 Hugo Vale
+
+# Configuration
+theme:
+  name: material
+  language: en
+  features:
+    - search.highlight
+    - search.suggest
+    - navigation.instant
+    - navigation.instant.prefetch
+    # - navigation.tabs
+    # - navigation.tabs.sticky
+    - navigation.indexes
+    - navigation.path
+    - navigation.top
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+watch:
+  - src/odrpack
+  - docs/tutorials
+  - docs/reference
+
+# Plugins
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          #        import:
+          #          - https://docs.python.org/3/objects.inv
+          options:
+            modernize_annotations: true
+            docstring_section_style: spacy
+            group_by_category: false
+            # show_category_heading: true
+            show_source: true
+            members_order: alphabetical
+            docstring_style: numpy
+            show_root_toc_entry: false
+            show_bases: false
+            separate_signature: true
+            show_signature_annotations: true
+            inherited_members: true
+            merge_init_into_class: false
+            show_symbol_type_toc: true
+            show_category_heading: false
+  - mkdocs-jupyter:
+      include: ["*.ipynb"]
+      include_source: false
+      ignore_h1_titles: true
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.highlight
+  - pymdownx.magiclink
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
+      base_path:
+        - docs
+      check_paths: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - toc:
+      permalink: "¤"
+
+extra_javascript:
+  - javascripts/katex.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js
+
+extra_css:
+  - css/mkdocstrings.css
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css
+
+# Customization
+extra:
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/HugoMVale
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/odrpack/
+    - icon: fontawesome/brands/linkedin
+      link: https://de.linkedin.com/in/hugo-vale-8b65948a
+
+nav:
+  - Home:
+      - index.md
+  # - Tutorials: tutorials/
+  - API Reference: reference/index.md
