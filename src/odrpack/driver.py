@@ -228,15 +228,33 @@ def odr(f: Callable[[Float64Vector, Float64Array], Float64Array],
     OdrResult
         An object containing the results of the regression.
 
+
     References
     ----------
+
     [1] Jason W. Zwolak, Paul T. Boggs, and Layne T. Watson.
         Algorithm 869: ODRPACK95: A weighted orthogonal distance regression code 
         with bound constraints. ACM Trans. Math. Softw. 33, 4 (August 2007), 27-es.
         https://doi.org/10.1145/1268776.1268782
+
     [2] Jason W. Zwolak, Paul T. Boggs, and Layne T. Watson. User's Reference
         Guide for ODRPACK95, 2005.
-        https://github.com/HugoMVale/odrpack95/blob/main/original/Doc/guide.pdf 
+        https://github.com/HugoMVale/odrpack95/blob/main/original/Doc/guide.pdf
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from odrpack import odr
+    >>> beta0 = np.array([2., 0.5])
+    >>> lower = np.array([0., 0.])
+    >>> upper = np.array([10., 0.9])
+    >>> x = np.array([0.982, 1.998, 4.978, 6.01])
+    >>> y = np.array([2.7, 7.4, 148.0, 403.0])
+    >>> def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    ...     return beta[0] * np.exp(beta[1]*x)
+    >>> sol = odr(f, beta0, y, x, lower=lower, upper=upper, iprint=0)
+    >>> sol.beta
+    array([1.63337057, 0.9       ])
     """
 
     # Interpret job
