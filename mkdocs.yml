@@ -54,6 +54,7 @@ plugins:
           paths: [src]
           import:
             - https://docs.python.org/3/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
           options:
             modernize_annotations: true
             docstring_section_style: spacy
@@ -126,6 +127,6 @@ nav:
   - Home:
       - index.md
   - Examples: 
-      - examples/explicit.ipynb
-      - examples/implicit.ipynb
+      - Explicit model: examples/explicit.ipynb
+      - Implicit model: examples/implicit.ipynb
   - API Reference: reference/index.md
