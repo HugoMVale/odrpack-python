@@ -17,6 +17,10 @@ the explanatory and response variables have significant errors.
   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Total_least_squares.svg/220px-Total_least_squares.svg.png" width="200" alt="Deming regression; special case of ODR.">
 </p>
 
+<p align="center">
+  <img src="docs/examples/ellipse.svg" width="300" alt="Estimated ellipse parameters.">
+</p>
+
 [errors-in-variables regression]: https://en.wikipedia.org/wiki/Errors-in-variables_models
 [odrpack95]: https://github.com/HugoMVale/odrpack95
 
