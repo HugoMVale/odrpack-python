@@ -1,7 +1,12 @@
 # Byte-compiled / optimized / DLL files
+
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Meson subprojects
+/subprojects/*
+!/subprojects/*.wrap
 
 # C extensions
 *.so

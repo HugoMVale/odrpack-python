@@ -1,0 +1,60 @@
+ ********************************************************* 
+ *                      ODRPACK REPORT                   * 
+ ********************************************************* 
+
+
+ *** Initial summary for fit by method of ODR ***
+
+ --- Problem Size:
+            N =    21          (number with nonzero weight =    21)
+           NQ =     1
+            M =     1
+           NP =     4          (number unfixed =     4)
+
+ --- Control Values:
+          JOB = 00010
+              = ABCDE, where
+                       A=0 ==> fit is not a restart.
+                       B=0 ==> deltas are initialized to zero.
+                       C=0 ==> covariance matrix will be computed using
+                               derivatives re-evaluated at the solution.
+                       D=1 ==> derivatives are estimated by central differences.
+                       E=0 ==> method is explicit ODR.
+       NDIGIT =    16          (estimated by ODRPACK)
+       TAUFAC =     1.00E+00
+
+ --- Stopping Criteria:
+        SSTOL =     1.49E-08   (sum of squares stopping tolerance)
+       PARTOL =     3.67E-11   (parameter stopping tolerance)
+        MAXIT =    50          (maximum number of iterations)
+
+ --- Initial Weighted Sum of Squares        =                    6.54831631E+04
+         Sum of Squared Weighted Deltas     =   0.00000000E+00
+         Sum of Squared Weighted Epsilons   =   6.54831631E+04
+
+ *** Final summary for fit by method of ODR ***
+
+ --- Stopping Conditions:
+         INFO =     1 ==> sum of squares convergence.
+        NITER =     5          (number of iterations)
+         NFEV =    66          (number of function evaluations)
+        IRANK =     0          (rank deficiency)
+        RCOND =     1.13E-02   (inverse condition number)
+        ISTOP =     0          (returned by user from subroutine FCN)
+
+ --- Final Weighted Sums of Squares       =                     2.23468597E-02
+         Sum of Squared Weighted Deltas   =    2.22745028E-02
+         Sum of Squared Weighted Epsilons =    7.23569246E-05
+
+ --- Residual Standard Deviation          =                     3.62563258E-02
+         Degrees of Freedom               =   17
+
+ --- Estimated BETA(J), J = 1, ..., NP:
+
+                     BETA      LOWER     UPPER      S.D.  ___ 95% Confidence ___
+                                                    BETA         Interval
+
+       1   1.00030619E+00  -1.80+308  1.80+308  4.34E-02   9.09E-01 to  1.09E+00
+       2  -2.01871557E+00  -1.80+308  1.80+308  2.42E-02  -2.07E+00 to -1.97E+00
+       3   1.00203276E-01  -1.80+308  1.80+308  3.59E-03   9.26E-02 to  1.08E-01
+       4  -9.91866267E-02  -1.80+308  1.80+308  6.27E-04  -1.01E-01 to -9.79E-02

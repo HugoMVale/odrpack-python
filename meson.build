@@ -20,7 +20,7 @@ ff = meson.get_compiler('fortran')
 # python and dependencies
 python = import('python').find_installation(pure: false)
 python_dep = python.dependency()
-pybind11_dep = dependency('pybind11', required: true)
+nanobind_dep = dependency('nanobind', static: true)
 # openblas_dep = dependency('openblas', required: true)
 
 # buid odrpack fortran
@@ -49,12 +49,12 @@ odrpack_lib = static_library(
 )
 
 # build extension module
-pybind_ext = python.extension_module(
+nanobind_ext = python.extension_module(
  '__odrpack',
-'src/odrpack/__odrpack.py.cpp',
- dependencies : [python_dep, pybind11_dep],
+'src/odrpack/__odrpack.py.nb.cpp',
+ dependencies : [python_dep, nanobind_dep],
  link_with: odrpack_lib,
- include_directories: include_directories('extern/odrpack95/c/include/odrpack'),
+ include_directories: include_directories('extern/odrpack95/c/include'),
  install : true,
  subdir: 'odrpack'
 )
@@ -66,7 +66,7 @@ python.install_sources(
   'src/odrpack/exceptions.py',
   'src/odrpack/result.py',
   'src/odrpack/py.typed',
-  'src/odrpack/__odrpack.pyi',
+  # 'src/odrpack/__odrpack.pyi',
   ],
   subdir: 'odrpack'
 )
