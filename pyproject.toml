@@ -8,7 +8,6 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Hugo Vale", email = "57530119+HugoMVale@users.noreply.github.com" },
 ]
-urls = { Repository = "https://github.com/HugoMVale/odrpack-python" }
 keywords = ["regression", "statistics", "mathematics"]
 classifiers = [
     "Development Status :: 1 - Planning",
@@ -28,6 +27,10 @@ classifiers = [
 
 dependencies = ['numpy']
 
+[project.urls]
+Repository = "https://github.com/HugoMVale/odrpack-python"
+Documentation = "https://hugovale.github.io/odrpack-python/"
+
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
 docs = [
@@ -40,7 +43,7 @@ docs = [
 
 [build-system]
 build-backend = "mesonpy"
-requires = ["meson-python>=0.15.0", "pybind11"]
+requires = ["meson-python>=0.15.0"]
 
 [tool.pytest.ini_options]
 norecursedirs = ["extern", "subprojects"]
