@@ -55,7 +55,8 @@ nanobind_ext = python.extension_module(
  dependencies : [python_dep, nanobind_dep],
  link_with: odrpack_lib,
  include_directories: include_directories('extern/odrpack95/c/include'),
- install : true,
+ install: true,
+ # limited_api: '3.12',
  subdir: 'odrpack'
 )
 
@@ -66,25 +67,25 @@ python.install_sources(
   'src/odrpack/exceptions.py',
   'src/odrpack/result.py',
   'src/odrpack/py.typed',
-  # 'src/odrpack/__odrpack.pyi',
+  'src/odrpack/__odrpack.pyi',
   ],
   subdir: 'odrpack'
 )
 
 # Generate stubs
-# python -m pybind11_stubgen odrpack.__odrpack --output-dir "src"
+# python -m nanobind.stubgen -m odrpack.__odrpack --output-dir "src/odrpack"
 # stubgen_command = [
 #     python,
-#     '-m', 'pybind11_stubgen',
+#     '-m', 'nanobind.stubgen',
 #     'odrpack.__odrpack',
-#     '--output-dir', 'src'
+#     '--output-dir', 'src/odrpack'
 # ]
 
 # stubgen_target = custom_target(
 #     'generate-stubs',
 #     command: stubgen_command,
-#     input: [pybind_ext],
+#     input: [nanobind_ext],
 #     output: 'stubs',
-#     depends: [pybind_ext],
+#     depends: [nanobind_ext],
 #     build_by_default: true
 # )

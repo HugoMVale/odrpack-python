@@ -1,11 +1,13 @@
-from __future__ import annotations
-import numpy
-import typing
-__all__ = ['diwinf', 'dwinf', 'odr', 'workspace_dimensions']
-def diwinf(m: int, npar: int, nq: int) -> dict:
+from collections.abc import Callable
+from typing import Annotated
+
+from numpy.typing import ArrayLike
+
+
+def diwinf(m: int, npar: int, nq: int) -> dict[str, int]:
     """
     Get storage locations within the integer work space.
-    
+
     Parameters
     ----------
     m : int
@@ -14,16 +16,17 @@ def diwinf(m: int, npar: int, nq: int) -> dict:
         Number of function parameters.
     nq : int
         Number of responses per observation.
-    
+
     Returns
     -------
-    dict
+    dict[str, int]
         A dictionary containing the 0-based indexes of the integer work array.
     """
-def dwinf(n: int, m: int, npar: int, nq: int, ldwe: int, ld2we: int, isodr: bool) -> dict:
+
+def dwinf(n: int, m: int, npar: int, nq: int, ldwe: int, ld2we: int, isodr: bool) -> dict[str, int]:
     """
     Get storage locations within the real work space.
-    
+
     Parameters
     ----------
     n : int
@@ -40,16 +43,17 @@ def dwinf(n: int, m: int, npar: int, nq: int, ldwe: int, ld2we: int, isodr: bool
         Second dimension of the `we` array.
     isodr : bool
         Indicates whether the solution is by ODR (True) or by OLS (False).
-    
+
     Returns
     -------
-    dict
+    dict[str, int]
         A dictionary containing the 0-based indexes of the real work array.
     """
-def odr(n: int, m: int, npar: int, nq: int, ldwe: int, ld2we: int, ldwd: int, ld2wd: int, ldifx: int, ldstpd: int, ldscld: int, f: typing.Callable, fjacb: typing.Callable, fjacd: typing.Callable, beta: numpy.ndarray[numpy.float64], y: numpy.ndarray[numpy.float64], x: numpy.ndarray[numpy.float64], delta: numpy.ndarray[numpy.float64], we: numpy.ndarray[numpy.float64] | None = None, wd: numpy.ndarray[numpy.float64] | None = None, ifixb: numpy.ndarray[numpy.int32] | None = None, ifixx: numpy.ndarray[numpy.int32] | None = None, stpb: numpy.ndarray[numpy.float64] | None = None, stpd: numpy.ndarray[numpy.float64] | None = None, sclb: numpy.ndarray[numpy.float64] | None = None, scld: numpy.ndarray[numpy.float64] | None = None, lower: numpy.ndarray[numpy.float64] | None = None, upper: numpy.ndarray[numpy.float64] | None = None, work: numpy.ndarray[numpy.float64] | None = None, iwork: numpy.ndarray[numpy.int32] | None = None, job: int | None = None, ndigit: int | None = None, taufac: float | None = None, sstol: float | None = None, partol: float | None = None, maxit: int | None = None, iprint: int | None = None, errfile: str | None = None, rptfile: str | None = None) -> int:
+
+def odr(n: int, m: int, npar: int, nq: int, ldwe: int, ld2we: int, ldwd: int, ld2wd: int, ldifx: int, ldstpd: int, ldscld: int, f: Callable, fjacb: Callable, fjacd: Callable, beta: Annotated[ArrayLike, dict(dtype='float64', order='C')], y: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)], x: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)], delta: Annotated[ArrayLike, dict(dtype='float64', order='C')], we: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, wd: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, ifixb: Annotated[ArrayLike, dict(dtype='int32', order='C', writable=False)] | None = None, ifixx: Annotated[ArrayLike, dict(dtype='int32', order='C', writable=False)] | None = None, stpb: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, stpd: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, sclb: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, scld: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, lower: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, upper: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, work: Annotated[ArrayLike, dict(dtype='float64', order='C')] | None = None, iwork: Annotated[ArrayLike, dict(dtype='int32', order='C')] | None = None, job: int | None = None, ndigit: int | None = None, taufac: float | None = None, sstol: float | None = None, partol: float | None = None, maxit: int | None = None, iprint: int | None = None, errfile: str | None = None, rptfile: str | None = None) -> int:
     """
     C++ wrapper for the Orthogonal Distance Regression (ODR) routine.
-    
+
     Parameters
     ----------
     n : int
@@ -132,31 +136,22 @@ def odr(n: int, m: int, npar: int, nq: int, ldwe: int, ld2we: int, ldwd: int, ld
         Filename to use for error messages. Default is None.
     rptfile : str, optional
         Filename to use for computation reports. Default is None.
-    
+
     Returns
     -------
-    result : dict
-        Dictionary with the following keys:
-        - beta : np.ndarray[float64]
-            Function parameters.
-        - delta : np.ndarray[float64]
-            Errors in `x` data.
-        - work : np.ndarray[float64]
-            Real work space.
-        - iwork : np.ndarray[int32]
-            Integer work space.
-        - info : int
-            Reason for stopping.
-    
+    info : int
+        Reason for stopping.
+
     Notes
     -----
     - Ensure all array dimensions and functions are consistent with the provided arguments.
     - Input arrays will automatically be made contiguous and cast to the correct type if necessary.
     """
-def workspace_dimensions(n: int, m: int, npar: int, nq: int, isodr: bool) -> tuple[int, int]:
+
+def workspace_dimensions(n: int, m: int, npar: int, nq: int, isodr: bool) -> tuple:
     """
     Calculate the dimensions of the workspace arrays.
-    
+
     Parameters
     ----------
     n : int
@@ -169,9 +164,9 @@ def workspace_dimensions(n: int, m: int, npar: int, nq: int, isodr: bool) -> tup
         Number of responses per observation.
     isodr : bool
         Variable designating whether the solution is by ODR (`True`) or by OLS (`False`).
-    
+
     Returns
     -------
-    tuple
+    tuple[int, int]
         A tuple containing the lengths of the work arrays (`lwork`, `liwork`).
     """
