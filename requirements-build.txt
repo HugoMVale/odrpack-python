@@ -1,8 +1,7 @@
 meson
 meson-python
 ninja
-pybind11
-pybind11-stubgen
+nanobind
 numpy
 # scipy-openblas64
 pytest
