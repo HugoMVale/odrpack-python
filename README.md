@@ -14,8 +14,8 @@ ODR, also known as [errors-in-variables regression], is designed primarily for i
 the explanatory and response variables have significant errors. 
 
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Total_least_squares.svg/220px-Total_least_squares.svg.png" width="200" alt="Deming regression; special case of ODR." style="margin-right: 10px;">
-  <img src="docs/examples/ellipse.svg" width="300" alt="Estimated ellipse parameters.">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Total_least_squares.svg/220px-Total_least_squares.svg.png" width="250" alt="Deming regression; special case of ODR." style="margin-right: 10px;">
+  <img src="docs/examples/ellipse.svg" width="400" alt="Estimated ellipse parameters.">
 </p>
 
 [errors-in-variables regression]: https://en.wikipedia.org/wiki/Errors-in-variables_models
@@ -30,7 +30,9 @@ You can install the package via pip:
 pip install odrpack
 ```
 
-## Usage
+## Documentation and Usage
+
+The following example demonstrates a simple use of the package. For more comprehensive examples and explanations, please refer to the [documentation](https://hugomvale.github.io/odrpack-python/) pages.
 
 ```py
 from odrpack import odr
