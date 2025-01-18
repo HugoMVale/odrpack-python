@@ -51,7 +51,7 @@ odrpack_lib = static_library(
 # build extension module
 nanobind_ext = python.extension_module(
  '__odrpack',
-'src/odrpack/__odrpack.py.nb.cpp',
+'src/odrpack/__odrpack.py.cpp',
  dependencies : [python_dep, nanobind_dep],
  link_with: odrpack_lib,
  include_directories: include_directories('extern/odrpack95/c/include'),

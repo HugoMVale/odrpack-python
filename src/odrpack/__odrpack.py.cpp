@@ -1,17 +1,19 @@
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
+#include <nanobind/stl/map.h>
+#include <nanobind/stl/optional.h>
+#include <nanobind/stl/string.h>
 
-#include <cstdint>
 #include <iostream>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <utility>
 
-#include "odrpack.h"
+#include "odrpack/odrpack.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 /*
 The following class is necessary to ensure that the static variables used to store the callback
@@ -19,11 +21,11 @@ functions are automatically reset upon normal or abnormal exit from the `odr_wra
 From: https://github.com/libprima/prima/blob/main/python/_prima.cpp
 */
 class SelfCleaningPyObject {
-    py::object &obj;
+    nb::object &obj;
 
    public:
-    SelfCleaningPyObject(py::object &obj) : obj(obj) {}
-    ~SelfCleaningPyObject() { obj = py::none(); }
+    SelfCleaningPyObject(nb::object &obj) : obj(obj) {}
+    ~SelfCleaningPyObject() { obj = nb::none(); }
 };
 
 /*
@@ -48,25 +50,25 @@ int odr_wrapper(int n,
                 int ldifx,
                 int ldstpd,
                 int ldscld,
-                const py::function fcn_f,
-                const py::function fcn_fjacb,
-                const py::function fcn_fjacd,
-                py::array_t<double, py::array::c_style> beta,
-                py::array_t<double, py::array::c_style> y,
-                py::array_t<double, py::array::c_style> x,
-                py::array_t<double, py::array::c_style> delta,
-                std::optional<py::array_t<double, py::array::c_style>> we,
-                std::optional<py::array_t<double, py::array::c_style>> wd,
-                std::optional<py::array_t<int, py::array::c_style>> ifixb,
-                std::optional<py::array_t<int, py::array::c_style>> ifixx,
-                std::optional<py::array_t<double, py::array::c_style>> stpb,
-                std::optional<py::array_t<double, py::array::c_style>> stpd,
-                std::optional<py::array_t<double, py::array::c_style>> sclb,
-                std::optional<py::array_t<double, py::array::c_style>> scld,
-                std::optional<py::array_t<double, py::array::c_style>> lower,
-                std::optional<py::array_t<double, py::array::c_style>> upper,
-                std::optional<py::array_t<double, py::array::c_style>> work,
-                std::optional<py::array_t<int, py::array::c_style>> iwork,
+                const nb::callable fcn_f,
+                const nb::callable fcn_fjacb,
+                const nb::callable fcn_fjacd,
+                nb::ndarray<double, nb::c_contig> beta,
+                nb::ndarray<const double, nb::c_contig> y,
+                nb::ndarray<const double, nb::c_contig> x,
+                nb::ndarray<double, nb::c_contig> delta,
+                std::optional<nb::ndarray<const double, nb::c_contig>> we,
+                std::optional<nb::ndarray<const double, nb::c_contig>> wd,
+                std::optional<nb::ndarray<const int, nb::c_contig>> ifixb,
+                std::optional<nb::ndarray<const int, nb::c_contig>> ifixx,
+                std::optional<nb::ndarray<const double, nb::c_contig>> stpb,
+                std::optional<nb::ndarray<const double, nb::c_contig>> stpd,
+                std::optional<nb::ndarray<const double, nb::c_contig>> sclb,
+                std::optional<nb::ndarray<const double, nb::c_contig>> scld,
+                std::optional<nb::ndarray<const double, nb::c_contig>> lower,
+                std::optional<nb::ndarray<const double, nb::c_contig>> upper,
+                std::optional<nb::ndarray<double, nb::c_contig>> work,
+                std::optional<nb::ndarray<int, nb::c_contig>> iwork,
                 std::optional<int> job,
                 std::optional<int> ndigit,
                 std::optional<double> taufac,
@@ -83,8 +85,8 @@ int odr_wrapper(int n,
     // pointer assignment without additional checks
     auto y_ptr = y.data();
     auto x_ptr = x.data();
-    auto beta_ptr = beta.mutable_data();
-    auto delta_ptr = delta.mutable_data();
+    auto beta_ptr = beta.data();
+    auto delta_ptr = delta.data();
 
     auto we_ptr = we ? we.value().data() : nullptr;
     auto wd_ptr = wd ? wd.value().data() : nullptr;
@@ -99,8 +101,8 @@ int odr_wrapper(int n,
     auto lower_ptr = lower ? lower.value().data() : nullptr;
     auto upper_ptr = upper ? upper.value().data() : nullptr;
 
-    auto work_ptr = work ? work.value().mutable_data() : nullptr;
-    auto iwork_ptr = iwork ? iwork.value().mutable_data() : nullptr;
+    auto work_ptr = work ? work.value().data() : nullptr;
+    auto iwork_ptr = iwork ? iwork.value().data() : nullptr;
 
     auto job_ptr = job ? &job.value() : nullptr;
     auto ndigit_ptr = ndigit ? &ndigit.value() : nullptr;
@@ -118,15 +120,15 @@ int odr_wrapper(int n,
     // Build static pointers to the Python functions
     // The static variables are necessary to ensure that the Python functions can be accessed
     // within the C-style function 'fcn'
-    static py::function fcn_f_holder;
+    static nb::callable fcn_f_holder;
     fcn_f_holder = std::move(fcn_f);
     auto cleaner_1 = SelfCleaningPyObject(fcn_f_holder);
 
-    static py::function fcn_fjacb_holder;
+    static nb::callable fcn_fjacb_holder;
     fcn_fjacb_holder = std::move(fcn_fjacb);
     auto cleaner_2 = SelfCleaningPyObject(fcn_fjacb_holder);
 
-    static py::function fcn_fjacd_holder;
+    static nb::callable fcn_fjacd_holder;
     fcn_fjacd_holder = std::move(fcn_fjacd);
     auto cleaner_3 = SelfCleaningPyObject(fcn_fjacd_holder);
 
@@ -138,22 +140,19 @@ int odr_wrapper(int n,
              const int *ldifx, const int *ideval, double f[], double fjacb[],
              double fjacd[], int *istop) {
         // Create NumPy arrays that wrap the input C-style arrays, without copying the data
-        py::array_t<double> beta_ndarray(*npar, beta, py::none());
-        py::array_t<double> xplusd_ndarray;
-        if (*m == 1) {
-            xplusd_ndarray = py::array_t<double>(*n, xplusd, py::none());
-        } else {
-            xplusd_ndarray = py::array_t<double>({*m, *n}, xplusd, py::none());
-        }
+        nb::ndarray<const double, nb::numpy> beta_ndarray(beta, {static_cast<size_t>(*npar)});
+        nb::ndarray<const double, nb::numpy> xplusd_ndarray(
+            xplusd,
+            (*m == 1) ? std::initializer_list<size_t>{static_cast<size_t>(*n)}
+                      : std::initializer_list<size_t>{static_cast<size_t>(*m), static_cast<size_t>(*n)});
 
         *istop = 0;
         try {
             // Evaluate model function
             if (*ideval % 10 > 0) {
-                py::array_t<double, py::array::c_style> f_ndarray;
-                f_ndarray = fcn_f_holder(beta_ndarray, xplusd_ndarray);
-                const double *f_ndarray_ptr = f_ndarray.data();
-
+                auto f_object = fcn_f_holder(beta_ndarray, xplusd_ndarray);
+                auto f_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(f_object);
+                auto f_ndarray_ptr = f_ndarray.data();
                 for (auto i = 0; i < (*nq) * (*ldn); i++) {
                     f[i] = f_ndarray_ptr[i];
                 }
@@ -161,10 +160,9 @@ int odr_wrapper(int n,
 
             // Model partial derivatives wrt `beta`
             if ((*ideval / 10) % 10 != 0) {
-                py::array_t<double, py::array::c_style> fjacb_ndarray;
-                fjacb_ndarray = fcn_fjacb_holder(beta_ndarray, xplusd_ndarray);
-                const double *fjacb_ndarray_ptr = fjacb_ndarray.data();
-
+                auto fjacb_object = fcn_fjacb_holder(beta_ndarray, xplusd_ndarray);
+                auto fjacb_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacb_object);
+                auto fjacb_ndarray_ptr = fjacb_ndarray.data();
                 for (auto i = 0; i < (*nq) * (*ldnp) * (*ldn); i++) {
                     fjacb[i] = fjacb_ndarray_ptr[i];
                 }
@@ -172,20 +170,19 @@ int odr_wrapper(int n,
 
             // Model partial derivatives wrt `delta`
             if ((*ideval / 100) % 10 != 0) {
-                py::array_t<double, py::array::c_style> fjacd_ndarray;
-                fjacd_ndarray = fcn_fjacd_holder(beta_ndarray, xplusd_ndarray);
-                const double *fjacd_ndarray_ptr = fjacd_ndarray.data();
-
+                auto fjacd_object = fcn_fjacd_holder(beta_ndarray, xplusd_ndarray);
+                auto fjacd_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacd_object);
+                auto fjacd_ndarray_ptr = fjacd_ndarray.data();
                 for (auto i = 0; i < (*nq) * (*ldnp) * (*ldn); i++) {
                     fjacd[i] = fjacd_ndarray_ptr[i];
                 }
             }
 
-        } catch (const py::error_already_set &e) {
+        } catch (const nb::python_error &e) {
             // temporary solution: need to figure out how to do this the right way
             std::string ewhat = e.what();
             if (ewhat.find("OdrStop") != std::string::npos) {
-                std::cerr << e.value() << std::endl;
+                std::cerr << ewhat << std::endl;
                 *istop = 1;
             } else {
                 throw;
@@ -237,7 +234,7 @@ int odr_wrapper(int n,
     return info;
 }
 
-PYBIND11_MODULE(__odrpack, m) {
+NB_MODULE(__odrpack, m) {
     m.def("odr", &odr_wrapper,
           R"doc(
 C++ wrapper for the Orthogonal Distance Regression (ODR) routine.
@@ -327,51 +324,45 @@ rptfile : str, optional
 
 Returns
 -------
-result : dict
-    Dictionary with the following keys:
-    - beta : np.ndarray[float64]
-        Function parameters.
-    - delta : np.ndarray[float64]
-        Errors in `x` data.
-    - work : np.ndarray[float64]
-        Real work space.
-    - iwork : np.ndarray[int32]
-        Integer work space.
-    - info : int
-        Reason for stopping.
+info : int
+    Reason for stopping.
 
 Notes
 -----
 - Ensure all array dimensions and functions are consistent with the provided arguments.
 - Input arrays will automatically be made contiguous and cast to the correct type if necessary.
-)doc",
-          py::arg("n"), py::arg("m"), py::arg("npar"), py::arg("nq"),
-          py::arg("ldwe"), py::arg("ld2we"), py::arg("ldwd"), py::arg("ld2wd"),
-          py::arg("ldifx"), py::arg("ldstpd"), py::arg("ldscld"), py::arg("f"),
-          py::arg("fjacb"), py::arg("fjacd"), py::arg("beta"), py::arg("y"),
-          py::arg("x"),
-          py::arg("delta"),
-          py::arg("we").none(true) = nullptr,
-          py::arg("wd").none(true) = nullptr,
-          py::arg("ifixb").none(true) = nullptr,
-          py::arg("ifixx").none(true) = nullptr,
-          py::arg("stpb").none(true) = nullptr,
-          py::arg("stpd").none(true) = nullptr,
-          py::arg("sclb").none(true) = nullptr,
-          py::arg("scld").none(true) = nullptr,
-          py::arg("lower").none(true) = nullptr,
-          py::arg("upper").none(true) = nullptr,
-          py::arg("work").none(true) = nullptr,
-          py::arg("iwork").none(true) = nullptr,
-          py::arg("job").none(true) = nullptr,
-          py::arg("ndigit").none(true) = nullptr,
-          py::arg("taufac").none(true) = nullptr,
-          py::arg("sstol").none(true) = nullptr,
-          py::arg("partol").none(true) = nullptr,
-          py::arg("maxit").none(true) = nullptr,
-          py::arg("iprint").none(true) = nullptr,
-          py::arg("errfile").none(true) = nullptr,
-          py::arg("rptfile").none(true) = nullptr);
+    )doc",
+          nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+          nb::arg("ldwe"), nb::arg("ld2we"), nb::arg("ldwd"), nb::arg("ld2wd"),
+          nb::arg("ldifx"), nb::arg("ldstpd"), nb::arg("ldscld"),
+          nb::arg("f"),
+          nb::arg("fjacb"),
+          nb::arg("fjacd"),
+          nb::arg("beta"),
+          nb::arg("y"),
+          nb::arg("x"),
+          nb::arg("delta"),
+          nb::arg("we").none() = nullptr,
+          nb::arg("wd").none() = nullptr,
+          nb::arg("ifixb").none() = nullptr,
+          nb::arg("ifixx").none() = nullptr,
+          nb::arg("stpb").none() = nullptr,
+          nb::arg("stpd").none() = nullptr,
+          nb::arg("sclb").none() = nullptr,
+          nb::arg("scld").none() = nullptr,
+          nb::arg("lower").none() = nullptr,
+          nb::arg("upper").none() = nullptr,
+          nb::arg("work").none() = nullptr,
+          nb::arg("iwork").none() = nullptr,
+          nb::arg("job").none() = nullptr,
+          nb::arg("ndigit").none() = nullptr,
+          nb::arg("taufac").none() = nullptr,
+          nb::arg("sstol").none() = nullptr,
+          nb::arg("partol").none() = nullptr,
+          nb::arg("maxit").none() = nullptr,
+          nb::arg("iprint").none() = nullptr,
+          nb::arg("errfile").none() = nullptr,
+          nb::arg("rptfile").none() = nullptr);
 
     // Calculate the dimensions of the workspace arrays
     m.def(
@@ -380,7 +371,7 @@ Notes
             int lwork = 0;
             int liwork = 0;
             workspace_dimensions_c(&n, &m, &npar, &nq, &isodr, &lwork, &liwork);
-            return std::make_tuple(lwork, liwork);
+            return nb::make_tuple(lwork, liwork);
         },
         R"doc(
 Calculate the dimensions of the workspace arrays.
@@ -400,11 +391,11 @@ isodr : bool
 
 Returns
 -------
-tuple
+tuple[int, int]
     A tuple containing the lengths of the work arrays (`lwork`, `liwork`).
 )doc",
-        py::arg("n"), py::arg("m"), py::arg("npar"), py::arg("nq"),
-        py::arg("isodr").none(false));
+        nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+        nb::arg("isodr"));
 
     // Get storage locations within the integer work space
     m.def(
@@ -412,29 +403,31 @@ tuple
         [](int m, int npar, int nq) {
             iworkidx_t iworkidx = {};
             diwinf_c(&m, &npar, &nq, &iworkidx);
-            return py::dict("msgb"_a = iworkidx.msgb,
-                            "msgd"_a = iworkidx.msgd,
-                            "ifix2"_a = iworkidx.ifix2,
-                            "istop"_a = iworkidx.istop,
-                            "nnzw"_a = iworkidx.nnzw,
-                            "npp"_a = iworkidx.npp,
-                            "idf"_a = iworkidx.idf,
-                            "job"_a = iworkidx.job,
-                            "iprin"_a = iworkidx.iprin,
-                            "luner"_a = iworkidx.luner,
-                            "lunrp"_a = iworkidx.lunrp,
-                            "nrow"_a = iworkidx.nrow,
-                            "ntol"_a = iworkidx.ntol,
-                            "neta"_a = iworkidx.neta,
-                            "maxit"_a = iworkidx.maxit,
-                            "niter"_a = iworkidx.niter,
-                            "nfev"_a = iworkidx.nfev,
-                            "njev"_a = iworkidx.njev,
-                            "int2"_a = iworkidx.int2,
-                            "irank"_a = iworkidx.irank,
-                            "ldtt"_a = iworkidx.ldtt,
-                            "bound"_a = iworkidx.bound,
-                            "liwkmn"_a = iworkidx.liwkmn);
+            std::map<std::string, int> result;
+            result["msgb"] = iworkidx.msgb;
+            result["msgd"] = iworkidx.msgd;
+            result["ifix2"] = iworkidx.ifix2;
+            result["istop"] = iworkidx.istop;
+            result["nnzw"] = iworkidx.nnzw;
+            result["npp"] = iworkidx.npp;
+            result["idf"] = iworkidx.idf;
+            result["job"] = iworkidx.job;
+            result["iprin"] = iworkidx.iprin;
+            result["luner"] = iworkidx.luner;
+            result["lunrp"] = iworkidx.lunrp;
+            result["nrow"] = iworkidx.nrow;
+            result["ntol"] = iworkidx.ntol;
+            result["neta"] = iworkidx.neta;
+            result["maxit"] = iworkidx.maxit;
+            result["niter"] = iworkidx.niter;
+            result["nfev"] = iworkidx.nfev;
+            result["njev"] = iworkidx.njev;
+            result["int2"] = iworkidx.int2;
+            result["irank"] = iworkidx.irank;
+            result["ldtt"] = iworkidx.ldtt;
+            result["bound"] = iworkidx.bound;
+            result["liwkmn"] = iworkidx.liwkmn;
+            return result;
         },
         R"doc(
 Get storage locations within the integer work space.
@@ -450,10 +443,10 @@ nq : int
 
 Returns
 -------
-dict
+dict[str, int]
     A dictionary containing the 0-based indexes of the integer work array.
 )doc",
-        py::arg("m"), py::arg("npar"), py::arg("nq"));
+        nb::arg("m"), nb::arg("npar"), nb::arg("nq"));
 
     // Get storage locations within the real work space
     m.def(
@@ -461,59 +454,60 @@ dict
         [](int n, int m, int npar, int nq, int ldwe, int ld2we, bool isodr) {
             workidx_t workidx = {};
             dwinf_c(&n, &m, &npar, &nq, &ldwe, &ld2we, &isodr, &workidx);
-            return py::dict(
-                "delta"_a = workidx.delta,
-                "eps"_a = workidx.eps,
-                "xplus"_a = workidx.xplus,
-                "fn"_a = workidx.fn,
-                "sd"_a = workidx.sd,
-                "vcv"_a = workidx.vcv,
-                "rvar"_a = workidx.rvar,
-                "wss"_a = workidx.wss,
-                "wssde"_a = workidx.wssde,
-                "wssep"_a = workidx.wssep,
-                "rcond"_a = workidx.rcond,
-                "eta"_a = workidx.eta,
-                "olmav"_a = workidx.olmav,
-                "tau"_a = workidx.tau,
-                "alpha"_a = workidx.alpha,
-                "actrs"_a = workidx.actrs,
-                "pnorm"_a = workidx.pnorm,
-                "rnors"_a = workidx.rnors,
-                "prers"_a = workidx.prers,
-                "partl"_a = workidx.partl,
-                "sstol"_a = workidx.sstol,
-                "taufc"_a = workidx.taufc,
-                "epsma"_a = workidx.epsma,
-                "beta0"_a = workidx.beta0,
-                "betac"_a = workidx.betac,
-                "betas"_a = workidx.betas,
-                "betan"_a = workidx.betan,
-                "s"_a = workidx.s,
-                "ss"_a = workidx.ss,
-                "ssf"_a = workidx.ssf,
-                "qraux"_a = workidx.qraux,
-                "u"_a = workidx.u,
-                "fs"_a = workidx.fs,
-                "fjacb"_a = workidx.fjacb,
-                "we1"_a = workidx.we1,
-                "diff"_a = workidx.diff,
-                "delts"_a = workidx.delts,
-                "deltn"_a = workidx.deltn,
-                "t"_a = workidx.t,
-                "tt"_a = workidx.tt,
-                "omega"_a = workidx.omega,
-                "fjacd"_a = workidx.fjacd,
-                "wrk1"_a = workidx.wrk1,
-                "wrk2"_a = workidx.wrk2,
-                "wrk3"_a = workidx.wrk3,
-                "wrk4"_a = workidx.wrk4,
-                "wrk5"_a = workidx.wrk5,
-                "wrk6"_a = workidx.wrk6,
-                "wrk7"_a = workidx.wrk7,
-                "lower"_a = workidx.lower,
-                "upper"_a = workidx.upper,
-                "lwkmn"_a = workidx.lwkmn);
+            std::map<std::string, int> result;
+            result["delta"] = workidx.delta;
+            result["eps"] = workidx.eps;
+            result["xplus"] = workidx.xplus;
+            result["fn"] = workidx.fn;
+            result["sd"] = workidx.sd;
+            result["vcv"] = workidx.vcv;
+            result["rvar"] = workidx.rvar;
+            result["wss"] = workidx.wss;
+            result["wssde"] = workidx.wssde;
+            result["wssep"] = workidx.wssep;
+            result["rcond"] = workidx.rcond;
+            result["eta"] = workidx.eta;
+            result["olmav"] = workidx.olmav;
+            result["tau"] = workidx.tau;
+            result["alpha"] = workidx.alpha;
+            result["actrs"] = workidx.actrs;
+            result["pnorm"] = workidx.pnorm;
+            result["rnors"] = workidx.rnors;
+            result["prers"] = workidx.prers;
+            result["partl"] = workidx.partl;
+            result["sstol"] = workidx.sstol;
+            result["taufc"] = workidx.taufc;
+            result["epsma"] = workidx.epsma;
+            result["beta0"] = workidx.beta0;
+            result["betac"] = workidx.betac;
+            result["betas"] = workidx.betas;
+            result["betan"] = workidx.betan;
+            result["s"] = workidx.s;
+            result["ss"] = workidx.ss;
+            result["ssf"] = workidx.ssf;
+            result["qraux"] = workidx.qraux;
+            result["u"] = workidx.u;
+            result["fs"] = workidx.fs;
+            result["fjacb"] = workidx.fjacb;
+            result["we1"] = workidx.we1;
+            result["diff"] = workidx.diff;
+            result["delts"] = workidx.delts;
+            result["deltn"] = workidx.deltn;
+            result["t"] = workidx.t;
+            result["tt"] = workidx.tt;
+            result["omega"] = workidx.omega;
+            result["fjacd"] = workidx.fjacd;
+            result["wrk1"] = workidx.wrk1;
+            result["wrk2"] = workidx.wrk2;
+            result["wrk3"] = workidx.wrk3;
+            result["wrk4"] = workidx.wrk4;
+            result["wrk5"] = workidx.wrk5;
+            result["wrk6"] = workidx.wrk6;
+            result["wrk7"] = workidx.wrk7;
+            result["lower"] = workidx.lower;
+            result["upper"] = workidx.upper;
+            result["lwkmn"] = workidx.lwkmn;
+            return result;
         },
         R"doc(
 Get storage locations within the real work space.
@@ -537,9 +531,9 @@ isodr : bool
 
 Returns
 -------
-dict
+dict[str, int]
     A dictionary containing the 0-based indexes of the real work array.
-)doc",
-        py::arg("n"), py::arg("m"), py::arg("npar"), py::arg("nq"),
-        py::arg("ldwe"), py::arg("ld2we"), py::arg("isodr").none(false));
+    )doc",
+        nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+        nb::arg("ldwe"), nb::arg("ld2we"), nb::arg("isodr"));
 }
