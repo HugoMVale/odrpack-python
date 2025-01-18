@@ -4,9 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/extern/pybind11/include/pybind11",
-                "${workspaceFolder}/extern/odrpack95/c/include/odrpack",
-                //"${workspaceFolder}/extern/nanobind/include/nanobind",
+                "${workspaceFolder}/extern/odrpack95/c/include",
+                "${workspaceFolder}/extern/nanobind/include/nanobind",
                 "/usr/include/python3.10"
             ],
             "defines": [],
