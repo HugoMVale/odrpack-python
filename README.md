@@ -13,10 +13,10 @@ of the original Fortran implementation, while working within the modern Python e
 ODR, also known as [errors-in-variables regression], is designed primarily for instances when both
 the explanatory and response variables have significant errors. 
 
-<div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Total_least_squares.svg/220px-Total_least_squares.svg.png" width="250" alt="Deming regression; special case of ODR.">
-  <img src="docs/examples/ellipse.svg" width="400" alt="Estimated ellipse parameters.">
-</div>
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Total_least_squares.svg/220px-Total_least_squares.svg.png" width="200" alt="Deming regression; special case of ODR." style="margin-right: 10px;">
+  <img src="docs/examples/ellipse.svg" width="300" alt="Estimated ellipse parameters.">
+</p>
 
 [errors-in-variables regression]: https://en.wikipedia.org/wiki/Errors-in-variables_models
 [odrpack95]: https://github.com/HugoMVale/odrpack95
