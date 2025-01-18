@@ -127,6 +127,6 @@ nav:
   - Home:
       - index.md
   - Examples: 
-      - Explicit model: examples/explicit.ipynb
-      - Implicit model: examples/implicit.ipynb
+      - Explicit model: examples/explicit-model.ipynb
+      - Implicit model: examples/implicit-model.ipynb
   - API Reference: reference/index.md
