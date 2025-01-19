@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/extern/odrpack95/c/include",
-                "${workspaceFolder}/extern/nanobind/include/nanobind",
+                "${workspaceFolder}/subprojects/nanobind*/include/nanobind",
                 "/usr/include/python3.10"
             ],
             "defines": [],
