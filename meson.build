@@ -16,7 +16,7 @@ cpp_compiler = meson.get_compiler('cpp')
 fortran_compiler = meson.get_compiler('fortran')
 
 # Add project-wide Fortran compiler arguments
-add_project_arguments('-fno-underscoring', language: 'fortran')
+# add_project_arguments('-fno-underscoring', language: 'fortran')
 
 # find python
 python = import('python').find_installation(pure: false)
