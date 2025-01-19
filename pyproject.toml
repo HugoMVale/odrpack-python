@@ -52,3 +52,20 @@ addopts = "-v -s"
 [tool.coverage.run]
 source = ["src"]
 branch = true
+
+[tool.cibuildwheel]
+skip = "*-win32 *i686 pp3*"
+build-verbosity = 1
+test-requires = "pytest"
+test-command = "pytest {project}/tests"
+
+[tool.cibuildwheel.linux]
+before-build = "bash {project}/cibw-scripts/cibw_before_build_linux.sh {project}"
+
+[tool.cibuildwheel.windows]
+before-build = "bash {project}/cibw-scripts/cibw_before_build_windows.sh {project}"
+repair-wheel-command = "bash ./cibw-scripts/cibw_repair_wheel_command_windows.sh {wheel} {dest_dir}"
+environment = { PKG_CONFIG_PATH = "{project}" }
+
+# [tool.cibuildwheel.windows.environment]
+# PKG_CONFIG_PATH = "{project}"

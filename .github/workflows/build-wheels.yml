@@ -42,19 +42,7 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
-        env:
-          # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
-          CIBW_SKIP: "*-win32 *i686 pp3*"
-          CIBW_BUILD_VERBOSITY: 1
-          CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: "pytest {project}/tests"
-          CIBW_BEFORE_BUILD_LINUX: |
-            bash {project}/cibw-scripts/cibw_before_build_linux.sh {project}
-          CIBW_BEFORE_BUILD_WINDOWS: |
-            bash {project}/cibw-scripts/cibw_before_build_windows.sh {project}
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
-            bash ./cibw-scripts/cibw_repair_wheel_command_windows.sh {wheel} {dest_dir}
-           
+
       - name: Upload wheels 
         uses: actions/upload-artifact@v4
         with:
