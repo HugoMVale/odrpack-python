@@ -10,26 +10,31 @@ project(
   ],
 )
 
-# Compilers
-add_languages('fortran', native: false)
-
 # compilers
-cpp = meson.get_compiler('cpp')
-ff = meson.get_compiler('fortran')
+add_languages('fortran', native: false)
+cpp_compiler = meson.get_compiler('cpp')
+fortran_compiler = meson.get_compiler('fortran')
 
-# python dependencies
+# find python
 python = import('python').find_installation(pure: false)
 python_dep = python.dependency()
 
-# nanobind dependency (from subprojects)
+# find nanobind (from subprojects)
 nanobind_dep = dependency('nanobind', static: true)
 
-# blas dependency
-# can be made more general to look for accelerate, scipy-openblas, etc.
-blas_dep = dependency('openblas', required: false)
+# find blas
+blas_libs = ['openblas', 'scipy_openblas32']
+foreach blas_lib : blas_libs
+  blas_dep = dependency(blas_lib, required: false)
+  if not blas_dep.found()
+    blas_dep = cpp_compiler.find_library(blas_lib, required: false)
+  endif
+  if blas_dep.found()
+    break
+  endif
+endforeach
 
 if blas_dep.found()
-  message('BLAS: ' + blas_dep.name() + ' ' + blas_dep.version())
   blas_source = []
 else
   message('No specific BLAS library detected. Falling back to reference BLAS.')
