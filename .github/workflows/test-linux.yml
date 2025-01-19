@@ -40,7 +40,7 @@ jobs:
       
       - name: Build package
         run: |
-          pip install -e . --no-build-isolation
+          pip install -ve . --no-build-isolation
           
       - name: Run tests and collect coverage
         run: |
