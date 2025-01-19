@@ -23,7 +23,11 @@ python_dep = python.dependency()
 nanobind_dep = dependency('nanobind', static: true)
 
 # find blas
-blas_libs = ['openblas', 'scipy-openblas']
+blas_libs = []
+if host_machine.system() == 'darwin'
+  blas_libs += 'accelerate'
+endif
+blas_libs += ['openblas', 'scipy-openblas']
 foreach blas_lib : blas_libs
   blas_dep = dependency(blas_lib, required: false)
   if not blas_dep.found()
