@@ -65,7 +65,3 @@ before-build = "bash {project}/cibw-scripts/cibw_before_build_linux.sh {project}
 [tool.cibuildwheel.windows]
 before-build = "bash {project}/cibw-scripts/cibw_before_build_windows.sh {project}"
 repair-wheel-command = "bash ./cibw-scripts/cibw_repair_wheel_command_windows.sh {wheel} {dest_dir}"
-environment = { PKG_CONFIG_PATH = "{project}" }
-
-# [tool.cibuildwheel.windows.environment]
-# PKG_CONFIG_PATH = "{project}"

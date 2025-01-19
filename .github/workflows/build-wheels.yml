@@ -35,10 +35,19 @@ jobs:
 
       # This can't be placed in the cibuildwheel action
       # Without it, the wheel repair fails
-      - name: Set macOS deployment target
+      - name: MacOS - Set deployment target
         if: runner.os == 'macOS'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+
+      - name: Windows - set PKG_CONFIG_PATH
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          $env:CIBW = "${{ github.workspace }}"
+          # It seems somewhere in the env passing, `\` is not
+          # passed through, so convert it to '/'
+          $env:CIBW=$env:CIBW.replace("\","/")
+          echo "CIBW_ENVIRONMENT=PKG_CONFIG_PATH=$env:CIBW" >> $env:GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
