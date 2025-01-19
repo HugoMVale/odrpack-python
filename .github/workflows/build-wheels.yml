@@ -20,7 +20,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        # os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [windows-latest]
 
     steps:
       - name: Checkout code
@@ -35,19 +36,19 @@ jobs:
 
       # This can't be placed in the cibuildwheel action
       # Without it, the wheel repair fails
-      - name: MacOS - Set deployment target
+      - name: macOS - Set deployment target
         if: runner.os == 'macOS'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
 
-      - name: Windows - set PKG_CONFIG_PATH
-        if: ${{ runner.os == 'Windows' }}
+      - name: Windows - Set PKG_CONFIG_PATH
+        if: runner.os == 'windows'
         run: |
-          $env:CIBW = "${{ github.workspace }}"
-          # It seems somewhere in the env passing, `\` is not
-          # passed through, so convert it to '/'
-          $env:CIBW=$env:CIBW.replace("\","/")
-          echo "CIBW_ENVIRONMENT=PKG_CONFIG_PATH=$env:CIBW" >> $env:GITHUB_ENV
+          choco install -y --no-progress --stoponfirstfailure --checksum 6004DF17818F5A6DBF19CB335CC92702 pkgconfiglite
+          # $CIBW = "${{ github.workspace }}/.openblas"
+          $CIBW = "${{ github.workspace }}"
+          $CIBW = $CIBW.replace("\","/")
+          echo "CIBW_ENVIRONMENT_WINDOWS=PKG_CONFIG_PATH=$CIBW" >> $env:GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
@@ -76,42 +77,42 @@ jobs:
           name: cibw-sdist
           path: dist/*.tar.gz
 
-  upload_pypi:
-    name: Publish to PyPI
-    needs: [build_wheels, build_sdist]
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-    permissions:
-      id-token: write
-    # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish-pypi') }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: cibw-*
-          path: dist
-          merge-multiple: true
+  # upload_pypi:
+  #   name: Publish to PyPI
+  #   needs: [build_wheels, build_sdist]
+  #   runs-on: ubuntu-latest
+  #   environment:
+  #     name: pypi
+  #   permissions:
+  #     id-token: write
+  #   # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+  #   if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish-pypi') }}
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         pattern: cibw-*
+  #         path: dist
+  #         merge-multiple: true
           
-      - uses: pypa/gh-action-pypi-publish@release/v1
+  #     - uses: pypa/gh-action-pypi-publish@release/v1
 
-  upload_test_pypi:
-    name: Publish to TestPyPI
-    needs: [build_wheels, build_sdist]
-    runs-on: ubuntu-latest
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/odrpack
-    permissions:
-      id-token: write
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish-testpypi') }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: cibw-*
-          path: dist
-          merge-multiple: true
+  # upload_test_pypi:
+  #   name: Publish to TestPyPI
+  #   needs: [build_wheels, build_sdist]
+  #   runs-on: ubuntu-latest
+  #   environment:
+  #     name: testpypi
+  #     url: https://test.pypi.org/p/odrpack
+  #   permissions:
+  #     id-token: write
+  #   if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish-testpypi') }}
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         pattern: cibw-*
+  #         path: dist
+  #         merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
+  #     - uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         repository-url: https://test.pypi.org/legacy/
