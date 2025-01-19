@@ -54,6 +54,7 @@ source = ["src"]
 branch = true
 
 [tool.cibuildwheel]
+build-frontend = "build"
 skip = "*-win32 *i686 pp3*"
 build-verbosity = 1
 test-requires = "pytest"
