@@ -1,7 +1,4 @@
-#!/usr/bin/env bash
-
-set -e
-set -x
+set -xe
 
 WHEEL=$1
 DEST_DIR=$2
