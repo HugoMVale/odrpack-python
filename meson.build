@@ -6,7 +6,7 @@ project(
   default_options: [
     'buildtype=release',
     'b_ndebug=if-release',
-    'cpp_std=c++17',
+    'cpp_std=c++17'
   ],
 )
 
@@ -14,9 +14,6 @@ project(
 add_languages('fortran', native: false)
 cpp_compiler = meson.get_compiler('cpp')
 fortran_compiler = meson.get_compiler('fortran')
-
-# Add project-wide Fortran compiler arguments
-# add_project_arguments('-fno-underscoring', language: 'fortran')
 
 # find python
 python = import('python').find_installation(pure: false)
@@ -26,20 +23,16 @@ python_dep = python.dependency()
 nanobind_dep = dependency('nanobind', static: true)
 
 # find blas
-blas_libs = []
 if host_machine.system() == 'darwin'
-  blas_libs += 'accelerate'
-endif
-blas_libs += ['openblas', 'scipy-openblas']
-foreach blas_lib : blas_libs
-  blas_dep = dependency(blas_lib, required: false)
+  # Use Apple's Accelerate framework
+  add_project_link_arguments('-framework', 'Accelerate', language: ['c', 'fortran'])
+  blas_dep = declare_dependency()
+else
+  blas_dep = dependency('openblas', required: false)
   if not blas_dep.found()
-    blas_dep = cpp_compiler.find_library(blas_lib, required: false)
+    blas_dep = cpp_compiler.find_library('openblas', required: false)
   endif
-  if blas_dep.found()
-    break
-  endif
-endforeach
+endif
 
 if blas_dep.found()
   blas_source = []
