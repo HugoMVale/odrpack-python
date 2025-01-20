@@ -5,6 +5,11 @@ PROJECT_DIR="$1"
 # install OpenBLAS
 curl -L -o OpenBLAS-0.3.29_x64.zip https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.29/OpenBLAS-0.3.29_x64.zip
 unzip OpenBLAS-0.3.29_x64.zip -d openblas
+pwd
+ls -l
+
+# install pkgconfiglite
+choco install -y --no-progress --stoponfirstfailure --checksum 6004DF17818F5A6DBF19CB335CC92702 pkgconfiglite
 
 # Use PROJECT_DIR to set the paths correctly relative to the project root
 export LIBRARY_PATH="$PROJECT_DIR/openblas/lib"
