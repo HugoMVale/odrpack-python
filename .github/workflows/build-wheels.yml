@@ -61,6 +61,8 @@ jobs:
           CIBW_TEST_COMMAND: "pytest {project}/tests"
           CIBW_BEFORE_BUILD_LINUX: |
             bash {project}/cibw-scripts/before_build_linux.sh {project}
+          CIBW_BEFORE_BUILD_MACOS: |
+            bash {project}/cibw-scripts/before_build_macos.sh {project}
           CIBW_BEFORE_BUILD_WINDOWS: |
             bash {project}/cibw-scripts/before_build_windows.sh {project}
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
