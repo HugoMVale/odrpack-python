@@ -24,7 +24,7 @@ nanobind_dep = dependency('nanobind', static: true)
 
 # find blas
 if host_machine.system() == 'darwin'
-  # Use Apple's Accelerate framework
+  message('Using `Accelerate` framework as BLAS library.')
   add_project_link_arguments('-framework', 'Accelerate', language: ['c', 'fortran'])
   blas_dep = declare_dependency()
 else
