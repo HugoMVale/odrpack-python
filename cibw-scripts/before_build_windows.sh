@@ -3,9 +3,8 @@ set -xe
 PROJECT_DIR="$1"
 
 # install OpenBLAS
-
-# pip install scipy-openblas32
-# python -c "import scipy_openblas32; print(scipy_openblas32.get_pkg_config())" > $PROJECT_DIR/scipy-openblas.pc
+curl -L -o OpenBLAS-0.3.29_x64.zip https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.29/OpenBLAS-0.3.29_x64.zip
+unzip OpenBLAS-0.3.29_x64.zip -d openblas
 
 # install delvewheel to repare wheels
 pip install delvewheel
