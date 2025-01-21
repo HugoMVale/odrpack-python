@@ -32,6 +32,9 @@ else
   if not blas_dep.found()
     blas_dep = cpp_compiler.find_library('openblas', required: false)
   endif
+  if not blas_dep.found()
+    blas_dep = dependency('openblas')
+  endif
 endif
 
 if blas_dep.found()
