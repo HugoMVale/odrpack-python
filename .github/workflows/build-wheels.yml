@@ -35,12 +35,12 @@ jobs:
         with:
           version: 13 # 14 not supported yet in Windows
 
-      # This can't be placed in the cibuildwheel action
-      # Without it, the wheel repair fails
-      - name: macOS - Set deployment target
-        if: runner.os == 'macOS'
-        run: |
-          echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+      # # This can't be placed in the cibuildwheel action
+      # # Without it, the wheel repair fails
+      # - name: macOS - Set deployment target
+      #   if: runner.os == 'macOS'
+      #   run: |
+      #     echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
 
       # - name: Windows - Set PKG_CONFIG_PATH
       #   if: runner.os == 'windows'
@@ -63,6 +63,8 @@ jobs:
             bash {project}/cibw-scripts/before_all_linux.sh {project}
           CIBW_BEFORE_ALL_WINDOWS: |
             bash {project}/cibw-scripts/before_all_windows.sh {project}
+          CIBW_BEFORE_ALL_MACOS: |
+            echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
             bash ./cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
