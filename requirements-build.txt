@@ -3,6 +3,5 @@ meson-python
 ninja
 nanobind
 numpy
-# scipy-openblas64
 pytest
 pytest-cov
