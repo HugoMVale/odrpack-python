@@ -5,4 +5,4 @@ revision = HEAD
 depth = 1
 
 [provide]
-odrpack95 = odrpack_c_dep
+odrpack95 = odrpack_dep

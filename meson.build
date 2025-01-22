@@ -12,68 +12,22 @@ project(
 
 # compilers
 add_languages('fortran', native: false)
-cpp_compiler = meson.get_compiler('cpp')
-fortran_compiler = meson.get_compiler('fortran')
 
-# find python
+# python
 python = import('python').find_installation(pure: false)
 python_dep = python.dependency()
 
-# find nanobind (from subprojects)
+# nanobind (from subprojects)
 nanobind_dep = dependency('nanobind', static: true)
 
-# find blas
-if host_machine.system() == 'darwin'
-  message('Using `Accelerate` framework as BLAS library.')
-  add_project_link_arguments('-framework', 'Accelerate', language: ['c', 'fortran'])
-  blas_dep = declare_dependency()
-else
-  blas_dep = dependency('openblas', required: false)
-  if not blas_dep.found()
-    blas_dep = cpp_compiler.find_library('openblas', required: false)
-  endif
-  if not blas_dep.found()
-    blas_dep = dependency('openblas')
-  endif
-endif
-
-if blas_dep.found()
-  blas_source = []
-else
-  message('No specific BLAS library detected. Falling back to reference BLAS.')
-  blas_source = join_paths(meson.current_source_dir(), 'extern/blas.f')
-endif
-
-# buid odrpack95
-odrpack95_path = join_paths(meson.current_source_dir(), 'extern/odrpack95')
-odrpack95_files = [
-  'src/linpack.f',
-  'src/blas_interfaces.f90',
-  'src/odrpack_kinds.F90',
-  'src/odrpack_core.f90',
-  'src/odrpack.f90',
-  'src/odrpack_reports.f90',
-  'c/odrpack_capi.f90'
-]
-
-odrpack95_source = []
-foreach f : odrpack95_files
-  odrpack95_source += files(join_paths(odrpack95_path, f))
-endforeach
-
-odrpack95_lib = static_library(
-  meson.project_name(),
-  sources: [odrpack95_source, blas_source],
-  dependencies: [blas_dep],
-)
+# odrpack (from subprojects)
+odrpack_dep = dependency('odrpack95', static: true)
 
 # build extension module
 nanobind_ext = python.extension_module(
   '__odrpack',
   'src/odrpack/__odrpack.py.cpp',
-  dependencies : [python_dep, nanobind_dep],
-  link_with: odrpack95_lib,
-  include_directories: include_directories('extern/odrpack95/c/include'),
+  dependencies : [python_dep, nanobind_dep, odrpack_dep],
   install: true,
   # limited_api: '3.12',
   subdir: 'odrpack'
