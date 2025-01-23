@@ -22,9 +22,9 @@ ls -l /mingw64/lib/pkgconfig
 # Convert MSYS2 path to Unix-style (in case of GitHub Actions path issues)
 # export PKG_CONFIG_PATH=$(cygpath -u "C:/msys64/mingw64/lib/pkgconfig")
 # echo "PKG_CONFIG_PATH is set to: $PKG_CONFIG_PATH"
-echo "PKG_CONFIG_PATH=/mingw64/lib/pkgconfig" >> $GITHUB_ENV
+# echo "PKG_CONFIG_PATH=/mingw64/lib/pkgconfig" >> $GITHUB_ENV
 
 # Verify OpenBLAS detection
 pkg-config --version
-# pkg-config --variable=pc_path pkg-config
+pkg-config --variable=pc_path pkg-config
 pkg-config --modversion openblas
