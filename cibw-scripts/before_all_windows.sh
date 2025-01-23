@@ -21,4 +21,6 @@ export PKG_CONFIG_PATH=$(cygpath -u "C:/msys64/mingw64/lib/pkgconfig")
 echo "PKG_CONFIG_PATH is set to: $PKG_CONFIG_PATH"
 
 # Verify OpenBLAS detection
+which pkg-config
+pkg-config --version
 pkg-config --modversion openblas
