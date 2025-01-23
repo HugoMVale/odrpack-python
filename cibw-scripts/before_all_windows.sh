@@ -26,4 +26,5 @@ echo "PKG_CONFIG_PATH is set to: $PKG_CONFIG_PATH"
 
 # Verify OpenBLAS detection
 pkg-config --version
+pkg-config --variable=pc_path pkg-config
 pkg-config --modversion openblas
