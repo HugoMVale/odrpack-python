@@ -44,7 +44,7 @@ jobs:
       - name: Windows - Set PKG_CONFIG_PATH
         if: runner.os == 'windows'
         run: |
-          echo "PKG_CONFIG_PATH=c/mingw64/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $GITHUB_ENV
           echo "PATH=C:/msys64/mingw64/bin:$PATH" >> $GITHUB_ENV
 
       - name: Build wheels
