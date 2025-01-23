@@ -2,13 +2,8 @@ set -xe
 
 PROJECT_DIR="$1"
 
-# Check if gcc and gfortran are available
-which gcc
-which gfortran
-gcc --version
-gfortran --version
-
 # Update pacman database and upgrade system packages
+PATH="/c/msys64/usr/bin:$PATH"
 pacman -Sy --noconfirm
 pacman -Suu --noconfirm
 
