@@ -44,9 +44,7 @@ jobs:
       - name: Windows - Set PKG_CONFIG_PATH
         if: runner.os == 'windows'
         run: |
-          $CIBW = "c/mingw64/lib/pkgconfig"
-          $CIBW = $CIBW.replace("\","/")
-          echo "CIBW_ENVIRONMENT_WINDOWS=PKG_CONFIG_PATH=$CIBW" >> $env:GITHUB_ENV
+          echo "PKG_CONFIG_PATH=c/mingw64/lib/pkgconfig" >> $env:GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
