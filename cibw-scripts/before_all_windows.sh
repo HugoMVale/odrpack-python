@@ -17,12 +17,11 @@ pacman -S --noconfirm mingw-w64-x86_64-openblas
 
 # Set PKG_CONFIG_PATH for OpenBLAS
 ls -l /mingw64/lib/pkgconfig
+cp /mingw64/lib/pkgconfig/openblas.pc /c/ProgramData/Chocolatey/lib/pkgconfiglite/tools/pkg-config-lite-0.28-1/lib/pkgconfig/
 
 # Convert MSYS2 path to Unix-style (in case of GitHub Actions path issues)
-export PKG_CONFIG_PATH=$(cygpath -u "C:/msys64/mingw64/lib/pkgconfig")
-
-# Debugging: Check what the PKG_CONFIG_PATH is set to
-echo "PKG_CONFIG_PATH is set to: $PKG_CONFIG_PATH"
+# export PKG_CONFIG_PATH=$(cygpath -u "C:/msys64/mingw64/lib/pkgconfig")
+# echo "PKG_CONFIG_PATH is set to: $PKG_CONFIG_PATH"
 
 # Verify OpenBLAS detection
 pkg-config --version
