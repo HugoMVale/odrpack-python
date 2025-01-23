@@ -22,5 +22,9 @@ pacman -S --noconfirm mingw-w64-x86_64-pkg-config
 # Add only /mingw64/bin to PATH
 export PATH="/mingw64/bin:$PATH"
 
+# Set PKG_CONFIG_PATH for OpenBLAS
+ls -l /mingw64/lib/pkgconfig
+export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig:$PKG_CONFIG_PATH"
+
 # Verify OpenBLAS detection
 pkg-config --modversion openblas
