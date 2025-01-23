@@ -44,7 +44,7 @@ jobs:
       - name: Windows - Set PKG_CONFIG_PATH
         if: runner.os == 'windows'
         run: |
-          $CIBW = "${{ github.workspace }}/mingw64/lib/pkgconfig"
+          $CIBW = "c/mingw64/lib/pkgconfig"
           $CIBW = $CIBW.replace("\","/")
           echo "CIBW_ENVIRONMENT_WINDOWS=PKG_CONFIG_PATH=$CIBW" >> $env:GITHUB_ENV
 

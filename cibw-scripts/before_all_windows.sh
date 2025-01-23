@@ -26,5 +26,5 @@ ls -l /mingw64/lib/pkgconfig
 
 # Verify OpenBLAS detection
 pkg-config --version
-pkg-config --variable=pc_path pkg-config
-pkg-config --modversion openblas
+# pkg-config --variable=pc_path pkg-config
+# pkg-config --modversion openblas
