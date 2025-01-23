@@ -45,6 +45,7 @@ jobs:
         if: runner.os == 'windows'
         run: |
           echo "PKG_CONFIG_PATH=c/mingw64/lib/pkgconfig" >> $env:GITHUB_ENV
+          echo "PATH=C:/msys64/mingw64/bin:$PATH" >> $GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
