@@ -7,7 +7,7 @@ choco install -y --no-progress --stoponfirstfailure pkgconfiglite
 which pkg-config
 
 # Update pacman database and upgrade system packages
-PATH="/c/msys64/usr/bin:$PATH"
+PATH="c/msys64/usr/bin:$PATH"
 pacman -Sy --noconfirm
 pacman -Suu --noconfirm
 
@@ -16,9 +16,10 @@ pacman -S --noconfirm mingw-w64-x86_64-openblas
 # pacman -S --noconfirm mingw-w64-x86_64-pkg-config
 
 # Set PKG_CONFIG_PATH for OpenBLAS
-ls -l c/mingw64/lib/pkgconfig
-ls -l c/mingw64/lib/libopenblas.*
-ls -l c/mingw64/bin
+pwd
+ls -l c/msys64/mingw64/lib/pkgconfig
+ls -l c/msys64/mingw64/lib/libopenblas.*
+ls -l c/msys64/mingw64/bin
 # PKG_CONFIG_LITE="/c/ProgramData/Chocolatey/lib/pkgconfiglite/tools/pkg-config-lite-0.28-1"
 # mkdir -p "$PKG_CONFIG_LITE/include"
 # mkdir -p "$PKG_CONFIG_LITE/lib"
