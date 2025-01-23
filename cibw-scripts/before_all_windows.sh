@@ -17,9 +17,24 @@ pacman -S --noconfirm mingw-w64-x86_64-openblas
 
 # Set PKG_CONFIG_PATH for OpenBLAS
 ls -l /mingw64/lib/pkgconfig
-# mkdir -p /c/ProgramData/Chocolatey/lib/pkgconfiglite/tools/pkg-config-lite-0.28-1/lib/pkgconfig/
-# cp /mingw64/lib/pkgconfig/openblas.pc /c/ProgramData/Chocolatey/lib/pkgconfiglite/tools/pkg-config-lite-0.28-1/lib/pkgconfig/
-# ls -l /c/ProgramData/Chocolatey/lib/pkgconfiglite/tools/pkg-config-lite-0.28-1/lib/pkgconfig/
+PKG_CONFIG_LITE="/c/ProgramData/Chocolatey/lib/pkgconfiglite/tools/pkg-config-lite-0.28-1"
+mkdir -p "$PKG_CONFIG_LITE/include"
+mkdir -p "$PKG_CONFIG_LITE/lib"
+mkdir -p "$PKG_CONFIG_LITE/lib/pkgconfig"
+
+cp /mingw64/lib/pkgconfig/openblas.pc "$PKG_CONFIG_LITE/lib/pkgconfig"
+cp -r /mingw64/lib/libopenblas.* "$PKG_CONFIG_LITE/lib"
+cp -r /mingw64/include/* "$PKG_CONFIG_LITE/include"
+
+# Debugging: Verify the copied files
+echo "Contents of $PKG_CONFIG_LITE/lib/pkgconfig:"
+ls -l "$PKG_CONFIG_LITE/lib/pkgconfig"
+
+echo "Contents of $PKG_CONFIG_LITE/include:"
+ls -l "$PKG_CONFIG_LITE/include"
+
+echo "Contents of $PKG_CONFIG_LITE/lib:"
+ls -l "$PKG_CONFIG_LITE/lib"
 
 # Convert MSYS2 path to Unix-style (in case of GitHub Actions path issues)
 # export PKG_CONFIG_PATH=$(cygpath -u "C:/msys64/mingw64/lib/pkgconfig")
@@ -28,5 +43,5 @@ ls -l /mingw64/lib/pkgconfig
 
 # Verify OpenBLAS detection
 pkg-config --version
-# pkg-config --variable=pc_path pkg-config
-# pkg-config --modversion openblas
+pkg-config --variable=pc_path pkg-config
+pkg-config --modversion openblas
