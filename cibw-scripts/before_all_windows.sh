@@ -7,7 +7,8 @@ choco install -y --no-progress --stoponfirstfailure pkgconfiglite
 which pkg-config
 
 # Update pacman database and upgrade system packages
-PATH="c/msys64/usr/bin:$PATH"
+pwd
+PATH="/c/msys64/usr/bin:$PATH"
 pacman -Sy --noconfirm
 pacman -Suu --noconfirm
 
@@ -16,7 +17,6 @@ pacman -S --noconfirm mingw-w64-x86_64-openblas
 # pacman -S --noconfirm mingw-w64-x86_64-pkg-config
 
 # Set PKG_CONFIG_PATH for OpenBLAS
-pwd
 ls -l c/msys64/mingw64/lib/pkgconfig
 ls -l c/msys64/mingw64/lib/libopenblas.*
 ls -l c/msys64/mingw64/bin
