@@ -8,9 +8,6 @@ which gfortran
 gcc --version
 gfortran --version
 
-# Temporarily add MSYS2 to PATH
-PATH="/c/msys64/usr/bin:$PATH"
-
 # Update pacman database and upgrade system packages
 pacman -Sy --noconfirm
 pacman -Suu --noconfirm
@@ -21,8 +18,12 @@ pacman -S --noconfirm mingw-w64-x86_64-pkg-config
 
 # Set PKG_CONFIG_PATH for OpenBLAS
 ls -l /mingw64/lib/pkgconfig
-export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
-echo $PKG_CONFIG_PATH
+
+# Convert MSYS2 path to Unix-style (in case of GitHub Actions path issues)
+export PKG_CONFIG_PATH=$(cygpath -u "C:/msys64/mingw64/lib/pkgconfig")
+
+# Debugging: Check what the PKG_CONFIG_PATH is set to
+echo "PKG_CONFIG_PATH is set to: $PKG_CONFIG_PATH"
 
 # Verify OpenBLAS detection
 pkg-config --modversion openblas
