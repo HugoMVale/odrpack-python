@@ -26,8 +26,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: macOS - Set up Fortran
         if: runner.os == 'macOS'
@@ -47,8 +45,8 @@ jobs:
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
           $PKG = "${{ github.workspace }}/mingw64/lib/pkgconfig"
           $PKG = $PKG.replace("\","/")
-          echo "PKG_CONFIG_PATH=$PKG" >> $GITHUB_ENV
-          type $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$PKG" >> env:$GITHUB_ENV
+          Get-Content $env:GITHUB_ENV
           pkg-config --variable=pc_path pkg-config
 
       - name: Build wheels
