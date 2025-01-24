@@ -37,14 +37,13 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
-        # This does not work inside CIBW_BEFORE_ALL_MACOS; Without it, the wheel repair fails.
+          # This does not work inside CIBW_BEFORE_ALL_MACOS; Without it, the wheel repair fails.
 
       - name: Windows - Set up pkg-config
         if: runner.os == 'windows'
         run: |
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
           echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $env:GITHUB_ENV
-          # Add-Content $env:GITHUB_PATH "C:\msys64\mingw64\bin"
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
@@ -59,7 +58,8 @@ jobs:
             bash {project}/cibw-scripts/before_all_linux.sh {project}
           CIBW_BEFORE_ALL_WINDOWS: |
             bash {project}/cibw-scripts/before_all_windows.sh
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_BEFORE_BUILD_WINDOWS: |
+            pip install delvewheel"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
             bash ./cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
 

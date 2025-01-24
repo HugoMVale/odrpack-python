@@ -11,4 +11,3 @@ else
     echo "Detected manylinux environment. Installing OpenBLAS using yum..."
     yum install -y openblas-devel
 fi
-
