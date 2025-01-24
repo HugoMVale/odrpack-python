@@ -2,10 +2,15 @@ set -xe
 
 PROJECT_DIR="$1"
 
-# Update pacman database and upgrade system packages
-# cd c:
+# Verify working directory
 pwd
 ls -l
+
+# Verify compiler locations
+which gcc
+which gfortran
+
+# Update pacman database and upgrade system packages
 PATH="/c/msys64/usr/bin:$PATH"
 pacman -Sy --noconfirm
 pacman -Suu --noconfirm
