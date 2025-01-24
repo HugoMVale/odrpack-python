@@ -43,8 +43,7 @@ jobs:
         if: runner.os == 'windows'
         run: |
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
-          $PKG = "${{ github.workspace }}/mingw64/lib/pkgconfig"
-          $PKG = $PKG.replace("\","/")
+          $PKG = "C:/msys64/mingw64/lib/pkgconfig"
           echo "PKG_CONFIG_PATH=$PKG" >> $GITHUB_ENV
           pkg-config --variable=pc_path pkg-config
 
