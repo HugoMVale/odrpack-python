@@ -43,7 +43,7 @@ jobs:
         if: runner.os == 'windows'
         run: |
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
-          echo "PKG_CONFIG_PATH=C:/msys64/mingw64/lib/pkgconfig" >> $env:GITHUB_ENV
+          echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $env:GITHUB_ENV
           # Add-Content $env:GITHUB_PATH "C:\msys64\mingw64\bin"
 
       - name: Build wheels
