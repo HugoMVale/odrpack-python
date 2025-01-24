@@ -44,11 +44,11 @@ jobs:
       - name: Windows - Set up pkg-config
         if: runner.os == 'windows'
         run: |
-          pwd
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
           $PKG = "${{ github.workspace }}/mingw64/lib/pkgconfig"
           $PKG = $PKG.replace("\","/")
           echo "PKG_CONFIG_PATH=$PKG" >> $GITHUB_ENV
+          type $GITHUB_ENV
           pkg-config --variable=pc_path pkg-config
 
       - name: Build wheels
