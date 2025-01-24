@@ -39,15 +39,17 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
-      # This does not work inside CIBW_BEFORE_ALL_MACOS; Without it, the wheel repair fails
+        # This does not work inside CIBW_BEFORE_ALL_MACOS; Without it, the wheel repair fails.
 
-      - name: Windows - Set PKG_CONFIG_PATH
+      - name: Windows - Set up pkg-config
         if: runner.os == 'windows'
         run: |
           pwd
-          cd
-          echo "PKG_CONFIG_PATH=C:\mingw64\lib\pkgconfig" >> $GITHUB_ENV
-          echo "PATH=C:\msys64\mingw64\bin:$PATH" >> $GITHUB_ENV
+          choco install -y --no-progress --stoponfirstfailure pkgconfiglite
+          $PKG = "${{ github.workspace }}/mingw64/lib/pkgconfig"
+          $PKG = $PKG.replace("\","/")
+          echo "PKG_CONFIG_PATH=$PKG" >> $GITHUB_ENV
+          pkg-config --variable=pc_path pkg-config
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0

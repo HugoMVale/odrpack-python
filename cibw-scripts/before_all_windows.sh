@@ -3,7 +3,7 @@ set -xe
 PROJECT_DIR="$1"
 
 # Install pkgconfiglite
-choco install -y --no-progress --stoponfirstfailure pkgconfiglite
+# choco install -y --no-progress --stoponfirstfailure pkgconfiglite
 which pkg-config
 
 # Update pacman database and upgrade system packages
