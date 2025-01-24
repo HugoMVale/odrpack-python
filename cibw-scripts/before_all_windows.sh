@@ -1,6 +1,6 @@
 set -xe
 
-# Verify compiler locations
+# Verify active compiler locations
 which gcc
 which gfortran
 
@@ -17,6 +17,8 @@ ls -l /c/msys64/mingw64/lib/libopenblas.*
 ls -l /c/msys64/mingw64/bin
 
 # Copy OpenBLAS files to mingw64 (where the active compiler toolchain is)
+# Without this, some dlls come from c/msys64/mingw64 and others from c/msys64/ resulting in
+# a runtime failure
 mkdir -p /c/mingw64/lib/pkgconfig
 cp /c/msys64/mingw64/lib/pkgconfig/openblas.pc /c/mingw64/lib/pkgconfig/
 cp /c/msys64/mingw64/bin/libopenblas.dll /c/mingw64/bin/
