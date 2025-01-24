@@ -17,7 +17,7 @@ ls -l /c/msys64/mingw64/lib/pkgconfig/
 ls -l /c/msys64/mingw64/lib/libopenblas.*
 ls -l /c/msys64/mingw64/bin
 
-cp /c/msys64/mingw64/bin/libopenblas.dll /c/msys64/mingw64/bin/
+cp /c/msys64/mingw64/bin/libopenblas.dll /c/mingw64/bin/
 
 # Verify OpenBLAS detection
 pkg-config --variable=pc_path pkg-config
