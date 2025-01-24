@@ -1,7 +1,5 @@
 set -xe
 
-PROJECT_DIR="$1"
-
 # Verify compiler locations
 which gcc
 which gfortran
