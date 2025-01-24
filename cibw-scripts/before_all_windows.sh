@@ -23,7 +23,7 @@ mkdir -p /c/mingw64/lib/pkgconfig
 cp /c/msys64/mingw64/lib/pkgconfig/openblas.pc /c/mingw64/lib/pkgconfig/
 cp /c/msys64/mingw64/bin/libopenblas.dll /c/mingw64/bin/
 cp /c/msys64/mingw64/lib/libopenblas.*   /c/mingw64/lib/
-cp /c/msys64/mingw64/include/openblas    /c/mingw64/include
+cp -r /c/msys64/mingw64/include/openblas    /c/mingw64/include
 
 # Verify OpenBLAS detection
 pkg-config --modversion openblas
