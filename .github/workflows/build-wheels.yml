@@ -59,7 +59,9 @@ jobs:
             bash {project}/cibw-scripts/before_all_linux.sh {project}
           CIBW_BEFORE_ALL_WINDOWS: |
             bash {project}/cibw-scripts/before_all_windows.sh {project}
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_BEFORE_BUILD_WINDOWS: | 
+            echo $env:PATH
+            pip install delvewheel
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
             bash ./cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
 
