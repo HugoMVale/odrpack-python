@@ -46,7 +46,6 @@ jobs:
           $PKG = "${{ github.workspace }}/mingw64/lib/pkgconfig"
           $PKG = $PKG.replace("\","/")
           echo "PKG_CONFIG_PATH=$PKG" >> env:$GITHUB_ENV
-          Get-Content $env:GITHUB_ENV
           pkg-config --variable=pc_path pkg-config
 
       - name: Build wheels
