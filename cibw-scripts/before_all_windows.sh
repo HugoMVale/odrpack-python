@@ -16,9 +16,10 @@ pacman -S --noconfirm mingw-w64-x86_64-openblas
 
 # Set PKG_CONFIG_PATH for OpenBLAS
 ls -l
-ls -l /mingw64/lib/pkgconfig
-ls -l /mingw64/lib/libopenblas.*
-ls -l /mingw64/bin
+ls -l /c/msys64/mingw64/lib/pkgconfig/
+ls -l /c/msys64/mingw64/lib/libopenblas.*
+ls -l /c/msys64/mingw64/bin
+
 # PKG_CONFIG_LITE="/c/ProgramData/Chocolatey/lib/pkgconfiglite/tools/pkg-config-lite-0.28-1"
 # mkdir -p "$PKG_CONFIG_LITE/include"
 # mkdir -p "$PKG_CONFIG_LITE/lib"
