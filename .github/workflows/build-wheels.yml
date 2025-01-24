@@ -44,7 +44,7 @@ jobs:
         run: |
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
           echo "PKG_CONFIG_PATH=C:/msys64/mingw64/lib/pkgconfig" >> $env:GITHUB_ENV
-          Add-Content $env:GITHUB_PATH "C:\msys64\mingw64\bin"
+          # Add-Content $env:GITHUB_PATH "C:\msys64\mingw64\bin"
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0

@@ -23,6 +23,5 @@ ls -l /c/msys64/mingw64/bin
 # cp -r /mingw64/include/openblas/* "$PKG_CONFIG_LITE/include"
 
 # Verify OpenBLAS detection
-pkg-config --version
 pkg-config --variable=pc_path pkg-config
 pkg-config --modversion openblas
