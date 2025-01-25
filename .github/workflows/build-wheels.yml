@@ -37,9 +37,11 @@ jobs:
 
       - name: Windows - Set up pkg-config
         if: runner.os == 'windows'
+        shell: bash
         run: |
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
-          echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $env:GITHUB_ENV
+          # echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $env:GITHUB_ENV
+          echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
