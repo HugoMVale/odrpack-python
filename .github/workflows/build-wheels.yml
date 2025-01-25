@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
-          echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=C:/msys64/mingw64/lib/pkgconfig" >> $GITHUB_ENV
           echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
 
       - name: Build wheels
