@@ -40,26 +40,27 @@ jobs:
         shell: bash
         run: |
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
-          echo "PKG_CONFIG_PATH=C:/msys64/mingw64/lib/pkgconfig" >> $GITHUB_ENV
-          echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
+          echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $GITHUB_ENV
+          # echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
           # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
           CIBW_SKIP: "*-win32 *i686 pp3*"
-          CIBW_BUILD_FRONTEND: "build"
+          CIBW_BUILD_FRONTEND: build
           CIBW_BUILD_VERBOSITY: 1
           CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: "pytest {project}/tests"
+          CIBW_TEST_COMMAND: |
+            pytest {project}/tests
           CIBW_BEFORE_ALL_LINUX: |
             bash {project}/cibw-scripts/before_all_linux.sh {project}
           CIBW_BEFORE_ALL_WINDOWS: |
             bash {project}/cibw-scripts/before_all_windows.sh
           CIBW_BEFORE_BUILD_WINDOWS: |
-            pip install delvewheel"
+            pip install delvewheel
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
-            bash ./cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
+            bash {project}/cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
 
       - name: Upload wheels 
         uses: actions/upload-artifact@v4
