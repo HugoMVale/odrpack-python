@@ -60,7 +60,7 @@ jobs:
           CIBW_BEFORE_BUILD_WINDOWS: |
             pip install delvewheel
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
-            bash {project}/cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
+            bash ./cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
 
       - name: Upload wheels 
         uses: actions/upload-artifact@v4
