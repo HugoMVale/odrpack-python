@@ -73,5 +73,7 @@
     "autopep8.args": [
         "--max-line-length=90"
     ],
-    "C_Cpp.vcFormat.newLine.beforeOpenBrace.block": "sameLine"
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.block": "sameLine",
+    "C_Cpp.default.compileCommands": "/home/odrpack-python/builddir/compile_commands.json",
+    "C_Cpp.default.configurationProvider": "mesonbuild.mesonbuild"
 }
