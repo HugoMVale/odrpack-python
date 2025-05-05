@@ -26,7 +26,7 @@ the explanatory and response variables have significant errors.
 
 You can install the package via pip:
 
-```bash
+```sh
 pip install odrpack
 ```
 
@@ -41,9 +41,9 @@ import numpy as np
 x = np.array([0.982, 1.998, 4.978, 6.01])
 y = np.array([2.7, 7.4, 148.0, 403.0])
 
-beta0 = np.array([2., 0.5])
-lower = np.array([0., 0.])
-upper = np.array([10., 0.9])
+beta0 = np.array([2.0, 0.5])
+lower = np.array([0.0, 0.0])
+upper = np.array([10.0, 0.9])
 
 def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
     "Model function."
