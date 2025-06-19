@@ -4,7 +4,7 @@ from typing import Annotated
 from numpy.typing import ArrayLike
 
 
-def diwinf(m: int, npar: int, nq: int) -> dict[str, int]:
+def loc_iwork(m: int, npar: int, nq: int) -> dict[str, int]:
     """
     Get storage locations within the integer work space.
 
@@ -23,7 +23,7 @@ def diwinf(m: int, npar: int, nq: int) -> dict[str, int]:
         A dictionary containing the 0-based indexes of the integer work array.
     """
 
-def dwinf(n: int, m: int, npar: int, nq: int, ldwe: int, ld2we: int, isodr: bool) -> dict[str, int]:
+def loc_rwork(n: int, m: int, npar: int, nq: int, ldwe: int, ld2we: int, isodr: bool) -> dict[str, int]:
     """
     Get storage locations within the real work space.
 

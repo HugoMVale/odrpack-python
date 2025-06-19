@@ -3,7 +3,7 @@ from typing import Callable
 import numpy as np
 from numpy.typing import NDArray
 
-from odrpack.__odrpack import diwinf, dwinf
+from odrpack.__odrpack import loc_iwork, loc_rwork
 from odrpack.__odrpack import odr as _odr
 from odrpack.__odrpack import workspace_dimensions
 from odrpack.result import OdrResult
@@ -486,8 +486,8 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
                 )
 
     # Indexes of integer and real work arrays
-    iwork_idx: dict[str, int] = diwinf(m, npar, nq)
-    work_idx: dict[str, int] = dwinf(n, m, npar, nq, ldwe, ld2we, is_odr)
+    iwork_idx: dict[str, int] = loc_iwork(m, npar, nq)
+    work_idx: dict[str, int] = loc_rwork(n, m, npar, nq, ldwe, ld2we, is_odr)
 
     # Return the result
     # Extract results without messing up the original work arrays

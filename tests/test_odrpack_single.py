@@ -1,23 +1,23 @@
 import os
+from copy import deepcopy
 
 import numpy as np
 import pytest
-from copy import deepcopy
 
 from odrpack import odr
-from odrpack.__odrpack import diwinf, dwinf, workspace_dimensions
+from odrpack.__odrpack import loc_iwork, loc_rwork, workspace_dimensions
 
 SEED = 1234567890
 
 
-def test_diwinf():
-    res = diwinf(m=10, npar=5, nq=2)
+def test_loc_iwork():
+    res = loc_iwork(m=10, npar=5, nq=2)
     assert len(res) == 23
     assert all(idx >= 0 for idx in res.values())
 
 
-def test_dwinf():
-    res = dwinf(n=10, m=2, npar=5, nq=2, ldwe=1, ld2we=1, isodr=True)
+def test_loc_rwork():
+    res = loc_rwork(n=10, m=2, npar=5, nq=2, ldwe=1, ld2we=1, isodr=True)
     assert len(res) == 52
     assert all(idx >= 0 for idx in res.values())
 
@@ -40,8 +40,8 @@ def test_dimension_consistency():
     npar = 5
     for isodr in [True, False]:
         dims = workspace_dimensions(n, m, npar, nq, isodr)
-        iworkidx = diwinf(m, npar, nq)
-        workidx = dwinf(n, m, npar, nq, ldwe=1, ld2we=1, isodr=isodr)
+        iworkidx = loc_iwork(m, npar, nq)
+        workidx = loc_rwork(n, m, npar, nq, ldwe=1, ld2we=1, isodr=isodr)
         assert dims[0] >= workidx['lwkmn']
         assert dims[1] >= iworkidx['liwkmn']
 
@@ -420,7 +420,7 @@ def test_parameters(case1):
     sstol = 0.123
     sol = odr(**case1, sstol=sstol)
     assert sol.info == 1
-    idxwork = dwinf(case1['x'].size, 1, case1['beta0'].size, 1, 1, 1, True)
+    idxwork = loc_rwork(case1['x'].size, 1, case1['beta0'].size, 1, 1, 1, True)
     assert np.isclose(sol.work[idxwork['sstol']], sstol)
 
     # partol

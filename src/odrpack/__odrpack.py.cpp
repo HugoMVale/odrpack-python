@@ -134,8 +134,7 @@ int odr_wrapper(int n,
 
     // Define the overall user-supplied model function 'fcn'
     odrpack_fcn_t fcn = nullptr;
-    fcn = [](const int *n, const int *m, const int *npar, const int *nq,
-             const int *ldn, const int *ldm, const int *ldnp, const double beta[],
+    fcn = [](const int *n, const int *m, const int *npar, const int *nq, const double beta[],
              const double xplusd[], const int ifixb[], const int ifixx[],
              const int *ldifx, const int *ideval, double f[], double fjacb[],
              double fjacd[], int *istop) {
@@ -153,7 +152,7 @@ int odr_wrapper(int n,
                 auto f_object = fcn_f_holder(beta_ndarray, xplusd_ndarray);
                 auto f_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(f_object);
                 auto f_ndarray_ptr = f_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*ldn); i++) {
+                for (auto i = 0; i < (*nq) * (*n); i++) {
                     f[i] = f_ndarray_ptr[i];
                 }
             }
@@ -163,7 +162,7 @@ int odr_wrapper(int n,
                 auto fjacb_object = fcn_fjacb_holder(beta_ndarray, xplusd_ndarray);
                 auto fjacb_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacb_object);
                 auto fjacb_ndarray_ptr = fjacb_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*ldnp) * (*ldn); i++) {
+                for (auto i = 0; i < (*nq) * (*npar) * (*n); i++) {
                     fjacb[i] = fjacb_ndarray_ptr[i];
                 }
             }
@@ -173,7 +172,7 @@ int odr_wrapper(int n,
                 auto fjacd_object = fcn_fjacd_holder(beta_ndarray, xplusd_ndarray);
                 auto fjacd_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacd_object);
                 auto fjacd_ndarray_ptr = fjacd_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*ldnp) * (*ldn); i++) {
+                for (auto i = 0; i < (*nq) * (*npar) * (*n); i++) {
                     fjacd[i] = fjacd_ndarray_ptr[i];
                 }
             }
@@ -399,10 +398,10 @@ tuple[int, int]
 
     // Get storage locations within the integer work space
     m.def(
-        "diwinf",
+        "loc_iwork",
         [](int m, int npar, int nq) {
             iworkidx_t iworkidx = {};
-            diwinf_c(&m, &npar, &nq, &iworkidx);
+            loc_iwork_c(&m, &npar, &nq, &iworkidx);
             std::map<std::string, int> result;
             result["msgb"] = iworkidx.msgb;
             result["msgd"] = iworkidx.msgd;
@@ -450,10 +449,10 @@ dict[str, int]
 
     // Get storage locations within the real work space
     m.def(
-        "dwinf",
+        "loc_rwork",
         [](int n, int m, int npar, int nq, int ldwe, int ld2we, bool isodr) {
             workidx_t workidx = {};
-            dwinf_c(&n, &m, &npar, &nq, &ldwe, &ld2we, &isodr, &workidx);
+            loc_rwork_c(&n, &m, &npar, &nq, &ldwe, &ld2we, &isodr, &workidx);
             std::map<std::string, int> result;
             result["delta"] = workidx.delta;
             result["eps"] = workidx.eps;
