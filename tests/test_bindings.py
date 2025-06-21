@@ -21,9 +21,9 @@ def test_workspace_dimensions():
     m = 3
     npar = 5
     isodr = True
-    dims = workspace_dimensions(n, m, q, npar, isodr)
-    assert dims == (770, 46)
-    assert dims[1] == 20 + 2*npar + q*(npar + m)
+    lrwork, liwork = workspace_dimensions(n, m, q, npar, isodr)
+    assert lrwork == 770
+    assert liwork == 46
 
 
 def test_dimension_consistency():

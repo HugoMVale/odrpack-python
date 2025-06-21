@@ -53,7 +53,7 @@ class OdrResult():
         Sum of squared differences between observed and fitted `y` values.
     iwork : NDArray[np.int32]
         Integer workspace array used internally by `odrpack`.
-    work : NDArray[np.float64]
+    rwork : NDArray[np.float64]
         Floating-point workspace array used internally by `odrpack`.
     """
     beta: NDArray[np.float64]
@@ -76,4 +76,4 @@ class OdrResult():
     sum_square_delta: float
     sum_square_eps: float
     iwork: NDArray[np.int32]
-    work: NDArray[np.float64]
+    rwork: NDArray[np.float64]

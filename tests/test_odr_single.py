@@ -384,20 +384,20 @@ def test_parameters(case1):
     sstol = 0.123
     sol = odr(**case1, sstol=sstol)
     assert sol.info == 1
-    idxwork = loc_rwork(case1['x'].size, 1, 1, case1['beta0'].size, 1, 1, True)
-    assert np.isclose(sol.work[idxwork['sstol']], sstol)
+    rwork_idx = loc_rwork(case1['x'].size, 1, 1, case1['beta0'].size, 1, 1, True)
+    assert np.isclose(sol.rwork[rwork_idx['sstol']], sstol)
 
     # partol
     partol = 0.456
     sol = odr(**case1, partol=partol)
     assert sol.info == 2
-    assert np.isclose(sol.work[idxwork['partl']], partol)
+    assert np.isclose(sol.rwork[rwork_idx['partl']], partol)
 
     # taufac
     taufac = 0.6969
     sol = odr(**case1, taufac=taufac)
     assert sol.info == 1
-    assert np.isclose(sol.work[idxwork['taufc']], taufac)
+    assert np.isclose(sol.rwork[rwork_idx['taufc']], taufac)
 
 
 def test_restart(case1):
@@ -405,23 +405,23 @@ def test_restart(case1):
     # valid restart
     sol_ref = odr(**case1)
     sol1 = odr(**case1, maxit=2)
-    sol2 = odr(**case1, job=10_000, iwork=sol1.iwork, work=sol1.work)
+    sol2 = odr(**case1, job=10_000, iwork=sol1.iwork, rwork=sol1.rwork)
     assert sol2.info == 1
     assert np.allclose(sol_ref.beta, sol2.beta)
 
     # invalid restarts
     with pytest.raises(ValueError):
-        _ = odr(**case1, iwork=sol1.iwork, work=sol1.work)
+        _ = odr(**case1, iwork=sol1.iwork, rwork=sol1.rwork)
     with pytest.raises(ValueError):
         _ = odr(**case1, job=10_000)
     with pytest.raises(ValueError):
         _ = odr(**case1, job=10_000, iwork=sol1.iwork)
     with pytest.raises(ValueError):
-        _ = odr(**case1, job=10_000, work=sol1.work)
+        _ = odr(**case1, job=10_000, rwork=sol1.rwork)
     with pytest.raises(ValueError):
-        _ = odr(**case1, job=10_000, iwork=sol1.iwork, work=np.ones(10000))
+        _ = odr(**case1, job=10_000, iwork=sol1.iwork, rwork=np.ones(10000))
     with pytest.raises(ValueError):
-        _ = odr(**case1, job=10_000, iwork=np.ones(10000, dtype=np.int32), work=sol1.work)
+        _ = odr(**case1, job=10_000, iwork=np.ones(10000, dtype=np.int32), rwork=sol1.rwork)
 
 
 def test_rptfile_and_errfile(case1):

@@ -40,7 +40,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         stpd: NDArray[np.float64] | None = None,
         sclb: NDArray[np.float64] | None = None,
         scld: NDArray[np.float64] | None = None,
-        work: NDArray[np.float64] | None = None,
+        rwork: NDArray[np.float64] | None = None,
         iwork: NDArray[np.int32] | None = None,
         ) -> OdrResult:
     r"""Solve a weighted orthogonal distance regression (ODR) problem, also
@@ -211,7 +211,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         should not be confused with the weighting matrices `we` and `wd`. By
         default, `scld` is set internally based on the relative magnitudes of
         `x`. For further details, refer to pages 32 and 85 of the ODRPACK95 guide.
-    work : NDArray[np.float64] | None
+    rwork : NDArray[np.float64] | None
         Array containing the real-valued internal state of the odrpack solver.
         It is only required for a restart (see `job`), in which case it must be
         set to the state of the previous run.
@@ -453,11 +453,11 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
 
     # Check/allocate work arrays
     lwork, liwork = workspace_dimensions(n, m, q, npar, is_odr)
-    if (not is_restart) and (work is None) and (iwork is None):
-        work = np.zeros(lwork, dtype=np.float64)
+    if (not is_restart) and (rwork is None) and (iwork is None):
+        rwork = np.zeros(lwork, dtype=np.float64)
         iwork = np.zeros(liwork, dtype=np.int32)
-    elif is_restart and (work is not None) and (iwork is not None):
-        if work.size != lwork:
+    elif is_restart and (rwork is not None) and (iwork is not None):
+        if rwork.size != lwork:
             raise ValueError(
                 "Work array `work` does not have the correct length.")
         if iwork.size != liwork:
@@ -479,7 +479,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
                 delta=delta,
                 we=we, wd=wd, ifixb=ifixb, ifixx=ifixx,
                 lower=lower, upper=upper,
-                work=work, iwork=iwork,
+                rwork=rwork, iwork=iwork,
                 job=job,
                 ndigit=ndigit, taufac=taufac, sstol=sstol, partol=partol, maxit=maxit,
                 iprint=iprint, errfile=errfile, rptfile=rptfile
@@ -487,19 +487,19 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
 
     # Indexes of integer and real work arrays
     iwork_idx: dict[str, int] = loc_iwork(m, q, npar)
-    work_idx: dict[str, int] = loc_rwork(n, m, q, npar, ldwe, ld2we, is_odr)
+    rwork_idx: dict[str, int] = loc_rwork(n, m, q, npar, ldwe, ld2we, is_odr)
 
     # Return the result
     # Extract results without messing up the original work arrays
-    i0_eps = work_idx['eps']
-    eps = work[i0_eps:i0_eps+y.size].copy()
+    i0_eps = rwork_idx['eps']
+    eps = rwork[i0_eps:i0_eps+y.size].copy()
     eps = np.reshape(eps, y.shape)
 
-    i0_sd = work_idx['sd']
-    sd_beta = work[i0_sd:i0_sd+beta.size].copy()
+    i0_sd = rwork_idx['sd']
+    sd_beta = rwork[i0_sd:i0_sd+beta.size].copy()
 
-    i0_vcv = work_idx['vcv']
-    cov_beta = work[i0_vcv:i0_vcv+beta.size**2].copy()
+    i0_vcv = rwork_idx['vcv']
+    cov_beta = rwork[i0_vcv:i0_vcv+beta.size**2].copy()
     cov_beta = np.reshape(cov_beta, (beta.size, beta.size))
 
     result = OdrResult(
@@ -510,7 +510,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         yest=y+eps,
         sd_beta=sd_beta,
         cov_beta=cov_beta,
-        res_var=work[work_idx['rvar']],
+        res_var=rwork[rwork_idx['rvar']],
         info=info,
         stopreason=_interpret_info(info),
         success=info < 4,
@@ -518,12 +518,12 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         njev=iwork[iwork_idx['njev']],
         niter=iwork[iwork_idx['niter']],
         irank=iwork[iwork_idx['irank']],
-        inv_condnum=work[work_idx['rcond']],
-        sum_square=work[work_idx['wss']],
-        sum_square_delta=work[work_idx['wssde']],
-        sum_square_eps=work[work_idx['wssep']],
+        inv_condnum=rwork[rwork_idx['rcond']],
+        sum_square=rwork[rwork_idx['wss']],
+        sum_square_delta=rwork[rwork_idx['wssde']],
+        sum_square_eps=rwork[rwork_idx['wssep']],
         iwork=iwork,
-        work=work,
+        rwork=rwork,
     )
 
     return result

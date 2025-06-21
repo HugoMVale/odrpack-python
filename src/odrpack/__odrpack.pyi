@@ -50,7 +50,7 @@ def loc_rwork(n: int, m: int, q: int, npar: int, ldwe: int, ld2we: int, isodr: b
         A dictionary containing the 0-based indexes of the real work array.
     """
 
-def odr(n: int, m: int, q: int, npar: int, ldwe: int, ld2we: int, ldwd: int, ld2wd: int, ldifx: int, ldstpd: int, ldscld: int, f: Callable, fjacb: Callable, fjacd: Callable, beta: Annotated[ArrayLike, dict(dtype='float64', order='C')], y: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)], x: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)], delta: Annotated[ArrayLike, dict(dtype='float64', order='C')], we: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, wd: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, ifixb: Annotated[ArrayLike, dict(dtype='int32', order='C', writable=False)] | None = None, ifixx: Annotated[ArrayLike, dict(dtype='int32', order='C', writable=False)] | None = None, stpb: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, stpd: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, sclb: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, scld: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, lower: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, upper: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, work: Annotated[ArrayLike, dict(dtype='float64', order='C')] | None = None, iwork: Annotated[ArrayLike, dict(dtype='int32', order='C')] | None = None, job: int | None = None, ndigit: int | None = None, taufac: float | None = None, sstol: float | None = None, partol: float | None = None, maxit: int | None = None, iprint: int | None = None, errfile: str | None = None, rptfile: str | None = None) -> int:
+def odr(n: int, m: int, q: int, npar: int, ldwe: int, ld2we: int, ldwd: int, ld2wd: int, ldifx: int, ldstpd: int, ldscld: int, f: Callable, fjacb: Callable, fjacd: Callable, beta: Annotated[ArrayLike, dict(dtype='float64', order='C')], y: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)], x: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)], delta: Annotated[ArrayLike, dict(dtype='float64', order='C')], we: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, wd: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, ifixb: Annotated[ArrayLike, dict(dtype='int32', order='C', writable=False)] | None = None, ifixx: Annotated[ArrayLike, dict(dtype='int32', order='C', writable=False)] | None = None, stpb: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, stpd: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, sclb: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, scld: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, lower: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, upper: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, rwork: Annotated[ArrayLike, dict(dtype='float64', order='C')] | None = None, iwork: Annotated[ArrayLike, dict(dtype='int32', order='C')] | None = None, job: int | None = None, ndigit: int | None = None, taufac: float | None = None, sstol: float | None = None, partol: float | None = None, maxit: int | None = None, iprint: int | None = None, errfile: str | None = None, rptfile: str | None = None) -> int:
     """
     C++ wrapper for the Orthogonal Distance Regression (ODR) routine.
 
@@ -114,7 +114,7 @@ def odr(n: int, m: int, q: int, npar: int, ldwe: int, ld2we: int, ldwd: int, ld2
         Lower bounds for `beta`. Default is None.
     upper : np.ndarray[float64], optional
         Upper bounds for `beta`. Default is None.
-    work : np.ndarray[float64], optional
+    rwork : np.ndarray[float64], optional
         Real work space. Default is None.
     iwork : np.ndarray[int32], optional
         Integer work space. Default is None.
@@ -168,5 +168,5 @@ def workspace_dimensions(n: int, m: int, q: int, npar: int, isodr: bool) -> tupl
     Returns
     -------
     tuple[int, int]
-        A tuple containing the lengths of the work arrays (`lwork`, `liwork`).
+        A tuple containing the lengths of the work arrays (`lrwork`, `liwork`).
     """
