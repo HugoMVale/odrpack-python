@@ -41,8 +41,8 @@ places.
 */
 int odr_wrapper(int n,
                 int m,
+                int q,
                 int npar,
-                int nq,
                 int ldwe,
                 int ld2we,
                 int ldwd,
@@ -134,7 +134,7 @@ int odr_wrapper(int n,
 
     // Define the overall user-supplied model function 'fcn'
     odrpack_fcn_t fcn = nullptr;
-    fcn = [](const int *n, const int *m, const int *npar, const int *nq, const double beta[],
+    fcn = [](const int *n, const int *m, const int *q, const int *npar, const double beta[],
              const double xplusd[], const int ifixb[], const int ifixx[],
              const int *ldifx, const int *ideval, double f[], double fjacb[],
              double fjacd[], int *istop) {
@@ -152,7 +152,7 @@ int odr_wrapper(int n,
                 auto f_object = fcn_f_holder(beta_ndarray, xplusd_ndarray);
                 auto f_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(f_object);
                 auto f_ndarray_ptr = f_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*n); i++) {
+                for (auto i = 0; i < (*q) * (*n); i++) {
                     f[i] = f_ndarray_ptr[i];
                 }
             }
@@ -162,7 +162,7 @@ int odr_wrapper(int n,
                 auto fjacb_object = fcn_fjacb_holder(beta_ndarray, xplusd_ndarray);
                 auto fjacb_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacb_object);
                 auto fjacb_ndarray_ptr = fjacb_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*npar) * (*n); i++) {
+                for (auto i = 0; i < (*q) * (*npar) * (*n); i++) {
                     fjacb[i] = fjacb_ndarray_ptr[i];
                 }
             }
@@ -172,7 +172,7 @@ int odr_wrapper(int n,
                 auto fjacd_object = fcn_fjacd_holder(beta_ndarray, xplusd_ndarray);
                 auto fjacd_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacd_object);
                 auto fjacd_ndarray_ptr = fjacd_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*npar) * (*n); i++) {
+                for (auto i = 0; i < (*q) * (*npar) * (*n); i++) {
                     fjacd[i] = fjacd_ndarray_ptr[i];
                 }
             }
@@ -212,7 +212,7 @@ int odr_wrapper(int n,
 
     // Call the C function
     int info = -1;
-    odr_long_c(fcn, &n, &m, &npar, &nq, &ldwe, &ld2we, &ldwd, &ld2wd, &ldifx,
+    odr_long_c(fcn, &n, &m, &q, &npar, &ldwe, &ld2we, &ldwd, &ld2wd, &ldifx,
                &ldstpd, &ldscld, &lwork, &liwork, beta_ptr, y_ptr, x_ptr, we_ptr,
                wd_ptr, ifixb_ptr, ifixx_ptr, stpb_ptr, stpd_ptr, sclb_ptr,
                scld_ptr, delta_ptr, lower_ptr, upper_ptr, work_ptr, iwork_ptr,
@@ -244,14 +244,14 @@ n : int
     Number of observations.
 m : int
     Number of columns in the independent variable data.
+q : int
+    Number of responses per observation.
 npar : int
     Number of function parameters.
-nq : int
-    Number of responses per observation.
 ldwe : int
     Leading dimension of the `we` array, must be in `{1, n}`.
 ld2we : int
-    Second dimension of the `we` array, must be in `{1, nq}`.
+    Second dimension of the `we` array, must be in `{1, q}`.
 ldwd : int
     Leading dimension of the `wd` array, must be in `{1, n}`.
 ld2wd : int
@@ -273,13 +273,13 @@ fjacd : Callable
 beta : np.ndarray[float64]
     Array of function parameters with shape `(npar)`.
 y : np.ndarray[float64]
-    Dependent variables with shape `(nq, n)`. Ignored for implicit models.
+    Dependent variables with shape `(q, n)`. Ignored for implicit models.
 x : np.ndarray[float64]
     Explanatory variables with shape `(m, n)`.
 delta : np.ndarray[float64]
     Initial errors in `x` data with shape `(m, n)`.
 we : np.ndarray[float64], optional
-    Weights for `epsilon` with shape `(nq, ld2we, ldwe)`. Default is None.
+    Weights for `epsilon` with shape `(q, ld2we, ldwe)`. Default is None.
 wd : np.ndarray[float64], optional
     Weights for `delta` with shape `(m, ld2wd, ldwd)`. Default is None.
 ifixb : np.ndarray[int32], optional
@@ -331,7 +331,7 @@ Notes
 - Ensure all array dimensions and functions are consistent with the provided arguments.
 - Input arrays will automatically be made contiguous and cast to the correct type if necessary.
     )doc",
-          nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+          nb::arg("n"), nb::arg("m"), nb::arg("q"), nb::arg("npar"),
           nb::arg("ldwe"), nb::arg("ld2we"), nb::arg("ldwd"), nb::arg("ld2wd"),
           nb::arg("ldifx"), nb::arg("ldstpd"), nb::arg("ldscld"),
           nb::arg("f"),
@@ -366,10 +366,10 @@ Notes
     // Calculate the dimensions of the workspace arrays
     m.def(
         "workspace_dimensions",
-        [](int n, int m, int npar, int nq, bool isodr) {
+        [](int n, int m, int q, int npar, bool isodr) {
             int lwork = 0;
             int liwork = 0;
-            workspace_dimensions_c(&n, &m, &npar, &nq, &isodr, &lwork, &liwork);
+            workspace_dimensions_c(&n, &m, &q, &npar, &isodr, &lwork, &liwork);
             return nb::make_tuple(lwork, liwork);
         },
         R"doc(
@@ -381,10 +381,10 @@ n : int
     Number of observations.
 m : int
     Number of columns of data in the explanatory variable.
+q : int
+    Number of responses per observation.
 npar : int
     Number of function parameters.
-nq : int
-    Number of responses per observation.
 isodr : bool
     Variable designating whether the solution is by ODR (`True`) or by OLS (`False`).
 
@@ -393,15 +393,15 @@ Returns
 tuple[int, int]
     A tuple containing the lengths of the work arrays (`lwork`, `liwork`).
 )doc",
-        nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+        nb::arg("n"), nb::arg("m"), nb::arg("q"), nb::arg("npar"),
         nb::arg("isodr"));
 
     // Get storage locations within the integer work space
     m.def(
         "loc_iwork",
-        [](int m, int npar, int nq) {
+        [](int m, int q, int npar) {
             iworkidx_t iworkidx = {};
-            loc_iwork_c(&m, &npar, &nq, &iworkidx);
+            loc_iwork_c(&m, &q, &npar, &iworkidx);
             std::map<std::string, int> result;
             result["msgb"] = iworkidx.msgb;
             result["msgd"] = iworkidx.msgd;
@@ -435,24 +435,24 @@ Parameters
 ----------
 m : int
     Number of columns of data in the explanatory variable.
+q : int
+    Number of responses per observation.
 npar : int
     Number of function parameters.
-nq : int
-    Number of responses per observation.
 
 Returns
 -------
 dict[str, int]
     A dictionary containing the 0-based indexes of the integer work array.
 )doc",
-        nb::arg("m"), nb::arg("npar"), nb::arg("nq"));
+        nb::arg("m"), nb::arg("q"), nb::arg("npar"));
 
     // Get storage locations within the real work space
     m.def(
         "loc_rwork",
-        [](int n, int m, int npar, int nq, int ldwe, int ld2we, bool isodr) {
+        [](int n, int m, int q, int npar, int ldwe, int ld2we, bool isodr) {
             workidx_t workidx = {};
-            loc_rwork_c(&n, &m, &npar, &nq, &ldwe, &ld2we, &isodr, &workidx);
+            loc_rwork_c(&n, &m, &q, &npar, &ldwe, &ld2we, &isodr, &workidx);
             std::map<std::string, int> result;
             result["delta"] = workidx.delta;
             result["eps"] = workidx.eps;
@@ -517,10 +517,10 @@ n : int
     Number of observations.
 m : int
     Number of columns of data in the explanatory variable.
+q : int
+    Number of responses per observation.
 npar : int
     Number of function parameters.
-nq : int
-    Number of responses per observation.
 ldwe : int
     Leading dimension of the `we` array.
 ld2we : int
@@ -533,6 +533,6 @@ Returns
 dict[str, int]
     A dictionary containing the 0-based indexes of the real work array.
     )doc",
-        nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+        nb::arg("n"), nb::arg("m"), nb::arg("q"), nb::arg("npar"),
         nb::arg("ldwe"), nb::arg("ld2we"), nb::arg("isodr"));
 }
