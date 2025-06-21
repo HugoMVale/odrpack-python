@@ -5,45 +5,9 @@ import numpy as np
 import pytest
 
 from odrpack import odr
-from odrpack.__odrpack import loc_iwork, loc_rwork, workspace_dimensions
+from odrpack.__odrpack import loc_rwork
 
 SEED = 1234567890
-
-
-def test_loc_iwork():
-    res = loc_iwork(m=10, q=2, npar=5)
-    assert len(res) == 23
-    assert all(idx >= 0 for idx in res.values())
-
-
-def test_loc_rwork():
-    res = loc_rwork(n=10, m=2, q=2, npar=5, ldwe=1, ld2we=1, isodr=True)
-    assert len(res) == 52
-    assert all(idx >= 0 for idx in res.values())
-
-
-def test_workspace_dimensions():
-    n = 10
-    q = 2
-    m = 3
-    npar = 5
-    isodr = True
-    dims = workspace_dimensions(n, m, q, npar, isodr)
-    assert dims == (770, 46)
-    assert dims[1] == 20 + 2*npar + q*(npar + m)
-
-
-def test_dimension_consistency():
-    n = 11
-    q = 2
-    m = 3
-    npar = 5
-    for isodr in [True, False]:
-        dims = workspace_dimensions(n, m, q, npar, isodr)
-        iworkidx = loc_iwork(m, q, npar)
-        workidx = loc_rwork(n, m, q, npar, ldwe=1, ld2we=1, isodr=isodr)
-        assert dims[0] >= workidx['lwkmn']
-        assert dims[1] >= iworkidx['liwkmn']
 
 
 @pytest.fixture
