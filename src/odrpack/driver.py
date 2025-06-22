@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from odrpack.__odrpack import loc_iwork, loc_rwork
 from odrpack.__odrpack import odr as _odr
 from odrpack.__odrpack import workspace_dimensions
-from odrpack.result import OdrResult
+from odrpack.result import OdrResult, interpret_info
 
 __all__ = ['odr']
 
@@ -512,7 +512,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         cov_beta=cov_beta,
         res_var=rwork[rwork_idx['rvar']],
         info=info,
-        stopreason=_interpret_info(info),
+        stopreason=interpret_info(info),
         success=info < 4,
         nfev=iwork[iwork_idx['nfev']],
         njev=iwork[iwork_idx['njev']],
@@ -530,21 +530,5 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
 
 
 def _get_digit(number: int, ndigit: int) -> int:
-    """Return the `ndigit`-th digit from the right of `number`."""
+    """Return the n-th digit from the right of `number`."""
     return (number // 10**(ndigit-1)) % 10
-
-
-def _interpret_info(info: int) -> str:
-    """Return a message corresponding to the value of `info`."""
-    message = ""
-    if info == 1:
-        message = "Sum of squares convergence."
-    elif info == 2:
-        message = "Parameter convergence."
-    elif info == 3:
-        message = "Sum of squares and parameter convergence."
-    elif info == 4:
-        message = "Iteration limit reached."
-    elif info >= 5:
-        message = "Questionable results or fatal errors detected. See report and error message."
-    return message
