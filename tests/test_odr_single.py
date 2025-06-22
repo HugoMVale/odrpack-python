@@ -426,8 +426,10 @@ def test_restart(case1):
 
 def test_rptfile_and_errfile(case1):
 
-    # write to report file
     rptfile = 'rtptest.txt'
+    errfile = 'errtest.txt'
+
+    # write to report file
     for iprint, rptsize in zip([0, 1001], [0, 2600]):
         if os.path.isfile(rptfile):
             os.remove(rptfile)
@@ -436,11 +438,9 @@ def test_rptfile_and_errfile(case1):
             and abs(os.path.getsize(rptfile) - rptsize) < 200
 
     # write to error file
-    errfile = 'errtest.txt'
     if os.path.isfile(errfile):
         os.remove(errfile)
-    _ = odr(**case1, iprint=1001,
-            errfile=errfile)
+    _ = odr(**case1, iprint=1001, errfile=errfile)
     assert os.path.isfile(errfile)  # and os.path.getsize(errfile) > 0
 
     # write to report and error file
@@ -448,13 +448,17 @@ def test_rptfile_and_errfile(case1):
         os.remove(rptfile)
     if os.path.isfile(errfile):
         os.remove(errfile)
-    _ = odr(**case1, job=10, iprint=1001,
-            rptfile=rptfile,
-            errfile=errfile)
+    _ = odr(**case1, job=10, iprint=1001, rptfile=rptfile, errfile=errfile)
     assert os.path.isfile(rptfile) and os.path.getsize(rptfile) > 2500
     assert os.path.isfile(errfile)  # and os.path.getsize(errfile) > 0
 
     # I can't get the error file to be written to..
+
+    # Clean up
+    if os.path.isfile(rptfile):
+        os.remove(rptfile)
+    if os.path.isfile(errfile):
+        os.remove(errfile)
 
 
 def test_jacobians():
