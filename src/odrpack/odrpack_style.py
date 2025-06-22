@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from odrpack.__odrpack import loc_iwork, loc_rwork
 from odrpack.__odrpack import odr as _odr
 from odrpack.__odrpack import workspace_dimensions
-from odrpack.result import OdrResult, interpret_info
+from odrpack.result import OdrResult
 
 __all__ = ['odr']
 
@@ -139,7 +139,8 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         forward finite difference, and covariance matrix computed using Jacobian
         matrices recomputed at the final solution. Another common option is 20,
         corresponding to an explicit orthogonal distance regression with 
-        user-supplied jacobians `fjacb` and `fjacd`. To initialize `delta0` with
+        user-supplied jacobians `fjacb` and `fjacd`. For an implicit orthogonal
+        distance regression, `job` must be set to 1. To initialize `delta0` with
         the user supplied values, the 4th digit of `job` must be set to 1, e.g.
         1000. To restart a previous run, the 5th digit of `job` must be set to
         1, e.g. 10000. For a comprehensive description of the options, refer to
@@ -512,7 +513,6 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         cov_beta=cov_beta,
         res_var=rwork[rwork_idx['rvar']],
         info=info,
-        stopreason=interpret_info(info),
         success=info < 4,
         nfev=iwork[iwork_idx['nfev']],
         njev=iwork[iwork_idx['njev']],
