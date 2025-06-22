@@ -70,7 +70,6 @@ class OdrResult():
     irank: int
     inv_condnum: float
     info: int
-    stopreason: str
     success: bool
     sum_square: float
     sum_square_delta: float
@@ -78,18 +77,17 @@ class OdrResult():
     iwork: NDArray[np.int32]
     rwork: NDArray[np.float64]
 
-
-def interpret_info(info: int) -> str:
-    """Return a message corresponding to the value of `info`."""
-    message = ""
-    if info == 1:
-        message = "Sum of squares convergence."
-    elif info == 2:
-        message = "Parameter convergence."
-    elif info == 3:
-        message = "Sum of squares and parameter convergence."
-    elif info == 4:
-        message = "Iteration limit reached."
-    elif info >= 5:
-        message = "Questionable results or fatal errors detected. See report and error message."
-    return message
+    @property
+    def stopreason(self) -> str:
+        message = ""
+        if self.info == 1:
+            message = "Sum of squares convergence."
+        elif self.info == 2:
+            message = "Parameter convergence."
+        elif self.info == 3:
+            message = "Sum of squares and parameter convergence."
+        elif self.info == 4:
+            message = "Iteration limit reached."
+        elif self.info >= 5:
+            message = "Questionable results or fatal errors detected. See report and error message."
+        return message
