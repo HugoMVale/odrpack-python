@@ -3,7 +3,7 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from odrpack.scipy_style import odr_fit
+from odrpack.odr_scipy import odr_fit
 
 SEED = 1234567890
 

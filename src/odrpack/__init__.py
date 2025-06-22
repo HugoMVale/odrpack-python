@@ -12,6 +12,6 @@ to the observations of the dependent variable.
 __version__ = '0.3.0'
 
 from odrpack.exceptions import *
-from odrpack.odrpack_style import *
+from odrpack.odr_fortran import *
+from odrpack.odr_scipy import *
 from odrpack.result import *
-from odrpack.scipy_style import *
