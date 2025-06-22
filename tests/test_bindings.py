@@ -33,10 +33,10 @@ def test_dimension_consistency():
     npar = 5
     for isodr in [True, False]:
         dims = workspace_dimensions(n, m, q, npar, isodr)
-        iworkidx = loc_iwork(m, q, npar)
-        workidx = loc_rwork(n, m, q, npar, ldwe=1, ld2we=1, isodr=isodr)
-        assert dims[0] >= workidx['lwkmn']
-        assert dims[1] >= iworkidx['liwkmn']
+        iwork_idx = loc_iwork(m, q, npar)
+        rwork_idx = loc_rwork(n, m, q, npar, ldwe=1, ld2we=1, isodr=isodr)
+        assert dims[0] >= rwork_idx['lrwkmn']
+        assert dims[1] >= iwork_idx['liwkmn']
 
 
 def test_odr():

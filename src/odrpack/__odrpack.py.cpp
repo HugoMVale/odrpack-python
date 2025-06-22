@@ -449,7 +449,7 @@ dict[str, int]
     m.def(
         "loc_rwork",
         [](int n, int m, int q, int npar, int ldwe, int ld2we, bool isodr) {
-            workidx_t rwi = {};
+            rworkidx_t rwi = {};
             loc_rwork_c(&n, &m, &q, &npar, &ldwe, &ld2we, &isodr, &rwi);
             std::map<std::string, int> result;
             result["delta"] = rwi.delta;
@@ -503,7 +503,7 @@ dict[str, int]
             result["wrk7"] = rwi.wrk7;
             result["lower"] = rwi.lower;
             result["upper"] = rwi.upper;
-            result["lwkmn"] = rwi.lwkmn;
+            result["lrwkmn"] = rwi.lrwkmn;
             return result;
         },
         R"doc(
