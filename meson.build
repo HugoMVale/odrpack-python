@@ -1,7 +1,7 @@
 project(
   'odrpack',
   ['cpp'],
-  version : '0.2.0',
+  version : '0.3.0',
   meson_version: '>=1.5.0',
   default_options: [
     'buildtype=release',
@@ -36,11 +36,12 @@ nanobind_ext = python.extension_module(
 python.install_sources(
   [
   'src/odrpack/__init__.py',
-  'src/odrpack/driver.py',
+  'src/odrpack/__odrpack.pyi',
+  'src/odrpack/odr_fortran.py',
+  'src/odrpack/odr_scipy.py',
   'src/odrpack/exceptions.py',
   'src/odrpack/result.py',
   'src/odrpack/py.typed',
-  'src/odrpack/__odrpack.pyi',
   ],
   subdir: 'odrpack'
 )

@@ -1,6 +1,6 @@
 :::odrpack
     options:
         members:
-            - odr
+            - odr_fit
             - OdrResult
             - OdrStop

@@ -29,20 +29,18 @@ class SelfCleaningPyObject {
 };
 
 /*
-Wrapper for the C-interface of the Fortran ODR routine. This wrapper is
-intentionally very thin, with all argument checks and array dimension
-calculations delegated to the companion Python caller, which serves as the entry
-point for all function calls.
+Wrapper for the C-interface of the Fortran ODR routine. This wrapper is intentionally very
+thin, with all argument checks and array dimension calculations delegated to the companion
+Python caller, which serves as the entry point for all function calls.
 
-Some arguments have a default value of `nullptr` — this is by design, as the
-Fortran code automatically interprets `nullptr` as an absent optional argument.
-This approach avoids the redundant definition of default values in multiple
-places.
+Some arguments have a default value of `nullptr` — this is by design, as the Fortran code
+automatically interprets `nullptr` as an absent optional argument. This approach avoids the
+redundant definition of default values in multiple places.
 */
 int odr_wrapper(int n,
                 int m,
+                int q,
                 int npar,
-                int nq,
                 int ldwe,
                 int ld2we,
                 int ldwd,
@@ -67,7 +65,7 @@ int odr_wrapper(int n,
                 std::optional<nb::ndarray<const double, nb::c_contig>> scld,
                 std::optional<nb::ndarray<const double, nb::c_contig>> lower,
                 std::optional<nb::ndarray<const double, nb::c_contig>> upper,
-                std::optional<nb::ndarray<double, nb::c_contig>> work,
+                std::optional<nb::ndarray<double, nb::c_contig>> rwork,
                 std::optional<nb::ndarray<int, nb::c_contig>> iwork,
                 std::optional<int> job,
                 std::optional<int> ndigit,
@@ -101,7 +99,7 @@ int odr_wrapper(int n,
     auto lower_ptr = lower ? lower.value().data() : nullptr;
     auto upper_ptr = upper ? upper.value().data() : nullptr;
 
-    auto work_ptr = work ? work.value().data() : nullptr;
+    auto rwork_ptr = rwork ? rwork.value().data() : nullptr;
     auto iwork_ptr = iwork ? iwork.value().data() : nullptr;
 
     auto job_ptr = job ? &job.value() : nullptr;
@@ -112,9 +110,9 @@ int odr_wrapper(int n,
     auto maxit_ptr = maxit ? &maxit.value() : nullptr;
     auto iprint_ptr = iprint ? &iprint.value() : nullptr;
 
-    int lwork = 1;
+    int lrwork = 1;
     int liwork = 1;
-    if (work) lwork = work.value().size();
+    if (rwork) lrwork = rwork.value().size();
     if (iwork) liwork = iwork.value().size();
 
     // Build static pointers to the Python functions
@@ -134,8 +132,7 @@ int odr_wrapper(int n,
 
     // Define the overall user-supplied model function 'fcn'
     odrpack_fcn_t fcn = nullptr;
-    fcn = [](const int *n, const int *m, const int *npar, const int *nq,
-             const int *ldn, const int *ldm, const int *ldnp, const double beta[],
+    fcn = [](const int *n, const int *m, const int *q, const int *npar, const double beta[],
              const double xplusd[], const int ifixb[], const int ifixx[],
              const int *ldifx, const int *ideval, double f[], double fjacb[],
              double fjacd[], int *istop) {
@@ -153,7 +150,7 @@ int odr_wrapper(int n,
                 auto f_object = fcn_f_holder(beta_ndarray, xplusd_ndarray);
                 auto f_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(f_object);
                 auto f_ndarray_ptr = f_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*ldn); i++) {
+                for (auto i = 0; i < (*q) * (*n); i++) {
                     f[i] = f_ndarray_ptr[i];
                 }
             }
@@ -163,7 +160,7 @@ int odr_wrapper(int n,
                 auto fjacb_object = fcn_fjacb_holder(beta_ndarray, xplusd_ndarray);
                 auto fjacb_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacb_object);
                 auto fjacb_ndarray_ptr = fjacb_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*ldnp) * (*ldn); i++) {
+                for (auto i = 0; i < (*q) * (*npar) * (*n); i++) {
                     fjacb[i] = fjacb_ndarray_ptr[i];
                 }
             }
@@ -173,7 +170,7 @@ int odr_wrapper(int n,
                 auto fjacd_object = fcn_fjacd_holder(beta_ndarray, xplusd_ndarray);
                 auto fjacd_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacd_object);
                 auto fjacd_ndarray_ptr = fjacd_ndarray.data();
-                for (auto i = 0; i < (*nq) * (*ldnp) * (*ldn); i++) {
+                for (auto i = 0; i < (*q) * (*npar) * (*n); i++) {
                     fjacd[i] = fjacd_ndarray_ptr[i];
                 }
             }
@@ -213,10 +210,10 @@ int odr_wrapper(int n,
 
     // Call the C function
     int info = -1;
-    odr_long_c(fcn, &n, &m, &npar, &nq, &ldwe, &ld2we, &ldwd, &ld2wd, &ldifx,
-               &ldstpd, &ldscld, &lwork, &liwork, beta_ptr, y_ptr, x_ptr, we_ptr,
+    odr_long_c(fcn, &n, &m, &q, &npar, &ldwe, &ld2we, &ldwd, &ld2wd, &ldifx,
+               &ldstpd, &ldscld, &lrwork, &liwork, beta_ptr, y_ptr, x_ptr, we_ptr,
                wd_ptr, ifixb_ptr, ifixx_ptr, stpb_ptr, stpd_ptr, sclb_ptr,
-               scld_ptr, delta_ptr, lower_ptr, upper_ptr, work_ptr, iwork_ptr,
+               scld_ptr, delta_ptr, lower_ptr, upper_ptr, rwork_ptr, iwork_ptr,
                job_ptr, ndigit_ptr, taufac_ptr, sstol_ptr, partol_ptr, maxit_ptr,
                iprint_ptr, &lunerr, &lunrpt, &info);
 
@@ -245,14 +242,14 @@ n : int
     Number of observations.
 m : int
     Number of columns in the independent variable data.
+q : int
+    Number of responses per observation.
 npar : int
     Number of function parameters.
-nq : int
-    Number of responses per observation.
 ldwe : int
     Leading dimension of the `we` array, must be in `{1, n}`.
 ld2we : int
-    Second dimension of the `we` array, must be in `{1, nq}`.
+    Second dimension of the `we` array, must be in `{1, q}`.
 ldwd : int
     Leading dimension of the `wd` array, must be in `{1, n}`.
 ld2wd : int
@@ -274,13 +271,13 @@ fjacd : Callable
 beta : np.ndarray[float64]
     Array of function parameters with shape `(npar)`.
 y : np.ndarray[float64]
-    Dependent variables with shape `(nq, n)`. Ignored for implicit models.
+    Dependent variables with shape `(q, n)`. Ignored for implicit models.
 x : np.ndarray[float64]
     Explanatory variables with shape `(m, n)`.
 delta : np.ndarray[float64]
     Initial errors in `x` data with shape `(m, n)`.
 we : np.ndarray[float64], optional
-    Weights for `epsilon` with shape `(nq, ld2we, ldwe)`. Default is None.
+    Weights for `epsilon` with shape `(q, ld2we, ldwe)`. Default is None.
 wd : np.ndarray[float64], optional
     Weights for `delta` with shape `(m, ld2wd, ldwd)`. Default is None.
 ifixb : np.ndarray[int32], optional
@@ -299,7 +296,7 @@ lower : np.ndarray[float64], optional
     Lower bounds for `beta`. Default is None.
 upper : np.ndarray[float64], optional
     Upper bounds for `beta`. Default is None.
-work : np.ndarray[float64], optional
+rwork : np.ndarray[float64], optional
     Real work space. Default is None.
 iwork : np.ndarray[int32], optional
     Integer work space. Default is None.
@@ -332,7 +329,7 @@ Notes
 - Ensure all array dimensions and functions are consistent with the provided arguments.
 - Input arrays will automatically be made contiguous and cast to the correct type if necessary.
     )doc",
-          nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+          nb::arg("n"), nb::arg("m"), nb::arg("q"), nb::arg("npar"),
           nb::arg("ldwe"), nb::arg("ld2we"), nb::arg("ldwd"), nb::arg("ld2wd"),
           nb::arg("ldifx"), nb::arg("ldstpd"), nb::arg("ldscld"),
           nb::arg("f"),
@@ -352,7 +349,7 @@ Notes
           nb::arg("scld").none() = nullptr,
           nb::arg("lower").none() = nullptr,
           nb::arg("upper").none() = nullptr,
-          nb::arg("work").none() = nullptr,
+          nb::arg("rwork").none() = nullptr,
           nb::arg("iwork").none() = nullptr,
           nb::arg("job").none() = nullptr,
           nb::arg("ndigit").none() = nullptr,
@@ -367,11 +364,11 @@ Notes
     // Calculate the dimensions of the workspace arrays
     m.def(
         "workspace_dimensions",
-        [](int n, int m, int npar, int nq, bool isodr) {
-            int lwork = 0;
+        [](int n, int m, int q, int npar, bool isodr) {
+            int lrwork = 0;
             int liwork = 0;
-            workspace_dimensions_c(&n, &m, &npar, &nq, &isodr, &lwork, &liwork);
-            return nb::make_tuple(lwork, liwork);
+            workspace_dimensions_c(&n, &m, &q, &npar, &isodr, &lrwork, &liwork);
+            return nb::make_tuple(lrwork, liwork);
         },
         R"doc(
 Calculate the dimensions of the workspace arrays.
@@ -382,51 +379,51 @@ n : int
     Number of observations.
 m : int
     Number of columns of data in the explanatory variable.
+q : int
+    Number of responses per observation.
 npar : int
     Number of function parameters.
-nq : int
-    Number of responses per observation.
 isodr : bool
     Variable designating whether the solution is by ODR (`True`) or by OLS (`False`).
 
 Returns
 -------
 tuple[int, int]
-    A tuple containing the lengths of the work arrays (`lwork`, `liwork`).
+    A tuple containing the lengths of the work arrays (`lrwork`, `liwork`).
 )doc",
-        nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+        nb::arg("n"), nb::arg("m"), nb::arg("q"), nb::arg("npar"),
         nb::arg("isodr"));
 
     // Get storage locations within the integer work space
     m.def(
-        "diwinf",
-        [](int m, int npar, int nq) {
-            iworkidx_t iworkidx = {};
-            diwinf_c(&m, &npar, &nq, &iworkidx);
+        "loc_iwork",
+        [](int m, int q, int npar) {
+            iworkidx_t iwi = {};
+            loc_iwork_c(&m, &q, &npar, &iwi);
             std::map<std::string, int> result;
-            result["msgb"] = iworkidx.msgb;
-            result["msgd"] = iworkidx.msgd;
-            result["ifix2"] = iworkidx.ifix2;
-            result["istop"] = iworkidx.istop;
-            result["nnzw"] = iworkidx.nnzw;
-            result["npp"] = iworkidx.npp;
-            result["idf"] = iworkidx.idf;
-            result["job"] = iworkidx.job;
-            result["iprin"] = iworkidx.iprin;
-            result["luner"] = iworkidx.luner;
-            result["lunrp"] = iworkidx.lunrp;
-            result["nrow"] = iworkidx.nrow;
-            result["ntol"] = iworkidx.ntol;
-            result["neta"] = iworkidx.neta;
-            result["maxit"] = iworkidx.maxit;
-            result["niter"] = iworkidx.niter;
-            result["nfev"] = iworkidx.nfev;
-            result["njev"] = iworkidx.njev;
-            result["int2"] = iworkidx.int2;
-            result["irank"] = iworkidx.irank;
-            result["ldtt"] = iworkidx.ldtt;
-            result["bound"] = iworkidx.bound;
-            result["liwkmn"] = iworkidx.liwkmn;
+            result["msgb"] = iwi.msgb;
+            result["msgd"] = iwi.msgd;
+            result["ifix2"] = iwi.ifix2;
+            result["istop"] = iwi.istop;
+            result["nnzw"] = iwi.nnzw;
+            result["npp"] = iwi.npp;
+            result["idf"] = iwi.idf;
+            result["job"] = iwi.job;
+            result["iprin"] = iwi.iprin;
+            result["luner"] = iwi.luner;
+            result["lunrp"] = iwi.lunrp;
+            result["nrow"] = iwi.nrow;
+            result["ntol"] = iwi.ntol;
+            result["neta"] = iwi.neta;
+            result["maxit"] = iwi.maxit;
+            result["niter"] = iwi.niter;
+            result["nfev"] = iwi.nfev;
+            result["njev"] = iwi.njev;
+            result["int2"] = iwi.int2;
+            result["irank"] = iwi.irank;
+            result["ldtt"] = iwi.ldtt;
+            result["bound"] = iwi.bound;
+            result["liwkmn"] = iwi.liwkmn;
             return result;
         },
         R"doc(
@@ -436,77 +433,77 @@ Parameters
 ----------
 m : int
     Number of columns of data in the explanatory variable.
+q : int
+    Number of responses per observation.
 npar : int
     Number of function parameters.
-nq : int
-    Number of responses per observation.
 
 Returns
 -------
 dict[str, int]
     A dictionary containing the 0-based indexes of the integer work array.
 )doc",
-        nb::arg("m"), nb::arg("npar"), nb::arg("nq"));
+        nb::arg("m"), nb::arg("q"), nb::arg("npar"));
 
     // Get storage locations within the real work space
     m.def(
-        "dwinf",
-        [](int n, int m, int npar, int nq, int ldwe, int ld2we, bool isodr) {
-            workidx_t workidx = {};
-            dwinf_c(&n, &m, &npar, &nq, &ldwe, &ld2we, &isodr, &workidx);
+        "loc_rwork",
+        [](int n, int m, int q, int npar, int ldwe, int ld2we, bool isodr) {
+            rworkidx_t rwi = {};
+            loc_rwork_c(&n, &m, &q, &npar, &ldwe, &ld2we, &isodr, &rwi);
             std::map<std::string, int> result;
-            result["delta"] = workidx.delta;
-            result["eps"] = workidx.eps;
-            result["xplus"] = workidx.xplus;
-            result["fn"] = workidx.fn;
-            result["sd"] = workidx.sd;
-            result["vcv"] = workidx.vcv;
-            result["rvar"] = workidx.rvar;
-            result["wss"] = workidx.wss;
-            result["wssde"] = workidx.wssde;
-            result["wssep"] = workidx.wssep;
-            result["rcond"] = workidx.rcond;
-            result["eta"] = workidx.eta;
-            result["olmav"] = workidx.olmav;
-            result["tau"] = workidx.tau;
-            result["alpha"] = workidx.alpha;
-            result["actrs"] = workidx.actrs;
-            result["pnorm"] = workidx.pnorm;
-            result["rnors"] = workidx.rnors;
-            result["prers"] = workidx.prers;
-            result["partl"] = workidx.partl;
-            result["sstol"] = workidx.sstol;
-            result["taufc"] = workidx.taufc;
-            result["epsma"] = workidx.epsma;
-            result["beta0"] = workidx.beta0;
-            result["betac"] = workidx.betac;
-            result["betas"] = workidx.betas;
-            result["betan"] = workidx.betan;
-            result["s"] = workidx.s;
-            result["ss"] = workidx.ss;
-            result["ssf"] = workidx.ssf;
-            result["qraux"] = workidx.qraux;
-            result["u"] = workidx.u;
-            result["fs"] = workidx.fs;
-            result["fjacb"] = workidx.fjacb;
-            result["we1"] = workidx.we1;
-            result["diff"] = workidx.diff;
-            result["delts"] = workidx.delts;
-            result["deltn"] = workidx.deltn;
-            result["t"] = workidx.t;
-            result["tt"] = workidx.tt;
-            result["omega"] = workidx.omega;
-            result["fjacd"] = workidx.fjacd;
-            result["wrk1"] = workidx.wrk1;
-            result["wrk2"] = workidx.wrk2;
-            result["wrk3"] = workidx.wrk3;
-            result["wrk4"] = workidx.wrk4;
-            result["wrk5"] = workidx.wrk5;
-            result["wrk6"] = workidx.wrk6;
-            result["wrk7"] = workidx.wrk7;
-            result["lower"] = workidx.lower;
-            result["upper"] = workidx.upper;
-            result["lwkmn"] = workidx.lwkmn;
+            result["delta"] = rwi.delta;
+            result["eps"] = rwi.eps;
+            result["xplus"] = rwi.xplus;
+            result["fn"] = rwi.fn;
+            result["sd"] = rwi.sd;
+            result["vcv"] = rwi.vcv;
+            result["rvar"] = rwi.rvar;
+            result["wss"] = rwi.wss;
+            result["wssde"] = rwi.wssde;
+            result["wssep"] = rwi.wssep;
+            result["rcond"] = rwi.rcond;
+            result["eta"] = rwi.eta;
+            result["olmav"] = rwi.olmav;
+            result["tau"] = rwi.tau;
+            result["alpha"] = rwi.alpha;
+            result["actrs"] = rwi.actrs;
+            result["pnorm"] = rwi.pnorm;
+            result["rnors"] = rwi.rnors;
+            result["prers"] = rwi.prers;
+            result["partl"] = rwi.partl;
+            result["sstol"] = rwi.sstol;
+            result["taufc"] = rwi.taufc;
+            result["epsma"] = rwi.epsma;
+            result["beta0"] = rwi.beta0;
+            result["betac"] = rwi.betac;
+            result["betas"] = rwi.betas;
+            result["betan"] = rwi.betan;
+            result["s"] = rwi.s;
+            result["ss"] = rwi.ss;
+            result["ssf"] = rwi.ssf;
+            result["qraux"] = rwi.qraux;
+            result["u"] = rwi.u;
+            result["fs"] = rwi.fs;
+            result["fjacb"] = rwi.fjacb;
+            result["we1"] = rwi.we1;
+            result["diff"] = rwi.diff;
+            result["delts"] = rwi.delts;
+            result["deltn"] = rwi.deltn;
+            result["t"] = rwi.t;
+            result["tt"] = rwi.tt;
+            result["omega"] = rwi.omega;
+            result["fjacd"] = rwi.fjacd;
+            result["wrk1"] = rwi.wrk1;
+            result["wrk2"] = rwi.wrk2;
+            result["wrk3"] = rwi.wrk3;
+            result["wrk4"] = rwi.wrk4;
+            result["wrk5"] = rwi.wrk5;
+            result["wrk6"] = rwi.wrk6;
+            result["wrk7"] = rwi.wrk7;
+            result["lower"] = rwi.lower;
+            result["upper"] = rwi.upper;
+            result["lrwkmn"] = rwi.lrwkmn;
             return result;
         },
         R"doc(
@@ -518,10 +515,10 @@ n : int
     Number of observations.
 m : int
     Number of columns of data in the explanatory variable.
+q : int
+    Number of responses per observation.
 npar : int
     Number of function parameters.
-nq : int
-    Number of responses per observation.
 ldwe : int
     Leading dimension of the `we` array.
 ld2we : int
@@ -534,6 +531,6 @@ Returns
 dict[str, int]
     A dictionary containing the 0-based indexes of the real work array.
     )doc",
-        nb::arg("n"), nb::arg("m"), nb::arg("npar"), nb::arg("nq"),
+        nb::arg("n"), nb::arg("m"), nb::arg("q"), nb::arg("npar"),
         nb::arg("ldwe"), nb::arg("ld2we"), nb::arg("isodr"));
 }

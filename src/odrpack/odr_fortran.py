@@ -1,9 +1,10 @@
+import warnings
 from typing import Callable
 
 import numpy as np
 from numpy.typing import NDArray
 
-from odrpack.__odrpack import diwinf, dwinf
+from odrpack.__odrpack import loc_iwork, loc_rwork
 from odrpack.__odrpack import odr as _odr
 from odrpack.__odrpack import workspace_dimensions
 from odrpack.result import OdrResult
@@ -40,7 +41,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         stpd: NDArray[np.float64] | None = None,
         sclb: NDArray[np.float64] | None = None,
         scld: NDArray[np.float64] | None = None,
-        work: NDArray[np.float64] | None = None,
+        rwork: NDArray[np.float64] | None = None,
         iwork: NDArray[np.int32] | None = None,
         ) -> OdrResult:
     r"""Solve a weighted orthogonal distance regression (ODR) problem, also
@@ -56,7 +57,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         within the bounds specified by arguments `lower` and `upper` (if they are
         specified).
     y : NDArray[np.float64]
-        Array of shape `(n,)` or `(nq, n)` containing the values of the response
+        Array of shape `(n,)` or `(q, n)` containing the values of the response
         variable(s). When the model is explicit, the user must specify a value
         for each element of `y`. If some responses of some observations are
         actually missing, then the user can set the corresponding weight in
@@ -69,13 +70,13 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
     we : float | NDArray[np.float64] | None
         Scalar or array specifying how the errors on `y` are to be weighted.
         If `we` is a scalar, then it is used for all data points. If `we` is
-        an array of shape `(n,)` and `nq==1`, then `we[i]` represents the weight
-        for `y[i]`. If `we` is an array of shape `(nq)`, then it represents the
+        an array of shape `(n,)` and `q==1`, then `we[i]` represents the weight
+        for `y[i]`. If `we` is an array of shape `(q)`, then it represents the
         diagonal of the covariant weighting matrix for all data points. If `we`
-        is an array of shape `(nq, nq)`, then it represents the full covariant
+        is an array of shape `(q, q)`, then it represents the full covariant
         weighting matrix for all data points. If `we` is an array of shape
-        `(nq, n)`, then `we[:, i]` represents the diagonal of the covariant
-        weighting matrix for `y[:, i]`. If `we` is an array of shape `(nq, nq, n)`,
+        `(q, n)`, then `we[:, i]` represents the diagonal of the covariant
+        weighting matrix for `y[:, i]`. If `we` is an array of shape `(q, q, n)`,
         then `we[:, :, i]` represents the full covariant weighting matrix for
         `y[:, i]`. For a comprehensive description of the options, refer to page
         25 of the ODRPACK95 guide. By default, `we` is set to one for all `y`
@@ -97,13 +98,13 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
     fjacb : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
         Jacobian of the function to be fitted with respect to `beta`, with the
         signature `fjacb(beta, x)`. It must return an array with shape 
-        `(n, npar, nq)` or compatible. To activate this option, `job` must be
+        `(n, npar, q)` or compatible. To activate this option, `job` must be
         set accordingly. By default, the Jacobian is evaluated numerically
         according to the finite difference scheme defined in `job`.
     fjacd : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
         Jacobian of the function to be fitted with respect to `delta`, with the
         signature `fjacd(beta, x)`. It must return an array with shape 
-        `(n, m, nq)` or compatible. To activate this option, `job` must be
+        `(n, m, q)` or compatible. To activate this option, `job` must be
         set accordingly. By default, the Jacobian is evaluated numerically
         according to the finite difference scheme defined in `job`.
     ifixb : NDArray[np.int32] | None
@@ -139,7 +140,8 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         forward finite difference, and covariance matrix computed using Jacobian
         matrices recomputed at the final solution. Another common option is 20,
         corresponding to an explicit orthogonal distance regression with 
-        user-supplied jacobians `fjacb` and `fjacd`. To initialize `delta0` with
+        user-supplied jacobians `fjacb` and `fjacd`. For an implicit orthogonal
+        distance regression, `job` must be set to 1. To initialize `delta0` with
         the user supplied values, the 4th digit of `job` must be set to 1, e.g.
         1000. To restart a previous run, the 5th digit of `job` must be set to
         1, e.g. 10000. For a comprehensive description of the options, refer to
@@ -211,7 +213,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         should not be confused with the weighting matrices `we` and `wd`. By
         default, `scld` is set internally based on the relative magnitudes of
         `x`. For further details, refer to pages 32 and 85 of the ODRPACK95 guide.
-    work : NDArray[np.float64] | None
+    rwork : NDArray[np.float64] | None
         Array containing the real-valued internal state of the odrpack solver.
         It is only required for a restart (see `job`), in which case it must be
         set to the state of the previous run.
@@ -254,6 +256,13 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
     array([1.63337057, 0.9       ])
     """
 
+    # Future deprecation warning
+    warnings.warn(
+        "This function is deprecated and will be removed in a future version. "
+        "Please use `odr_fit` instead",
+        FutureWarning
+    )
+
     # Interpret job
     is_odr = _get_digit(job, 1) < 2
     has_jac = _get_digit(job, 2) > 1
@@ -270,12 +279,12 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
             f"`x` must be a rank-1 array of shape `(n,)` or a rank-2 array of shape `(m, n)`, but has shape {x.shape}.")
 
     if y.ndim == 1:
-        nq = 1
+        q = 1
     elif y.ndim == 2:
-        nq = y.shape[0]
+        q = y.shape[0]
     else:
         raise ValueError(
-            f"`y` must be a rank-1 array of shape `(n,)` or a rank-2 array of shape `(nq, n)`, but has shape {y.shape}.")
+            f"`y` must be a rank-1 array of shape `(n,)` or a rank-2 array of shape `(q, n)`, but has shape {y.shape}.")
 
     if x.shape[-1] == y.shape[-1]:
         n = x.shape[-1]
@@ -318,7 +327,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
             raise ValueError("`delta0` must have the same shape as `x`.")
         delta = delta0.copy()
     elif not has_delta0 and delta0 is None:
-        delta = np.zeros_like(x)
+        delta = np.zeros(x.shape, dtype=np.float64)
     else:
         raise ValueError("Inconsistent arguments for `job` and `delta0`.")
 
@@ -372,23 +381,23 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         if isinstance(we, (float, int)):
             ldwe = 1
             ld2we = 1
-            we = np.full((nq,), we, dtype=np.float64)
+            we = np.full((q,), we, dtype=np.float64)
         elif isinstance(we, np.ndarray):
-            if we.shape == (nq,):
+            if we.shape == (q,):
                 ldwe = 1
                 ld2we = 1
-            elif we.shape == (nq, nq):
+            elif we.shape == (q, q):
                 ldwe = 1
-                ld2we = nq
-            elif we.shape == (nq, n) or (we.shape == (n,) and nq == 1):
+                ld2we = q
+            elif we.shape == (q, n) or (we.shape == (n,) and q == 1):
                 ldwe = n
                 ld2we = 1
-            elif we.shape in ((nq, 1, 1), (nq, 1, n), (nq, nq, 1), (nq, nq, n)):
+            elif we.shape in ((q, 1, 1), (q, 1, n), (q, q, 1), (q, q, n)):
                 ldwe = we.shape[2]
                 ld2we = we.shape[1]
             else:
                 raise ValueError(
-                    r"`we` must be a array of shape `(nq,)`, `(n,)`, `(nq, nq)`, `(nq, n)`, `(nq, 1, 1)`, `(nq, 1, n)`, `(nq, nq, 1)`, or `(nq, nq, n)`. See page 25 of the ODRPACK95 User Guide.")
+                    r"`we` must be a array of shape `(q,)`, `(n,)`, `(q, q)`, `(q, n)`, `(q, 1, 1)`, `(q, 1, n)`, `(q, q, 1)`, or `(q, q, n)`. See page 25 of the ODRPACK95 User Guide.")
         else:
             raise TypeError("`we` must be a float or an array.")
     else:
@@ -433,9 +442,9 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
 
     if has_jac and fjacb is not None:
         fjacb0 = fjacb(beta0, x)
-        if fjacb0.shape[-1] != n or fjacb0.size != n*npar*nq:
+        if fjacb0.shape[-1] != n or fjacb0.size != n*npar*q:
             raise ValueError(
-                "Function `fjacb` must return an array with shape `(n, npar, nq)` or compatible.")
+                "Function `fjacb` must return an array with shape `(n, npar, q)` or compatible.")
     elif not has_jac and fjacb is None:
         fjacb = fdummy
     else:
@@ -443,21 +452,21 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
 
     if has_jac and fjacd is not None:
         fjacd0 = fjacd(beta0, x)
-        if fjacd0.shape[-1] != n or fjacd0.size != n*m*nq:
+        if fjacd0.shape[-1] != n or fjacd0.size != n*m*q:
             raise ValueError(
-                "Function `fjacd` must return an array with shape `(n, m, nq)` or compatible.")
+                "Function `fjacd` must return an array with shape `(n, m, q)` or compatible.")
     elif not has_jac and fjacd is None:
         fjacd = fdummy
     else:
         raise ValueError("Inconsistent arguments for `job` and `fjacd`.")
 
     # Check/allocate work arrays
-    lwork, liwork = workspace_dimensions(n, m, npar, nq, is_odr)
-    if (not is_restart) and (work is None) and (iwork is None):
-        work = np.zeros(lwork, dtype=np.float64)
+    lwork, liwork = workspace_dimensions(n, m, q, npar, is_odr)
+    if (not is_restart) and (rwork is None) and (iwork is None):
+        rwork = np.zeros(lwork, dtype=np.float64)
         iwork = np.zeros(liwork, dtype=np.int32)
-    elif is_restart and (work is not None) and (iwork is not None):
-        if work.size != lwork:
+    elif is_restart and (rwork is not None) and (iwork is not None):
+        if rwork.size != lwork:
             raise ValueError(
                 "Work array `work` does not have the correct length.")
         if iwork.size != liwork:
@@ -469,7 +478,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
 
     # Call the ODRPACK95 routine
     # Note: beta, delta, work, and iwork are modified in place
-    info = _odr(n=n, m=m, npar=npar, nq=nq,
+    info = _odr(n=n, m=m, q=q, npar=npar,
                 ldwe=ldwe, ld2we=ld2we,
                 ldwd=ldwd, ld2wd=ld2wd,
                 ldifx=ldifx,
@@ -479,27 +488,27 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
                 delta=delta,
                 we=we, wd=wd, ifixb=ifixb, ifixx=ifixx,
                 lower=lower, upper=upper,
-                work=work, iwork=iwork,
+                rwork=rwork, iwork=iwork,
                 job=job,
                 ndigit=ndigit, taufac=taufac, sstol=sstol, partol=partol, maxit=maxit,
                 iprint=iprint, errfile=errfile, rptfile=rptfile
                 )
 
     # Indexes of integer and real work arrays
-    iwork_idx: dict[str, int] = diwinf(m, npar, nq)
-    work_idx: dict[str, int] = dwinf(n, m, npar, nq, ldwe, ld2we, is_odr)
+    iwork_idx: dict[str, int] = loc_iwork(m, q, npar)
+    rwork_idx: dict[str, int] = loc_rwork(n, m, q, npar, ldwe, ld2we, is_odr)
 
     # Return the result
     # Extract results without messing up the original work arrays
-    i0_eps = work_idx['eps']
-    eps = work[i0_eps:i0_eps+y.size].copy()
+    i0_eps = rwork_idx['eps']
+    eps = rwork[i0_eps:i0_eps+y.size].copy()
     eps = np.reshape(eps, y.shape)
 
-    i0_sd = work_idx['sd']
-    sd_beta = work[i0_sd:i0_sd+beta.size].copy()
+    i0_sd = rwork_idx['sd']
+    sd_beta = rwork[i0_sd:i0_sd+beta.size].copy()
 
-    i0_vcv = work_idx['vcv']
-    cov_beta = work[i0_vcv:i0_vcv+beta.size**2].copy()
+    i0_vcv = rwork_idx['vcv']
+    cov_beta = rwork[i0_vcv:i0_vcv+beta.size**2].copy()
     cov_beta = np.reshape(cov_beta, (beta.size, beta.size))
 
     result = OdrResult(
@@ -510,41 +519,24 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         yest=y+eps,
         sd_beta=sd_beta,
         cov_beta=cov_beta,
-        res_var=work[work_idx['rvar']],
+        res_var=rwork[rwork_idx['rvar']],
         info=info,
-        stopreason=_interpret_info(info),
         success=info < 4,
         nfev=iwork[iwork_idx['nfev']],
         njev=iwork[iwork_idx['njev']],
         niter=iwork[iwork_idx['niter']],
         irank=iwork[iwork_idx['irank']],
-        inv_condnum=work[work_idx['rcond']],
-        sum_square=work[work_idx['wss']],
-        sum_square_delta=work[work_idx['wssde']],
-        sum_square_eps=work[work_idx['wssep']],
+        inv_condnum=rwork[rwork_idx['rcond']],
+        sum_square=rwork[rwork_idx['wss']],
+        sum_square_delta=rwork[rwork_idx['wssde']],
+        sum_square_eps=rwork[rwork_idx['wssep']],
         iwork=iwork,
-        work=work,
+        rwork=rwork,
     )
 
     return result
 
 
 def _get_digit(number: int, ndigit: int) -> int:
-    """Return the `ndigit`-th digit from the right of `number`."""
+    """Return the n-th digit from the right of `number`."""
     return (number // 10**(ndigit-1)) % 10
-
-
-def _interpret_info(info: int) -> str:
-    """Return a message corresponding to the value of `info`."""
-    message = ""
-    if info == 1:
-        message = "Sum of squares convergence."
-    elif info == 2:
-        message = "Parameter convergence."
-    elif info == 3:
-        message = "Sum of squares and parameter convergence."
-    elif info == 4:
-        message = "Iteration limit reached."
-    elif info >= 5:
-        message = "Questionable results or fatal errors detected. See report and error message."
-    return message

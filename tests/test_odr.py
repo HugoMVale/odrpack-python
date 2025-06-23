@@ -1,54 +1,18 @@
 import os
+from copy import deepcopy
 
 import numpy as np
 import pytest
-from copy import deepcopy
 
 from odrpack import odr
-from odrpack.__odrpack import diwinf, dwinf, workspace_dimensions
+from odrpack.__odrpack import loc_rwork
 
 SEED = 1234567890
 
 
-def test_diwinf():
-    res = diwinf(m=10, npar=5, nq=2)
-    assert len(res) == 23
-    assert all(idx >= 0 for idx in res.values())
-
-
-def test_dwinf():
-    res = dwinf(n=10, m=2, npar=5, nq=2, ldwe=1, ld2we=1, isodr=True)
-    assert len(res) == 52
-    assert all(idx >= 0 for idx in res.values())
-
-
-def test_workspace_dimensions():
-    n = 10
-    nq = 2
-    m = 3
-    npar = 5
-    isodr = True
-    dims = workspace_dimensions(n, m, npar, nq, isodr)
-    assert dims == (770, 46)
-    assert dims[1] == 20 + 2*npar + nq*(npar + m)
-
-
-def test_dimension_consistency():
-    n = 11
-    nq = 2
-    m = 3
-    npar = 5
-    for isodr in [True, False]:
-        dims = workspace_dimensions(n, m, npar, nq, isodr)
-        iworkidx = diwinf(m, npar, nq)
-        workidx = dwinf(n, m, npar, nq, ldwe=1, ld2we=1, isodr=isodr)
-        assert dims[0] >= workidx['lwkmn']
-        assert dims[1] >= iworkidx['liwkmn']
-
-
 @pytest.fixture
 def case1():
-    # m=1, nq=1
+    # m=1, q=1
     def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
         return beta[0] + beta[1] * x + beta[2] * x**2 + beta[3] * x**3
 
@@ -64,7 +28,7 @@ def case1():
 
 @pytest.fixture
 def case2():
-    # m=2, nq=1
+    # m=2, q=1
     def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
         return (beta[0] * x[0, :])**3 + x[1, :]**beta[1]
 
@@ -81,7 +45,7 @@ def case2():
 
 @pytest.fixture
 def case3():
-    # m=3, nq=2
+    # m=3, q=2
     def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
         y = np.zeros((2, x.shape[-1]))
         y[0, :] = (beta[0] * x[0, :])**3 + x[1, :]**beta[1] + np.exp(x[2, :]/2)
@@ -340,14 +304,14 @@ def test_we(case1, case3):
     sol = odr(**case1, we=1e10)
     assert np.allclose(sol.eps, np.zeros_like(sol.eps))
 
-    # we (n,) and nq==1
+    # we (n,) and q==1
     we = np.ones_like(case1['y'])
     fix = (4, 7)
     we[fix,] = 1e10
     sol = odr(**case1, we=we)
     assert np.allclose(sol.eps[fix,], np.zeros_like(sol.eps[fix,]), atol=ATOL)
 
-    # we (nq, n)
+    # we (q, n)
     we = np.ones_like(case3['y'])
     fix = (4, 13)
     we[:, fix,] = 1e10
@@ -356,13 +320,13 @@ def test_we(case1, case3):
     assert np.allclose(sol.eps[:, fix,], np.zeros((sol.eps.shape[0], len(fix))),
                        atol=ATOL)
 
-    # we (nq, 1, n)
+    # we (q, 1, n)
     we = np.expand_dims(we, axis=1)
     sol = odr(**case3, we=we)
     assert np.allclose(sol.delta, sol1.delta)
     assert np.allclose(sol.eps, sol1.eps)
 
-    # we (nq,)
+    # we (q,)
     we = np.ones(case3['y'].shape[0])
     fix = (1,)
     we[fix,] = 1e10
@@ -371,15 +335,15 @@ def test_we(case1, case3):
     assert np.allclose(sol.eps[fix, :], np.zeros((len(fix), sol.eps.shape[-1])),
                        atol=ATOL)
 
-    # we (nq, 1, 1)
+    # we (q, 1, 1)
     we = we[..., np.newaxis, np.newaxis]
     sol = odr(**case3, we=we)
     assert np.allclose(sol.delta, sol1.delta)
     assert np.allclose(sol.eps, sol1.eps)
 
-    # we (nq, nq)
-    nq = case3['y'].shape[0]
-    we = np.zeros((nq, nq))
+    # we (q, q)
+    q = case3['y'].shape[0]
+    we = np.zeros((q, q))
     np.fill_diagonal(we, 1.)
     fix = (1,)
     we[fix, fix] = 1e10
@@ -388,13 +352,13 @@ def test_we(case1, case3):
     assert np.allclose(sol.eps[fix, :], np.zeros((len(fix), sol.eps.shape[-1])),
                        atol=ATOL)
 
-    # we (nq, nq, 1)
+    # we (q, q, 1)
     we = we[..., np.newaxis]
     sol = odr(**case3, we=we)
     assert np.allclose(sol.delta, sol1.delta)
     assert np.allclose(sol.eps, sol1.eps)
 
-    # we (nq, nq, n)
+    # we (q, q, n)
     we = np.tile(we, (1, 1, case3['y'].shape[-1]))
     sol = odr(**case3, we=we)
     assert np.allclose(sol.delta, sol1.delta)
@@ -420,20 +384,20 @@ def test_parameters(case1):
     sstol = 0.123
     sol = odr(**case1, sstol=sstol)
     assert sol.info == 1
-    idxwork = dwinf(case1['x'].size, 1, case1['beta0'].size, 1, 1, 1, True)
-    assert np.isclose(sol.work[idxwork['sstol']], sstol)
+    rwork_idx = loc_rwork(case1['x'].size, 1, 1, case1['beta0'].size, 1, 1, True)
+    assert np.isclose(sol.rwork[rwork_idx['sstol']], sstol)
 
     # partol
     partol = 0.456
     sol = odr(**case1, partol=partol)
     assert sol.info == 2
-    assert np.isclose(sol.work[idxwork['partl']], partol)
+    assert np.isclose(sol.rwork[rwork_idx['partl']], partol)
 
     # taufac
     taufac = 0.6969
     sol = odr(**case1, taufac=taufac)
     assert sol.info == 1
-    assert np.isclose(sol.work[idxwork['taufc']], taufac)
+    assert np.isclose(sol.rwork[rwork_idx['taufc']], taufac)
 
 
 def test_restart(case1):
@@ -441,29 +405,31 @@ def test_restart(case1):
     # valid restart
     sol_ref = odr(**case1)
     sol1 = odr(**case1, maxit=2)
-    sol2 = odr(**case1, job=10_000, iwork=sol1.iwork, work=sol1.work)
+    sol2 = odr(**case1, job=10_000, iwork=sol1.iwork, rwork=sol1.rwork)
     assert sol2.info == 1
     assert np.allclose(sol_ref.beta, sol2.beta)
 
     # invalid restarts
     with pytest.raises(ValueError):
-        _ = odr(**case1, iwork=sol1.iwork, work=sol1.work)
+        _ = odr(**case1, iwork=sol1.iwork, rwork=sol1.rwork)
     with pytest.raises(ValueError):
         _ = odr(**case1, job=10_000)
     with pytest.raises(ValueError):
         _ = odr(**case1, job=10_000, iwork=sol1.iwork)
     with pytest.raises(ValueError):
-        _ = odr(**case1, job=10_000, work=sol1.work)
+        _ = odr(**case1, job=10_000, rwork=sol1.rwork)
     with pytest.raises(ValueError):
-        _ = odr(**case1, job=10_000, iwork=sol1.iwork, work=np.ones(10000))
+        _ = odr(**case1, job=10_000, iwork=sol1.iwork, rwork=np.ones(10000))
     with pytest.raises(ValueError):
-        _ = odr(**case1, job=10_000, iwork=np.ones(10000, dtype=np.int32), work=sol1.work)
+        _ = odr(**case1, job=10_000, iwork=np.ones(10000, dtype=np.int32), rwork=sol1.rwork)
 
 
 def test_rptfile_and_errfile(case1):
 
-    # write to report file
     rptfile = 'rtptest.txt'
+    errfile = 'errtest.txt'
+
+    # write to report file
     for iprint, rptsize in zip([0, 1001], [0, 2600]):
         if os.path.isfile(rptfile):
             os.remove(rptfile)
@@ -472,11 +438,9 @@ def test_rptfile_and_errfile(case1):
             and abs(os.path.getsize(rptfile) - rptsize) < 200
 
     # write to error file
-    errfile = 'errtest.txt'
     if os.path.isfile(errfile):
         os.remove(errfile)
-    _ = odr(**case1, iprint=1001,
-            errfile=errfile)
+    _ = odr(**case1, iprint=1001, errfile=errfile)
     assert os.path.isfile(errfile)  # and os.path.getsize(errfile) > 0
 
     # write to report and error file
@@ -484,13 +448,17 @@ def test_rptfile_and_errfile(case1):
         os.remove(rptfile)
     if os.path.isfile(errfile):
         os.remove(errfile)
-    _ = odr(**case1, job=10, iprint=1001,
-            rptfile=rptfile,
-            errfile=errfile)
+    _ = odr(**case1, job=10, iprint=1001, rptfile=rptfile, errfile=errfile)
     assert os.path.isfile(rptfile) and os.path.getsize(rptfile) > 2500
     assert os.path.isfile(errfile)  # and os.path.getsize(errfile) > 0
 
     # I can't get the error file to be written to..
+
+    # Clean up
+    if os.path.isfile(rptfile):
+        os.remove(rptfile)
+    if os.path.isfile(errfile):
+        os.remove(errfile)
 
 
 def test_jacobians():
@@ -554,6 +522,48 @@ def test_jacobians():
     # with correct jacobian, but wrong job
     with pytest.raises(ValueError):
         _ = odr(f, beta0, y, x, job=0, fjacb=fjacb, fjacd=fjacd)
+
+
+def test_implicit_model():
+
+    # model and data are from odrpack's example2
+    beta0 = np.array([-1.0, -3.0, 0.09, 0.02, 0.08])
+    x = [[0.50, -0.12],
+         [1.20, -0.60],
+         [1.60, -1.00],
+         [1.86, -1.40],
+         [2.12, -2.54],
+         [2.36, -3.36],
+         [2.44, -4.00],
+         [2.36, -4.75],
+         [2.06, -5.25],
+         [1.74, -5.64],
+         [1.34, -5.97],
+         [0.90, -6.32],
+         [-0.28, -6.44],
+         [-0.78, -6.44],
+         [-1.36, -6.41],
+         [-1.90, -6.25],
+         [-2.50, -5.88],
+         [-2.88, -5.50],
+         [-3.18, -5.24],
+         [-3.44, -4.86]]
+    x = np.array(x).T
+    y = np.full(x.shape[-1], 0.0)
+
+    def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+        v, h = x
+        return beta[2]*(v-beta[0])**2 + 2*beta[3]*(v-beta[0])*(h-beta[1]) \
+            + beta[4]*(h-beta[1])**2 - 1
+
+    beta_ref = np.array([-9.99380462E-01,
+                         -2.93104890E+00,
+                         8.75730642E-02,
+                         1.62299601E-02,
+                         7.97538109E-02])
+
+    sol = odr(f, beta0, y, x, job=1, wd=1)
+    assert np.allclose(sol.beta, beta_ref)
 
 
 def add_noise(array, noise, seed):

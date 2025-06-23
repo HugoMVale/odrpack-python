@@ -53,7 +53,7 @@ class OdrResult():
         Sum of squared differences between observed and fitted `y` values.
     iwork : NDArray[np.int32]
         Integer workspace array used internally by `odrpack`.
-    work : NDArray[np.float64]
+    rwork : NDArray[np.float64]
         Floating-point workspace array used internally by `odrpack`.
     """
     beta: NDArray[np.float64]
@@ -70,10 +70,24 @@ class OdrResult():
     irank: int
     inv_condnum: float
     info: int
-    stopreason: str
     success: bool
     sum_square: float
     sum_square_delta: float
     sum_square_eps: float
     iwork: NDArray[np.int32]
-    work: NDArray[np.float64]
+    rwork: NDArray[np.float64]
+
+    @property
+    def stopreason(self) -> str:
+        message = ""
+        if self.info == 1:
+            message = "Sum of squares convergence."
+        elif self.info == 2:
+            message = "Parameter convergence."
+        elif self.info == 3:
+            message = "Sum of squares and parameter convergence."
+        elif self.info == 4:
+            message = "Iteration limit reached."
+        elif self.info >= 5:
+            message = "Questionable results or fatal errors detected. See report and error message."
+        return message

@@ -9,8 +9,9 @@ solve the ordinary least squares problem where all of the errors are attributed
 to the observations of the dependent variable.
 """
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
-from odrpack.driver import *
 from odrpack.exceptions import *
+from odrpack.odr_fortran import *
+from odrpack.odr_scipy import *
 from odrpack.result import *
