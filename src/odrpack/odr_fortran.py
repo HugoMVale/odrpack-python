@@ -1,3 +1,4 @@
+import warnings
 from typing import Callable
 
 import numpy as np
@@ -254,6 +255,13 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
     >>> sol.beta
     array([1.63337057, 0.9       ])
     """
+
+    # Future deprecation warning
+    warnings.warn(
+        "This function is deprecated and will be removed in a future version. "
+        "Please use `odr_fit` instead",
+        FutureWarning
+    )
 
     # Interpret job
     is_odr = _get_digit(job, 1) < 2
