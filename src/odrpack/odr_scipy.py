@@ -99,10 +99,10 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         are set to negative and positive infinity, respectively, for all elements
         of `beta`.
     task : Literal['explicit-ODR', 'implicit-ODR', 'OLS']
-        Specifies the regression task to be performed. 'explicit-ODR' solves an
-        orthogonal distance regression problem with an explicit model.
-        'implicit-ODR' handles models defined implicitly. 'OLS' performs ordinary
-        least squares fitting.
+        Specifies the regression task to be performed. `'explicit-ODR'` solves
+        an orthogonal distance regression problem with an explicit model.
+        `'implicit-ODR'` handles models defined implicitly. `'OLS'` performs
+        ordinary least squares fitting.
     fix_beta : NDArray[np.bool] | None
         Array with the same shape as `beta0`, specifying which elements of `beta`
         are to be held fixed. `True` means the parameter is fixed; `False` means
@@ -131,14 +131,14 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         the errors in the explanatory variable. By default, `delta0` is set to
         zero for all elements of `xdata`.
     diff_scheme : Literal['forward', 'central']
-        Finite difference scheme used to approximate the Jacobian when the user
-        does not provide `jac_beta` and `jac_x`. The default method is forward
-        differences. Central differences are generally more accurate but require
-        one additional `f` evaluation per partial derivative.
+        Finite difference scheme used to approximate the Jacobian matrices when
+        the user does not provide `jac_beta` and `jac_x`. The default method is
+        forward differences. Central differences are generally more accurate but
+        require one additional `f` evaluation per partial derivative.
     report : Literal['none', 'short', 'long', 'iteration']
-        Specifies the level of computation reporting. 'none' disables all output.
-        'short' prints a brief initial and final summary. 'long' provides a 
-        detailed initial and final summary. 'iteration' outputs information at
+        Specifies the level of computation reporting. `'none'` disables all output.
+        `'short'` prints a brief initial and final summary. `'long'` provides a 
+        detailed initial and final summary. `'iteration'` outputs information at
         each iteration step in addition to the detailed summaries. This is 
         useful for debugging or monitoring progress.
     maxit : int | None
