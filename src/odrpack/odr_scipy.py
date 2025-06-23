@@ -18,7 +18,8 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
             *,
             weight_x: float | NDArray[np.float64] | None = None,
             weight_y: float | NDArray[np.float64] | None = None,
-            bounds: tuple[NDArray[np.float64], NDArray[np.float64]] | None = None,
+            bounds: tuple[NDArray[np.float64] | None,
+                          NDArray[np.float64] | None] | None = None,
             task: Literal['explicit-ODR', 'implicit-ODR', 'OLS'] = 'explicit-ODR',
             fix_beta: NDArray[np.bool] | None = None,
             fix_x: NDArray[np.bool] | None = None,
@@ -91,7 +92,7 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         comprehensive description of the options, refer to page 25 of the
         ODRPACK95 guide. By default, `weight_y` is set to one for all `ydata`
         points.
-    bounds : tuple[NDArray[np.float64], NDArray[np.float64]] | None
+    bounds : tuple[NDArray[np.float64] | None, NDArray[np.float64] | None] | None
         Tuple of arrays with the same shape as `beta0`, specifying the lower and
         upper bounds of the model parameters. The first array contains the lower
         bounds, and the second contains the upper bounds. By default, the bounds
@@ -270,13 +271,20 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
     # Check p bounds
     if bounds is not None:
         lower, upper = bounds
-        if lower.shape != beta0.shape or upper.shape != beta0.shape:
-            raise ValueError(
-                "The two elements of `bounds` must have the same shape as `beta0`.")
-        if np.any(lower >= beta0):
-            raise ValueError("The lower bound `bounds[0]` must be less than `beta0`.")
-        if np.any(upper <= beta0):
-            raise ValueError("The upper bound `bounds[1]` must be greater than `beta0`.")
+        if lower is not None:
+            if lower.shape != beta0.shape:
+                raise ValueError(
+                    "The lower bound `bounds[0]` must have the same shape as `beta0`.")
+            if np.any(lower >= beta0):
+                raise ValueError(
+                    "The lower bound `bounds[0]` must be less than `beta0`.")
+        if upper is not None:
+            if upper.shape != beta0.shape:
+                raise ValueError(
+                    "The upper bound `bounds[1]` must have the same shape as `beta0`.")
+            if np.any(upper <= beta0):
+                raise ValueError(
+                    "The upper bound `bounds[1]` must be greater than `beta0`.")
     else:
         lower, upper = None, None
 
