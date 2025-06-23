@@ -228,11 +228,10 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
     >>> xdata = np.array([0.982, 1.998, 4.978, 6.01])
     >>> ydata = np.array([2.7, 7.4, 148.0, 403.0])
     >>> beta0 = np.array([2., 0.5])
-    >>> lower = np.array([0., 0.])
-    >>> upper = np.array([10., 0.9])
+    >>> bounds = (np.array([0., 0.]), np.array([10., 0.9]))
     >>> def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
     ...     return beta[0] * np.exp(beta[1]*x)
-    >>> sol = odr_fit(f, xdata, ydata, beta0, bounds=(lower, upper))
+    >>> sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds)
     >>> sol.beta
     array([1.63336897, 0.9       ])
     """
