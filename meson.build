@@ -36,12 +36,12 @@ nanobind_ext = python.extension_module(
 python.install_sources(
   [
   'src/odrpack/__init__.py',
-  'src/odrpack/odrpack_style.py',
-  'src/odrpack/scipy_style.py',
+  'src/odrpack/__odrpack.pyi',
+  'src/odrpack/odr_fortran.py',
+  'src/odrpack/odr_scipy.py',
   'src/odrpack/exceptions.py',
   'src/odrpack/result.py',
   'src/odrpack/py.typed',
-  'src/odrpack/__odrpack.pyi',
   ],
   subdir: 'odrpack'
 )
