@@ -412,6 +412,18 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
             "Function `f` must return an array with the same shape as `ydata`.")
 
     # Check model jacobians
+    if jac_beta is not None:
+        jac0_beta = jac_beta(xdata,  beta0)
+        if jac0_beta.shape[-1] != n or jac0_beta.size != n*npar*q:
+            raise ValueError(
+                "Function `jac_beta` must return an array with shape `(n, npar, q)` or compatible.")
+
+    if jac_x is not None:
+        jac0_x = jac_x(xdata, beta0)
+        if jac0_x.shape[-1] != n or jac0_x.size != n*m*q:
+            raise ValueError(
+                "Function `jac_x` must return an array with shape `(n, m, q)` or compatible.")
+
     def fdummy(x, beta): return np.array([np.nan])  # will never be called
 
     if jac_beta is None and jac_x is None:
@@ -420,17 +432,11 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         jac_x = fdummy
     elif jac_beta is not None and jac_x is not None:
         has_jac = True
-        jac0_beta = jac_beta(xdata,  beta0)
-        if jac0_beta.shape[-1] != n or jac0_beta.size != n*npar*q:
-            raise ValueError(
-                "Function `jac_beta` must return an array with shape `(n, npar, q)` or compatible.")
-        jac0_x = jac_x(xdata, beta0)
-        if jac0_x.shape[-1] != n or jac0_x.size != n*m*q:
-            raise ValueError(
-                "Function `jac_x` must return an array with shape `(n, m, q)` or compatible.")
+    elif jac_beta is not None and jac_x is None and task == 'OLS':
+        has_jac = False
+        jac_x = fdummy
     else:
-        raise ValueError(
-            "Inconsistent arguments for `jac_beta` and `jac_x`. Either both must be provided or none.")
+        raise ValueError("Inconsistent arguments for `jac_beta` and `jac_x`.")
 
     # Set iprint flag
     iprint_mapping = {
