@@ -475,18 +475,24 @@ def test_jacobians():
     beta_ref = np.array([1.63337602, 0.9])
     delta_ref = np.array([-0.36886137, -0.31273038, 0.029287, 0.11031505])
 
-    # without jacobian
+    # ODR without jacobian
     for diff_scheme in ['forward', 'central']:
         sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds,
                       diff_scheme=diff_scheme)
         assert np.allclose(sol.beta, beta_ref, rtol=1e-4)
         assert np.allclose(sol.delta, delta_ref, rtol=1e-3)
 
-    # with jacobian
+    # ODR with jacobian
     sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds,
                   jac_beta=jac_beta, jac_x=jac_x)
     assert np.allclose(sol.beta, beta_ref, rtol=1e-4)
     assert np.allclose(sol.delta, delta_ref, rtol=1e-3)
+
+    # OLS with jacobian
+    sol1 = odr_fit(f, xdata, ydata, beta0, weight_x=1e100)
+    sol2 = odr_fit(f, xdata, ydata, beta0, jac_beta=jac_beta, task='OLS')
+    assert np.allclose(sol2.beta, sol1.beta, rtol=1e-4)
+    assert np.allclose(sol2.delta, np.zeros_like(xdata))
 
     # invalid f shape
     with pytest.raises(ValueError):

@@ -68,7 +68,9 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "strstream": "cpp",
+        "bitset": "cpp"
     },
     "autopep8.args": [
         "--max-line-length=90"

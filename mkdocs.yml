@@ -52,9 +52,9 @@ plugins:
       handlers:
         python:
           paths: [src]
-          import:
-            - https://docs.python.org/3/objects.inv
-            - https://numpy.org/doc/stable/objects.inv
+#          import:
+#            - https://docs.python.org/3/objects.inv
+#            - https://numpy.org/doc/stable/objects.inv
           options:
             modernize_annotations: true
             docstring_section_style: spacy
