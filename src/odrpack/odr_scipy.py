@@ -48,7 +48,7 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
     Parameters
     ----------
     f : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]]
-        Function to be fitted, with the signature `f(beta, x)`. It must return
+        Function to be fitted, with the signature `f(x, beta)`. It must return
         an array with the same shape as `y`.
     xdata : NDArray[np.float64]
         Array of shape `(n,)` or `(m, n)` containing the observed values of the
@@ -117,13 +117,13 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         all `xdata` values are automatically treated as fixed.
     jac_beta : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
         Jacobian of the function to be fitted with respect to `beta`, with the
-        signature `jac_beta(beta, x)`. It must return an array with shape 
+        signature `jac_beta(x, beta)`. It must return an array with shape 
         `(n, npar, q)` or a compatible shape. By default, the Jacobian is
         approximated numerically using the finite difference scheme specified
         by `diff_scheme`.
     jac_x : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
         Jacobian of the function to be fitted with respect to `x`, with the
-        signature `jac_x(beta, x)`. It must return an array with shape 
+        signature `jac_x(x, beta)`. It must return an array with shape 
         `(n, m, q)` or a compatible shape. By default, the Jacobian is approximated
         numerically using the finite difference scheme specified by `diff_scheme`.
     delta0 : NDArray[np.float64] | None
@@ -229,7 +229,7 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
     >>> ydata = np.array([2.7, 7.4, 148.0, 403.0])
     >>> beta0 = np.array([2., 0.5])
     >>> bounds = (np.array([0., 0.]), np.array([10., 0.9]))
-    >>> def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    >>> def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
     ...     return beta[0] * np.exp(beta[1]*x)
     >>> sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds)
     >>> sol.beta
@@ -409,13 +409,13 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         ld2we = 1
 
     # Check model function
-    f0 = f(beta0, xdata)
+    f0 = f(xdata, beta0)
     if f0.shape != ydata.shape:
         raise ValueError(
             "Function `f` must return an array with the same shape as `ydata`.")
 
     # Check model jacobians
-    def fdummy(beta, x): return np.array([np.nan])  # will never be called
+    def fdummy(x, beta): return np.array([np.nan])  # will never be called
 
     if jac_beta is None and jac_x is None:
         has_jac = False
@@ -423,11 +423,11 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         jac_x = fdummy
     elif jac_beta is not None and jac_x is not None:
         has_jac = True
-        jac0_beta = jac_beta(beta0, xdata)
+        jac0_beta = jac_beta(xdata,  beta0)
         if jac0_beta.shape[-1] != n or jac0_beta.size != n*npar*q:
             raise ValueError(
                 "Function `jac_beta` must return an array with shape `(n, npar, q)` or compatible.")
-        jac0_x = jac_x(beta0, xdata)
+        jac0_x = jac_x(xdata, beta0)
         if jac0_x.shape[-1] != n or jac0_x.size != n*m*q:
             raise ValueError(
                 "Function `jac_x` must return an array with shape `(n, m, q)` or compatible.")

@@ -42,19 +42,19 @@ def test_dimension_consistency():
 def test_odr():
     "example5 from odrpack"
 
-    def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return beta[0] * np.exp(beta[1]*x)
 
-    def fjacb(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def fjacb(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         jac = np.zeros((beta.size, x.size))
         jac[0, :] = np.exp(beta[1]*x)
         jac[1, :] = beta[0]*x*np.exp(beta[1]*x)
         return jac
 
-    def fjacd(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def fjacd(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return beta[0] * beta[1] * np.exp(beta[1]*x)
 
-    def fdummy(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def fdummy(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return np.array([42.0])
 
     beta0 = np.array([2., 0.5])
@@ -77,7 +77,7 @@ def test_odr():
                f, fdummy, fdummy, beta, y, x, delta,
                lower=lower, upper=upper, job=0)
     assert info == 1
-    np.allclose(beta, beta_ref)
+    assert np.allclose(beta, beta_ref)
 
     # solution with jacobian
     beta = beta0.copy()

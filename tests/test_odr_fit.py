@@ -19,12 +19,12 @@ def add_noise(array, noise, seed):
 @pytest.fixture
 def case1():
     # m=1, q=1
-    def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return beta[0] + beta[1] * x + beta[2] * x**2 + beta[3] * x**3
 
     beta_star = np.array([1, -2., 0.1, -0.1])
     x = np.linspace(-10., 10., 21)
-    y = f(beta_star, x)
+    y = f(x, beta_star)
 
     x = add_noise(x, 5e-2, SEED)
     y = add_noise(y, 10e-2, SEED)
@@ -35,13 +35,13 @@ def case1():
 @pytest.fixture
 def case2():
     # m=2, q=1
-    def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return (beta[0] * x[0, :])**3 + x[1, :]**beta[1]
 
     beta_star = np.array([2., 2.])
     x1 = np.linspace(-10., 10., 41)
     x = np.vstack((x1, 10+x1/2))
-    y = f(beta_star, x)
+    y = f(x, beta_star)
 
     x = add_noise(x, 5e-2, SEED)
     y = add_noise(y, 10e-2, SEED)
@@ -52,7 +52,7 @@ def case2():
 @pytest.fixture
 def case3():
     # m=3, q=2
-    def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         y = np.zeros((2, x.shape[-1]))
         y[0, :] = (beta[0] * x[0, :])**3 + x[1, :]**beta[1] + np.exp(x[2, :]/2)
         y[1, :] = (beta[2] * x[0, :])**2 + x[1, :]**beta[1]
@@ -61,7 +61,7 @@ def case3():
     beta_star = np.array([1., 2., 3.])
     x1 = np.linspace(-1., 1., 31)
     x = np.vstack((x1, np.exp(x1), x1**2))
-    y = f(beta_star, x)
+    y = f(x, beta_star)
 
     x = add_noise(x, 5e-2, SEED)
     y = add_noise(y, 10e-2, SEED)
@@ -460,16 +460,16 @@ def test_jacobians():
     beta0 = np.array([2., 0.5])
     bounds = (np.array([0., 0.]), np.array([10., 0.9]))
 
-    def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return beta[0] * np.exp(beta[1]*x)
 
-    def jac_beta(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def jac_beta(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         jac = np.zeros((beta.size, x.size))
         jac[0, :] = np.exp(beta[1]*x)
         jac[1, :] = beta[0]*x*np.exp(beta[1]*x)
         return jac
 
-    def jac_x(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def jac_x(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return beta[0] * beta[1] * np.exp(beta[1]*x)
 
     beta_ref = np.array([1.63337602, 0.9])
@@ -539,7 +539,7 @@ def test_implicit_model():
     xdata = np.array(x).T
     ydata = np.full(xdata.shape[-1], 0.0)
 
-    def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         v, h = x
         return beta[2]*(v-beta[0])**2 + 2*beta[3]*(v-beta[0])*(h-beta[1]) \
             + beta[4]*(h-beta[1])**2 - 1

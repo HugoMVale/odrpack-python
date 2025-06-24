@@ -147,7 +147,7 @@ int odr_wrapper(int n,
         try {
             // Evaluate model function
             if (*ideval % 10 > 0) {
-                auto f_object = fcn_f_holder(beta_ndarray, xplusd_ndarray);
+                auto f_object = fcn_f_holder(xplusd_ndarray, beta_ndarray);
                 auto f_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(f_object);
                 auto f_ndarray_ptr = f_ndarray.data();
                 for (auto i = 0; i < (*q) * (*n); i++) {
@@ -157,7 +157,7 @@ int odr_wrapper(int n,
 
             // Model partial derivatives wrt `beta`
             if ((*ideval / 10) % 10 != 0) {
-                auto fjacb_object = fcn_fjacb_holder(beta_ndarray, xplusd_ndarray);
+                auto fjacb_object = fcn_fjacb_holder(xplusd_ndarray, beta_ndarray);
                 auto fjacb_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacb_object);
                 auto fjacb_ndarray_ptr = fjacb_ndarray.data();
                 for (auto i = 0; i < (*q) * (*npar) * (*n); i++) {
@@ -167,7 +167,7 @@ int odr_wrapper(int n,
 
             // Model partial derivatives wrt `delta`
             if ((*ideval / 100) % 10 != 0) {
-                auto fjacd_object = fcn_fjacd_holder(beta_ndarray, xplusd_ndarray);
+                auto fjacd_object = fcn_fjacd_holder(xplusd_ndarray, beta_ndarray);
                 auto fjacd_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacd_object);
                 auto fjacd_ndarray_ptr = fjacd_ndarray.data();
                 for (auto i = 0; i < (*q) * (*npar) * (*n); i++) {
@@ -261,13 +261,13 @@ ldstpd : int
 ldscld : int
     Leading dimension of the `scld` array, must be in `{1, n}`.
 f : Callable
-    User-supplied function for evaluating the model, `f(beta, x)`.
+    User-supplied function for evaluating the model, `f(x, beta)`.
 fjacb : Callable
     User-supplied function for evaluating the Jacobian w.r.t. `beta`,
-    `fjacb(beta, x)`.
+    `fjacb(x, beta)`.
 fjacd : Callable
     User-supplied function for evaluating the Jacobian w.r.t. `delta`,
-    `fjacd(beta, x)`.
+    `fjacd(x, beta)`.
 beta : np.ndarray[float64]
     Array of function parameters with shape `(npar)`.
 y : np.ndarray[float64]
