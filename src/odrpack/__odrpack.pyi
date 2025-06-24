@@ -79,13 +79,13 @@ def odr(n: int, m: int, q: int, npar: int, ldwe: int, ld2we: int, ldwd: int, ld2
     ldscld : int
         Leading dimension of the `scld` array, must be in `{1, n}`.
     f : Callable
-        User-supplied function for evaluating the model, `f(beta, x)`.
+        User-supplied function for evaluating the model, `f(x, beta)`.
     fjacb : Callable
         User-supplied function for evaluating the Jacobian w.r.t. `beta`,
-        `fjacb(beta, x)`.
+        `fjacb(x, beta)`.
     fjacd : Callable
         User-supplied function for evaluating the Jacobian w.r.t. `delta`,
-        `fjacd(beta, x)`.
+        `fjacd(x, beta)`.
     beta : np.ndarray[float64]
         Array of function parameters with shape `(npar)`.
     y : np.ndarray[float64]

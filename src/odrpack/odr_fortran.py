@@ -253,7 +253,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
     ...     return beta[0] * np.exp(beta[1]*x)
     >>> sol = odr(f, beta0, y, x, lower=lower, upper=upper, iprint=0)
     >>> sol.beta
-    array([1.63337057, 0.9       ])
+    array([1.63336897, 0.9       ])
     """
 
     # Future deprecation warning
@@ -434,29 +434,33 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
 
     # Check model function and jacobians
     f0 = f(beta0, x)
+    def f_(x, beta): return f(beta, x)
+
     if f0.shape != y.shape:
         raise ValueError(
             "Function `f` must return an array with the same shape as `y`.")
 
-    def fdummy(beta, x): return np.array([np.nan])  # will never be called
+    def fdummy(x, beta): return np.array([np.nan])  # will never be called
 
     if has_jac and fjacb is not None:
         fjacb0 = fjacb(beta0, x)
+        def fjacb_(x, beta): return fjacb(beta, x)
         if fjacb0.shape[-1] != n or fjacb0.size != n*npar*q:
             raise ValueError(
                 "Function `fjacb` must return an array with shape `(n, npar, q)` or compatible.")
     elif not has_jac and fjacb is None:
-        fjacb = fdummy
+        fjacb_ = fdummy
     else:
         raise ValueError("Inconsistent arguments for `job` and `fjacb`.")
 
     if has_jac and fjacd is not None:
         fjacd0 = fjacd(beta0, x)
+        def fjacd_(x, beta): return fjacd(beta, x)
         if fjacd0.shape[-1] != n or fjacd0.size != n*m*q:
             raise ValueError(
                 "Function `fjacd` must return an array with shape `(n, m, q)` or compatible.")
     elif not has_jac and fjacd is None:
-        fjacd = fdummy
+        fjacd_ = fdummy
     else:
         raise ValueError("Inconsistent arguments for `job` and `fjacd`.")
 
@@ -483,7 +487,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
                 ldwd=ldwd, ld2wd=ld2wd,
                 ldifx=ldifx,
                 ldstpd=ldstpd, ldscld=ldscld,
-                f=f, fjacb=fjacb, fjacd=fjacd,
+                f=f_, fjacb=fjacb_, fjacd=fjacd_,
                 beta=beta, y=y, x=x,
                 delta=delta,
                 we=we, wd=wd, ifixb=ifixb, ifixx=ifixx,

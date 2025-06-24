@@ -35,27 +35,26 @@ pip install odrpack
 The following example demonstrates a simple use of the package. For more comprehensive examples and explanations, please refer to the [documentation](https://hugomvale.github.io/odrpack-python/) pages.
 
 ```py
-from odrpack import odr
+from odrpack import odr_fit
 import numpy as np
 
-x = np.array([0.982, 1.998, 4.978, 6.01])
-y = np.array([2.7, 7.4, 148.0, 403.0])
+xdata = np.array([0.982, 1.998, 4.978, 6.01])
+ydata = np.array([2.7, 7.4, 148.0, 403.0])
 
 beta0 = np.array([2.0, 0.5])
-lower = np.array([0.0, 0.0])
-upper = np.array([10.0, 0.9])
+bounds = (np.array([0.0, 0.0]), np.array([10.0, 0.9]))
 
 def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
     "Model function."
     return beta[0] * np.exp(beta[1]*x)
 
-sol = odr(f, beta0, y, x, lower=lower, upper=upper, iprint=1001)
+sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds)
 
 print("beta:", sol.beta)
 print("delta:", sol.delta)
 ```
 
 ```sh
-beta: [1.63337057 0.9       ]
-delta: [-0.36885787 -0.31272733  0.02928942  0.11031791]
+beta: [1.63336897 0.9       ]
+delta: [-0.36885696 -0.31272648  0.02929022  0.11031872]
 ```
