@@ -164,6 +164,9 @@ def test_beta0_related(case1):
     with pytest.raises(ValueError):
         # sclb has invalid shape
         _ = odr_fit(**case1, scale_beta=np.array([1., 1., 1., 1., 1.]))
+    with pytest.raises(ValueError):
+        # invalid task
+        _ = odr_fit(**case1, task='invalid')
 
 
 def test_delta0_related(case1, case3):
@@ -516,6 +519,9 @@ def test_jacobians():
     with pytest.raises(ValueError):
         _ = odr_fit(f, xdata, ydata, beta0,
                     jac_beta=jac_beta)
+    # invalid diff_scheme
+    with pytest.raises(ValueError):
+        _ = odr_fit(f, xdata, ydata, beta0, diff_scheme='invalid')
 
 
 def test_implicit_model():
