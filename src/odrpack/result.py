@@ -5,6 +5,10 @@ from numpy.typing import NDArray
 
 __all__ = ['OdrResult']
 
+F64Array = NDArray[np.float64]
+I32Array = NDArray[np.int32]
+BoolArray = NDArray[np.bool]
+
 
 @dataclass(frozen=True)
 class OdrResult():
@@ -13,19 +17,19 @@ class OdrResult():
 
     Attributes
     ----------
-    beta : NDArray[np.float64]
+    beta : F64Array
         Estimated parameters of the model.
-    delta : NDArray[np.float64]
+    delta : F64Array
         Differences between the observed and fitted `x` values.
-    eps : NDArray[np.float64]
+    eps : F64Array
         Differences between the observed and fitted `y` values.
-    xplus : NDArray[np.float64]
+    xplus : F64Array
         Adjusted `x` values after fitting, `x + delta`.
-    yest : NDArray[np.float64]
+    yest : F64Array
         Estimated `y` values corresponding to the fitted model, `y + eps`.
-    sd_beta : NDArray[np.float64]
+    sd_beta : F64Array
         Standard deviations of the estimated parameters.
-    cov_beta : NDArray[np.float64]
+    cov_beta : F64Array
         Covariance matrix of the estimated parameters.
     res_var : float
         Residual variance, indicating the variance of the residuals.
@@ -51,18 +55,18 @@ class OdrResult():
         Sum of squared differences between observed and fitted `x` values.
     sum_square_eps : float
         Sum of squared differences between observed and fitted `y` values.
-    iwork : NDArray[np.int32]
+    iwork : I32Array
         Integer workspace array used internally by `odrpack`.
-    rwork : NDArray[np.float64]
+    rwork : F64Array
         Floating-point workspace array used internally by `odrpack`.
     """
-    beta: NDArray[np.float64]
-    delta: NDArray[np.float64]
-    eps: NDArray[np.float64]
-    xplus: NDArray[np.float64]
-    yest: NDArray[np.float64]
-    sd_beta: NDArray[np.float64]
-    cov_beta: NDArray[np.float64]
+    beta: F64Array
+    delta: F64Array
+    eps: F64Array
+    xplus: F64Array
+    yest: F64Array
+    sd_beta: F64Array
+    cov_beta: F64Array
     res_var: float
     nfev: int
     njev: int
@@ -74,8 +78,8 @@ class OdrResult():
     sum_square: float
     sum_square_delta: float
     sum_square_eps: float
-    iwork: NDArray[np.int32]
-    rwork: NDArray[np.float64]
+    iwork: I32Array
+    rwork: F64Array
 
     @property
     def stopreason(self) -> str:
