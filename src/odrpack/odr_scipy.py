@@ -6,28 +6,25 @@ from numpy.typing import NDArray
 from odrpack.__odrpack import loc_iwork, loc_rwork
 from odrpack.__odrpack import odr as _odr
 from odrpack.__odrpack import workspace_dimensions
-from odrpack.result import OdrResult
+from odrpack.result import OdrResult, F64Array, BoolArray
 
 __all__ = ['odr_fit']
 
 
-def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]],
-            xdata: NDArray[np.float64],
-            ydata: NDArray[np.float64],
-            beta0: NDArray[np.float64],
+def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
+            xdata: F64Array,
+            ydata: F64Array,
+            beta0: F64Array,
             *,
-            weight_x: float | NDArray[np.float64] | None = None,
-            weight_y: float | NDArray[np.float64] | None = None,
-            bounds: tuple[NDArray[np.float64] | None,
-                          NDArray[np.float64] | None] | None = None,
+            weight_x: float | F64Array | None = None,
+            weight_y: float | F64Array | None = None,
+            bounds: tuple[F64Array | None, F64Array | None] | None = None,
             task: Literal['explicit-ODR', 'implicit-ODR', 'OLS'] = 'explicit-ODR',
-            fix_beta: NDArray[np.bool] | None = None,
-            fix_x: NDArray[np.bool] | None = None,
-            jac_beta: Callable[[NDArray[np.float64], NDArray[np.float64]],
-                               NDArray[np.float64]] | None = None,
-            jac_x: Callable[[NDArray[np.float64], NDArray[np.float64]],
-                            NDArray[np.float64]] | None = None,
-            delta0: NDArray[np.float64] | None = None,
+            fix_beta: BoolArray | None = None,
+            fix_x: BoolArray | None = None,
+            jac_beta: Callable[[F64Array, F64Array], F64Array] | None = None,
+            jac_x: Callable[[F64Array, F64Array], F64Array] | None = None,
+            delta0: F64Array | None = None,
             diff_scheme: Literal['forward', 'central'] = 'forward',
             report: Literal['none', 'short', 'long', 'iteration'] = 'none',
             maxit: int = 50,
@@ -35,10 +32,10 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
             taufac: float | None = None,
             sstol: float | None = None,
             partol: float | None = None,
-            step_beta: NDArray[np.float64] | None = None,
-            step_delta: NDArray[np.float64] | None = None,
-            scale_beta: NDArray[np.float64] | None = None,
-            scale_delta: NDArray[np.float64] | None = None,
+            step_beta: F64Array | None = None,
+            step_delta: F64Array | None = None,
+            scale_beta: F64Array | None = None,
+            scale_delta: F64Array | None = None,
             rptfile: str | None = None,
             errfile: str | None = None,
             ) -> OdrResult:
@@ -47,22 +44,22 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
 
     Parameters
     ----------
-    f : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]]
+    f : Callable[[F64Array, F64Array], F64Array]
         Function to be fitted, with the signature `f(x, beta)`. It must return
         an array with the same shape as `y`.
-    xdata : NDArray[np.float64]
+    xdata : F64Array
         Array of shape `(n,)` or `(m, n)` containing the observed values of the
         explanatory variable(s).
-    ydata : NDArray[np.float64]
+    ydata : F64Array
         Array of shape `(n,)` or `(q, n)` containing the observed values of the
         response variable(s). When the model is explicit, `ydata` must contain
         a value for each observation. To ignore specific values (e.g., missing
         data), set the corresponding entry in `weight_y` to zero. When the model
         is implicit, `ydata` is not used (but must be defined).
-    beta0 : NDArray[np.float64]
+    beta0 : F64Array
         Array of shape `(npar,)` with the initial guesses of the model parameters,
         within the optional bounds specified by `bounds`.
-    weight_x : float | NDArray[np.float64] | None
+    weight_x : float | F64Array | None
         Scalar or array specifying how the errors on `xdata` are to be weighted.
         If `weight_x` is a scalar, then it is used for all data points. If
         `weight_x` is an array of shape `(n,)` and `m==1`, then `weight_x[i]`
@@ -77,7 +74,7 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         comprehensive description of the options, refer to page 26 of the
         ODRPACK95 guide. By default, `weight_x` is set to one for all `xdata`
         points.
-    weight_y : float | NDArray[np.float64] | None
+    weight_y : float | F64Array | None
         Scalar or array specifying how the errors on `ydata` are to be weighted.
         If `weight_y` is a scalar, then it is used for all data points. If
         `weight_y` is an array of shape `(n,)` and `q==1`, then `weight_y[i]`
@@ -92,7 +89,7 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         comprehensive description of the options, refer to page 25 of the
         ODRPACK95 guide. By default, `weight_y` is set to one for all `ydata`
         points.
-    bounds : tuple[NDArray[np.float64] | None, NDArray[np.float64] | None] | None
+    bounds : tuple[F64Array | None, F64Array | None] | None
         Tuple of arrays with the same shape as `beta0`, specifying the lower and
         upper bounds of the model parameters. The first array contains the lower
         bounds, and the second contains the upper bounds. By default, the bounds
@@ -103,11 +100,11 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         an orthogonal distance regression problem with an explicit model.
         `'implicit-ODR'` handles models defined implicitly. `'OLS'` performs
         ordinary least squares fitting.
-    fix_beta : NDArray[np.bool] | None
+    fix_beta : BoolArray | None
         Array with the same shape as `beta0`, specifying which elements of `beta`
         are to be held fixed. `True` means the parameter is fixed; `False` means
         it is adjustable. By default, all elements of `beta` are set to `False`.
-    fix_x : NDArray[np.bool] | None
+    fix_x : BoolArray | None
         Array with the same shape as `xdata`, specifying which elements of `xdata`
         are to be held fixed. Alternatively, it can be a rank-1 array of shape
         `(m,)` or `(n,)`, in which case it will be broadcast along the other
@@ -115,18 +112,18 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         By default, in orthogonal distance regression mode, all elements of 
         `fix_x` are set to `False`. In ordinary least squares mode (`task='OLS'`),
         all `xdata` values are automatically treated as fixed.
-    jac_beta : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
+    jac_beta : Callable[[F64Array, F64Array], F64Array] | None
         Jacobian of the function to be fitted with respect to `beta`, with the
         signature `jac_beta(x, beta)`. It must return an array with shape 
         `(n, npar, q)` or a compatible shape. By default, the Jacobian is
         approximated numerically using the finite difference scheme specified
         by `diff_scheme`.
-    jac_x : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
+    jac_x : Callable[[F64Array, F64Array], F64Array] | None
         Jacobian of the function to be fitted with respect to `x`, with the
         signature `jac_x(x, beta)`. It must return an array with shape 
         `(n, m, q)` or a compatible shape. By default, the Jacobian is approximated
         numerically using the finite difference scheme specified by `diff_scheme`.
-    delta0 : NDArray[np.float64] | None
+    delta0 : F64Array | None
         Array with the same shape as `xdata`, containing the initial guesses of 
         the errors in the explanatory variable. By default, `delta0` is set to
         zero for all elements of `xdata`.
@@ -163,14 +160,14 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         explicit, the default value is `eps**(2/3)`, and when the model is
         implicit, the default value is `eps**(1/3)`, where `eps` is the machine
         precision in `float64`.
-    step_beta : NDArray[np.float64] | None
+    step_beta : F64Array | None
         Array with the same shape as `beta0` containing the _relative_ step
         sizes used to compute the finite difference derivatives with respect
         to the model parameters. By default, the step size is set internally 
         based on the value of `ndigit` and the type of finite differences
         specified by `diff_scheme`. For additional details, refer to pages 31
         and 78 of the ODRPACK95 guide.
-    step_delta : NDArray[np.float64] | None
+    step_delta : F64Array | None
         Array with the same shape as `xdata`, containing the _relative_ step 
         sizes used to compute the finite difference derivatives with respect to
         the errors in the explanatory variable. Alternatively, it can be a rank-1
@@ -178,7 +175,7 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         the other axis. By default, step size is set internally based on the value
         of `ndigit` and the type of finite differences specified by `diff_scheme`.
         For additional details, refer to pages 31 and 78 of the ODRPACK95 guide.
-    scale_beta : NDArray[np.float64] | None
+    scale_beta : F64Array | None
         Array with the same shape as `beta0` containing the scale values of the
         model parameters. Scaling is used to improve the numerical stability
         of the regression, but does not affect the problem specification. Scaling
@@ -186,7 +183,7 @@ def odr_fit(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.f
         `weight_y`. By default, the scale is set internally based on the relative
         magnitudes of `beta`. For further details, refer to pages 32 and 84 of
         the ODRPACK95 guide.
-    scale_delta : NDArray[np.float64] | None
+    scale_delta : F64Array | None
         Array with the same shape as `xdata`, containing the scale values of the
         errors in the explanatory variable. Alternatively, it can be a rank-1
         array of shape `(m,)` or `(n,)`, in which case it will be broadcast along

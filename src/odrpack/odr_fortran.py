@@ -7,27 +7,25 @@ from numpy.typing import NDArray
 from odrpack.__odrpack import loc_iwork, loc_rwork
 from odrpack.__odrpack import odr as _odr
 from odrpack.__odrpack import workspace_dimensions
-from odrpack.result import OdrResult
+from odrpack.result import OdrResult, I32Array, F64Array
 
 __all__ = ['odr']
 
 
-def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]],
-        beta0: NDArray[np.float64],
-        y: NDArray[np.float64],
-        x: NDArray[np.float64],
+def odr(f: Callable[[F64Array, F64Array], F64Array],
+        beta0: F64Array,
+        y: F64Array,
+        x: F64Array,
         *,
-        we: float | NDArray[np.float64] | None = None,
-        wd: float | NDArray[np.float64] | None = None,
-        fjacb: Callable[[NDArray[np.float64], NDArray[np.float64]],
-                        NDArray[np.float64]] | None = None,
-        fjacd: Callable[[NDArray[np.float64], NDArray[np.float64]],
-                        NDArray[np.float64]] | None = None,
-        ifixb: NDArray[np.int32] | None = None,
-        ifixx: NDArray[np.int32] | None = None,
-        delta0: NDArray[np.float64] | None = None,
-        lower: NDArray[np.float64] | None = None,
-        upper: NDArray[np.float64] | None = None,
+        we: float | F64Array | None = None,
+        wd: float | F64Array | None = None,
+        fjacb: Callable[[F64Array, F64Array], F64Array] | None = None,
+        fjacd: Callable[[F64Array, F64Array], F64Array] | None = None,
+        ifixb: I32Array | None = None,
+        ifixx: I32Array | None = None,
+        delta0: F64Array | None = None,
+        lower: F64Array | None = None,
+        upper: F64Array | None = None,
         job: int = 0,
         iprint: int | None = 0,
         rptfile: str | None = None,
@@ -37,26 +35,26 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         sstol: float | None = None,
         partol: float | None = None,
         maxit: int | None = None,
-        stpb: NDArray[np.float64] | None = None,
-        stpd: NDArray[np.float64] | None = None,
-        sclb: NDArray[np.float64] | None = None,
-        scld: NDArray[np.float64] | None = None,
-        rwork: NDArray[np.float64] | None = None,
-        iwork: NDArray[np.int32] | None = None,
+        stpb: F64Array | None = None,
+        stpd: F64Array | None = None,
+        sclb: F64Array | None = None,
+        scld: F64Array | None = None,
+        rwork: F64Array | None = None,
+        iwork: I32Array | None = None,
         ) -> OdrResult:
     r"""Solve a weighted orthogonal distance regression (ODR) problem, also
     known as errors-in-variables regression.
 
     Parameters
     ----------
-    f : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]]
+    f : Callable[[F64Array, F64Array], F64Array]
         Function to be fitted, with the signature `f(beta, x)`. It must return
         an array with the same shape as `y`.
-    beta0 : NDArray[np.float64]
+    beta0 : F64Array
         Array of shape `(npar,)` with the initial guesses of the model parameters,
         within the bounds specified by arguments `lower` and `upper` (if they are
         specified).
-    y : NDArray[np.float64]
+    y : F64Array
         Array of shape `(n,)` or `(q, n)` containing the values of the response
         variable(s). When the model is explicit, the user must specify a value
         for each element of `y`. If some responses of some observations are
@@ -64,10 +62,10 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         argument `we` to zero in order to remove the effect of the missing
         observation from the analysis. When the model is implicit, `y` is not
         referenced.
-    x : NDArray[np.float64]
+    x : F64Array
         Array of shape `(n,)` or `(m, n)` containing the values of the explanatory
         variable(s).
-    we : float | NDArray[np.float64] | None
+    we : float | F64Array | None
         Scalar or array specifying how the errors on `y` are to be weighted.
         If `we` is a scalar, then it is used for all data points. If `we` is
         an array of shape `(n,)` and `q==1`, then `we[i]` represents the weight
@@ -81,7 +79,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         `y[:, i]`. For a comprehensive description of the options, refer to page
         25 of the ODRPACK95 guide. By default, `we` is set to one for all `y`
         data points.
-    wd : float | NDArray[np.float64] | None
+    wd : float | F64Array | None
         Scalar or array specifying how the errors on `x` are to be weighted.
         If `wd` is a scalar, then it is used for all data points. If `wd` is
         an array of shape `(n,)` and `m==1`, then `wd[i]` represents the weight
@@ -95,24 +93,24 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         `x[:, i]`. For a comprehensive description of the options, refer to page
         26 of the ODRPACK95 guide. By default, `wd` is set to one for all `x`
         data points.
-    fjacb : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
+    fjacb : Callable[[F64Array, F64Array], F64Array] | None
         Jacobian of the function to be fitted with respect to `beta`, with the
         signature `fjacb(beta, x)`. It must return an array with shape 
         `(n, npar, q)` or compatible. To activate this option, `job` must be
         set accordingly. By default, the Jacobian is evaluated numerically
         according to the finite difference scheme defined in `job`.
-    fjacd : Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
+    fjacd : Callable[[F64Array, F64Array], F64Array] | None
         Jacobian of the function to be fitted with respect to `delta`, with the
         signature `fjacd(beta, x)`. It must return an array with shape 
         `(n, m, q)` or compatible. To activate this option, `job` must be
         set accordingly. By default, the Jacobian is evaluated numerically
         according to the finite difference scheme defined in `job`.
-    ifixb : NDArray[np.int32] | None
+    ifixb : I32Array | None
         Array with the same shape as `beta0`, containing the values designating
         which elements of `beta` are to be held fixed. Zero means the parameter
         is held fixed, and one means it is adjustable. By default, `ifixb` is
         set to one for all elements of `beta`.
-    ifixx : NDArray[np.int32] | None
+    ifixx : I32Array | None
         Array with the same shape as `x`, containing the values designating
         which elements of `x` are to be held fixed. Alternatively, it can be a
         rank-1 array of shape `(m,)` or `(n,)`, in which case it will be broadcast
@@ -120,16 +118,16 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         it is free. By default, in orthogonal distance regression mode, `ifixx`
         is set to one for all elements of `x`. In ordinary least squares mode,
         the `x` values are intrinsically fixed.
-    delta0 : NDArray[np.float64] | None
+    delta0 : F64Array | None
         Array with the same shape as `x`, containing the initial guesses of the
         errors in the explanatory variable. To activate this option, `job` must
         be set accordingly. By default, `delta0` is set to zero for all elements
         of `x`.
-    lower : NDArray[np.float64] | None
+    lower : F64Array | None
         Array with the same shape as `beta0`, containing the lower bounds of the
         model parameters. By default, `lower` is set to negative infinity for
         all elements of `beta`.
-    upper : NDArray[np.float64] | None
+    upper : F64Array | None
         Array with the same shape as `beta0`, containing the upper bounds of the
         model parameters. By default, `upper` is set to positive infinity for
         all elements of `beta`.
@@ -182,13 +180,13 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
     maxit : int | None
         Maximum number of allowed iterations. The default value is 50 for a
         first run and 10 for a restart (see `job`).
-    stpb : NDArray[np.float64] | None
+    stpb : F64Array | None
         Array with the same shape as `beta0` containing the _relative_ step
         sizes used to compute the finite difference derivatives with respect
         to the model parameters. By default, `stpb` is set internally based on
         the value of `ndigit` and the type of finite differences used. For
         additional details, refer to pages 31 and 78 of the ODRPACK95 guide.
-    stpd : NDArray[np.float64] | None
+    stpd : F64Array | None
         Array with the same shape as `x`, containing the _relative_ step sizes
         used to compute the finite difference derivatives with respect to the
         errors in the explanatory variable. Alternatively, it can be a rank-1
@@ -196,7 +194,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         the other axis. By default, `stpd` is set internally based on the value
         of `ndigit` and the type of finite differences used. For additional
         details, refer to pages 31 and 78 of the ODRPACK95 guide.
-    sclb : NDArray[np.float64] | None
+    sclb : F64Array | None
         Array with the same shape as `beta0` containing the scale values of the
         model parameters. Scaling is used to improve the numerical stability
         of the regression, but does not affect the problem specification. Scaling
@@ -204,7 +202,7 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         default, `sclb` is set internally based on the relative magnitudes of 
         `beta`. For further details, refer to pages 32 and 84 of the ODRPACK95
         guide.
-    scld : NDArray[np.float64] | None
+    scld : F64Array | None
         Array with the same shape as `x`, containing the scale values of the
         errors in the explanatory variable. Alternatively, it can be a rank-1
         array of shape `(m,)` or `(n,)`, in which case it will be broadcast along
@@ -213,11 +211,11 @@ def odr(f: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float
         should not be confused with the weighting matrices `we` and `wd`. By
         default, `scld` is set internally based on the relative magnitudes of
         `x`. For further details, refer to pages 32 and 85 of the ODRPACK95 guide.
-    rwork : NDArray[np.float64] | None
+    rwork : F64Array | None
         Array containing the real-valued internal state of the odrpack solver.
         It is only required for a restart (see `job`), in which case it must be
         set to the state of the previous run.
-    iwork : NDArray[np.int32] | None
+    iwork : I32Array | None
         Array containing the integer-valued internal state of the odrpack solver.
         It is only required for a restart (see `job`), in which case it must be
         set to the state of the previous run.
