@@ -29,7 +29,7 @@ dependencies = ['numpy']
 
 [project.urls]
 Repository = "https://github.com/HugoMVale/odrpack-python"
-Documentation = "https://hugovale.github.io/odrpack-python/"
+Documentation = "https://hugomvale.github.io/odrpack-python/"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
