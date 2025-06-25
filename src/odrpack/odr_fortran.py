@@ -257,7 +257,7 @@ def odr(f: Callable[[F64Array, F64Array], F64Array],
     # Future deprecation warning
     warnings.warn(
         "This function is deprecated and will be removed in a future version. "
-        "Please use `odr_fit` instead",
+        "Please use `odr_fit` instead.",
         FutureWarning
     )
 
