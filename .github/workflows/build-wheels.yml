@@ -16,14 +16,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest] #[ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [ubuntu-latest] #[ubuntu-latest, windows-latest, macos-13, macos-14]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: macOS - Set up Fortran
-        if: runner.os == 'macOS' || runner.os == 'windows'
+        if: runner.os == 'macOS' || runner.os == 'linux'
         uses: fortran-lang/setup-fortran@v1
         with:
           version: 13
