@@ -3,9 +3,10 @@ from copy import deepcopy
 
 import numpy as np
 import pytest
+from scipy.optimize import curve_fit
 
+from odrpack import odr_fit
 from odrpack.__odrpack import loc_rwork
-from odrpack.odr_scipy import odr_fit
 
 SEED = 1234567890
 
@@ -572,3 +573,12 @@ def test_ols(case1):
     sol2 = odr_fit(**case1, weight_x=1e100)
     assert np.allclose(sol1.beta, sol2.beta)
     assert np.allclose(sol1.delta, np.zeros_like(sol1.delta))
+
+
+def test_compare_scipy(case1):
+
+    sol1 = odr_fit(**case1, task='OLS')
+    sol2 = curve_fit(lambda x, *b: case1['f'](x, np.array(b)),
+                     case1['xdata'], case1['ydata'], case1['beta0'])
+    print(sol2)
+    assert np.allclose(sol1.beta, sol2[0])
