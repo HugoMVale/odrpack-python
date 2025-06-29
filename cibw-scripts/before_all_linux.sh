@@ -5,9 +5,7 @@ PROJECT_DIR="$1"
 if [ -e /etc/alpine-release ]; then
     # musllinux (Alpine Linux)
     echo "Detected musllinux environment. Installing OpenBLAS using apk..."
-    apk update
-    apk upgrade gcc gfortran
-    apk add --no-cache openblas-dev gfortran
+    apk add --no-cache build-base openblas-dev
 else
     # manylinux (CentOS)
     echo "Detected manylinux environment. Installing OpenBLAS using yum..."
