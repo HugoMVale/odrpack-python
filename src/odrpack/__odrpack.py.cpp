@@ -132,10 +132,9 @@ int odr_wrapper(int n,
 
     // Define the overall user-supplied model function 'fcn'
     odrpack_fcn_t fcn = nullptr;
-    fcn = [](const int *n, const int *m, const int *q, const int *npar, const double beta[],
-             const double xplusd[], const int ifixb[], const int ifixx[],
-             const int *ldifx, const int *ideval, double f[], double fjacb[],
-             double fjacd[], int *istop) {
+    fcn = [](const int *n, const int *m, const int *q, const int *npar, const int *ldifx,
+             const double beta[], const double xplusd[], const int ifixb[], const int ifixx[],
+             const int *ideval, double f[], double fjacb[], double fjacd[], int *istop) {
         // Create NumPy arrays that wrap the input C-style arrays, without copying the data
         nb::ndarray<const double, nb::numpy> beta_ndarray(beta, {static_cast<size_t>(*npar)});
         nb::ndarray<const double, nb::numpy> xplusd_ndarray(
@@ -409,9 +408,9 @@ tuple[int, int]
             result["npp"] = iwi.npp;
             result["idf"] = iwi.idf;
             result["job"] = iwi.job;
-            result["iprin"] = iwi.iprin;
-            result["luner"] = iwi.luner;
-            result["lunrp"] = iwi.lunrp;
+            result["iprint"] = iwi.iprint;
+            result["lunerr"] = iwi.lunerr;
+            result["lunrpt"] = iwi.lunrpt;
             result["nrow"] = iwi.nrow;
             result["ntol"] = iwi.ntol;
             result["neta"] = iwi.neta;
@@ -423,7 +422,7 @@ tuple[int, int]
             result["irank"] = iwi.irank;
             result["ldtt"] = iwi.ldtt;
             result["bound"] = iwi.bound;
-            result["liwkmn"] = iwi.liwkmn;
+            result["liwkmin"] = iwi.liwkmin;
             return result;
         },
         R"doc(
@@ -454,27 +453,27 @@ dict[str, int]
             std::map<std::string, int> result;
             result["delta"] = rwi.delta;
             result["eps"] = rwi.eps;
-            result["xplus"] = rwi.xplus;
+            result["xplusd"] = rwi.xplusd;
             result["fn"] = rwi.fn;
             result["sd"] = rwi.sd;
             result["vcv"] = rwi.vcv;
             result["rvar"] = rwi.rvar;
             result["wss"] = rwi.wss;
-            result["wssde"] = rwi.wssde;
-            result["wssep"] = rwi.wssep;
+            result["wssdel"] = rwi.wssdel;
+            result["wsseps"] = rwi.wsseps;
             result["rcond"] = rwi.rcond;
             result["eta"] = rwi.eta;
-            result["olmav"] = rwi.olmav;
+            result["olmavg"] = rwi.olmavg;
             result["tau"] = rwi.tau;
             result["alpha"] = rwi.alpha;
             result["actrs"] = rwi.actrs;
             result["pnorm"] = rwi.pnorm;
-            result["rnors"] = rwi.rnors;
+            result["rnorms"] = rwi.rnorms;
             result["prers"] = rwi.prers;
-            result["partl"] = rwi.partl;
+            result["partol"] = rwi.partol;
             result["sstol"] = rwi.sstol;
-            result["taufc"] = rwi.taufc;
-            result["epsma"] = rwi.epsma;
+            result["taufac"] = rwi.taufac;
+            result["epsmac"] = rwi.epsmac;
             result["beta0"] = rwi.beta0;
             result["betac"] = rwi.betac;
             result["betas"] = rwi.betas;
@@ -488,8 +487,8 @@ dict[str, int]
             result["fjacb"] = rwi.fjacb;
             result["we1"] = rwi.we1;
             result["diff"] = rwi.diff;
-            result["delts"] = rwi.delts;
-            result["deltn"] = rwi.deltn;
+            result["deltas"] = rwi.deltas;
+            result["deltan"] = rwi.deltan;
             result["t"] = rwi.t;
             result["tt"] = rwi.tt;
             result["omega"] = rwi.omega;
@@ -503,7 +502,7 @@ dict[str, int]
             result["wrk7"] = rwi.wrk7;
             result["lower"] = rwi.lower;
             result["upper"] = rwi.upper;
-            result["lrwkmn"] = rwi.lrwkmn;
+            result["lrwkmin"] = rwi.lrwkmin;
             return result;
         },
         R"doc(

@@ -1,12 +1,11 @@
 from typing import Callable, Literal
 
 import numpy as np
-from numpy.typing import NDArray
 
 from odrpack.__odrpack import loc_iwork, loc_rwork
 from odrpack.__odrpack import odr as _odr
 from odrpack.__odrpack import workspace_dimensions
-from odrpack.result import OdrResult, F64Array, BoolArray
+from odrpack.result import BoolArray, F64Array, OdrResult
 
 __all__ = ['odr_fit']
 
@@ -528,7 +527,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         beta=beta,
         delta=delta,
         eps=eps,
-        xplus=xdata+delta,
+        xplusd=xdata+delta,
         yest=ydata+eps,
         sd_beta=sd_beta,
         cov_beta=cov_beta,
@@ -541,8 +540,8 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         irank=iwork[iwork_idx['irank']],
         inv_condnum=rwork[rwork_idx['rcond']],
         sum_square=rwork[rwork_idx['wss']],
-        sum_square_delta=rwork[rwork_idx['wssde']],
-        sum_square_eps=rwork[rwork_idx['wssep']],
+        sum_square_delta=rwork[rwork_idx['wssdel']],
+        sum_square_eps=rwork[rwork_idx['wsseps']],
         iwork=iwork,
         rwork=rwork,
     )

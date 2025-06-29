@@ -408,13 +408,13 @@ def test_parameters(case1):
     partol = 0.456
     sol = odr_fit(**case1, partol=partol)
     assert sol.info == 2
-    assert np.isclose(sol.rwork[rwork_idx['partl']], partol)
+    assert np.isclose(sol.rwork[rwork_idx['partol']], partol)
 
     # taufac
     taufac = 0.6969
     sol = odr_fit(**case1, taufac=taufac)
     assert sol.info == 1
-    assert np.isclose(sol.rwork[rwork_idx['taufc']], taufac)
+    assert np.isclose(sol.rwork[rwork_idx['taufac']], taufac)
 
 
 def test_rptfile_and_errfile(case1):

@@ -23,7 +23,7 @@ class OdrResult():
         Differences between the observed and fitted `x` values.
     eps : F64Array
         Differences between the observed and fitted `y` values.
-    xplus : F64Array
+    xplusd : F64Array
         Adjusted `x` values after fitting, `x + delta`.
     yest : F64Array
         Estimated `y` values corresponding to the fitted model, `y + eps`.
@@ -63,7 +63,7 @@ class OdrResult():
     beta: F64Array
     delta: F64Array
     eps: F64Array
-    xplus: F64Array
+    xplusd: F64Array
     yest: F64Array
     sd_beta: F64Array
     cov_beta: F64Array

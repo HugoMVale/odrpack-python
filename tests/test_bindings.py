@@ -35,8 +35,8 @@ def test_dimension_consistency():
         dims = workspace_dimensions(n, m, q, npar, isodr)
         iwork_idx = loc_iwork(m, q, npar)
         rwork_idx = loc_rwork(n, m, q, npar, ldwe=1, ld2we=1, isodr=isodr)
-        assert dims[0] >= rwork_idx['lrwkmn']
-        assert dims[1] >= iwork_idx['liwkmn']
+        assert dims[0] >= rwork_idx['lrwkmin']
+        assert dims[1] >= iwork_idx['liwkmin']
 
 
 def test_odr():
