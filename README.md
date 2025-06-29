@@ -44,7 +44,7 @@ ydata = np.array([2.7, 7.4, 148.0, 403.0])
 beta0 = np.array([2.0, 0.5])
 bounds = (np.array([0.0, 0.0]), np.array([10.0, 0.9]))
 
-def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
     "Model function."
     return beta[0] * np.exp(beta[1]*x)
 
