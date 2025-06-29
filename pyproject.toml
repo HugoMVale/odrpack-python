@@ -32,7 +32,7 @@ Repository = "https://github.com/HugoMVale/odrpack-python"
 Documentation = "https://hugomvale.github.io/odrpack-python/"
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov, scipy"]
+test = ["pytest", "pytest-cov", "scipy"]
 docs = [
     "mkdocs-material",
     "mkdocstrings-python",
