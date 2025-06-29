@@ -1,8 +1,7 @@
 import numpy as np
 
-from odrpack import odr
+from odrpack import odr_fit
 
-beta0 = np.array([-1.0, -3.0, 0.09, 0.02, 0.08])
 x = [[0.50, -0.12],
      [1.20, -0.60],
      [1.60, -1.00],
@@ -23,17 +22,20 @@ x = [[0.50, -0.12],
      [-2.88, -5.50],
      [-3.18, -5.24],
      [-3.44, -4.86]]
-x = np.array(x).T
-y = np.full(x.shape[-1], 4.0)
+
+xdata = np.array(x).T
+ydata = np.full(xdata.shape[-1], 0.0)
+
+beta0 = np.array([-1.0, -3.0, 0.09, 0.02, 0.08])
 
 
-def f(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
+def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
     v, h = x
     return beta[2]*(v-beta[0])**2 + 2*beta[3]*(v-beta[0])*(h-beta[1]) \
         + beta[4]*(h-beta[1])**2 - 1
 
 
-sol = odr(f, beta0, y, x, iprint=1001)
+sol = odr_fit(f, xdata, ydata, beta0, task='implicit-ODR')
 
 print("\n beta:", sol.beta)
 print("\n delta:", sol.delta)
