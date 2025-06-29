@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [windows-latest, macos-13, macos-14] # [ubuntu-latest, windows-latest, macos-13, macos-14]
 
     steps:
       - name: Checkout code
@@ -105,23 +105,23 @@ jobs:
           
 #       - uses: pypa/gh-action-pypi-publish@release/v1
 
-  upload_test_pypi:
-    name: Publish to TestPyPI
-    needs: [build_wheels, build_sdist]
-    runs-on: ubuntu-latest
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/odrpack
-    permissions:
-      id-token: write
-    if: ${{ github.event_name == 'workflow_dispatch' }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: cibw-*
-          path: dist
-          merge-multiple: true
+#   upload_test_pypi:
+#     name: Publish to TestPyPI
+#     needs: [build_wheels, build_sdist]
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: testpypi
+#       url: https://test.pypi.org/p/odrpack
+#     permissions:
+#       id-token: write
+#     if: ${{ github.event_name == 'workflow_dispatch' }}
+#     steps:
+#       - uses: actions/download-artifact@v4
+#         with:
+#           pattern: cibw-*
+#           path: dist
+#           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
+#       - uses: pypa/gh-action-pypi-publish@release/v1
+#         with:
+#           repository-url: https://test.pypi.org/legacy/
