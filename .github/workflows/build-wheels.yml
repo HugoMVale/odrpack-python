@@ -87,41 +87,41 @@ jobs:
           name: cibw-sdist
           path: dist/*.tar.gz
 
-#   upload_pypi:
-#     name: Publish to PyPI
-#     needs: [build_wheels, build_sdist]
-#     runs-on: ubuntu-latest
-#     environment:
-#       name: pypi
-#     permissions:
-#       id-token: write
-#     # if: github.event_name == 'release' && github.event.action == 'published'
-#     steps:
-#       - uses: actions/download-artifact@v4
-#         with:
-#           pattern: cibw-*
-#           path: dist
-#           merge-multiple: true
-          
-#       - uses: pypa/gh-action-pypi-publish@release/v1
-
-  upload_test_pypi:
-    name: Publish to TestPyPI
+  upload_pypi:
+    name: Publish to PyPI
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     environment:
-      name: testpypi
-      url: https://test.pypi.org/p/odrpack
+      name: pypi
     permissions:
       id-token: write
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - uses: actions/download-artifact@v4
         with:
           pattern: cibw-*
           path: dist
           merge-multiple: true
-
+          
       - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
+
+#   upload_test_pypi:
+#     name: Publish to TestPyPI
+#     needs: [build_wheels, build_sdist]
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: testpypi
+#       url: https://test.pypi.org/p/odrpack
+#     permissions:
+#       id-token: write
+#     if: ${{ github.event_name == 'workflow_dispatch' }}
+#     steps:
+#       - uses: actions/download-artifact@v4
+#         with:
+#           pattern: cibw-*
+#           path: dist
+#           merge-multiple: true
+
+#       - uses: pypa/gh-action-pypi-publish@release/v1
+#         with:
+#           repository-url: https://test.pypi.org/legacy/
