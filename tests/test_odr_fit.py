@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from scipy.optimize import curve_fit
 
-from odrpack import odr_fit
+from odrpack import OdrStop, odr_fit
 from odrpack.__odrpack import loc_rwork
 
 SEED = 1234567890
@@ -573,6 +573,22 @@ def test_ols(case1):
     sol2 = odr_fit(**case1, weight_x=1e100)
     assert np.allclose(sol1.beta, sol2.beta)
     assert np.allclose(sol1.delta, np.zeros_like(sol1.delta))
+
+
+def test_exception_odrstop():
+
+    # model and data are from odrpack's example5
+    xdata = np.array([1.0, 2.0, 3.0, 4.0])
+    ydata = np.array([1.0, 2.0, 3.0, 4.0])
+    beta0 = np.array([1.0, 1.0])
+
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
+        if beta[0] > 0:
+            raise OdrStop("Oops!")
+        return beta[0] * np.exp(beta[1]*x)
+
+    with pytest.raises(OdrStop):
+        _ = odr_fit(f, xdata, ydata, beta0)
 
 
 def test_compare_scipy(case1):
