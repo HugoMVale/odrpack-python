@@ -56,9 +56,11 @@ class OdrResult():
     sum_square_eps : float
         Sum of squared differences between observed and fitted `y` values.
     iwork : I32Array
-        Integer workspace array used internally by `odrpack`.
+        Integer workspace array used internally by `odrpack`. Typically for
+        advanced debugging.
     rwork : F64Array
-        Floating-point workspace array used internally by `odrpack`.
+        Floating-point workspace array used internally by `odrpack`. Typically
+        for advanced debugging.
     """
     beta: F64Array
     delta: F64Array
