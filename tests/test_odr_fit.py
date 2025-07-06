@@ -588,7 +588,9 @@ def test_exception_odrstop():
         return beta[0] * np.exp(beta[1]*x)
 
     with pytest.raises(OdrStop):
-        _ = odr_fit(f, xdata, ydata, beta0)
+        sol = odr_fit(f, xdata, ydata, beta0)
+        assert not sol.success
+        assert sol.info == 51000
 
 
 def test_compare_scipy(case1):
