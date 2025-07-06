@@ -219,12 +219,12 @@ int odr_wrapper(int n,
     // Close files
     if (rptfile) {
         close_file(&lunrpt, &ierr);
-        if (ierr != 0) std::cerr << "Error closing report file." << std::endl;
+        if (ierr != 0) throw std::runtime_error("Error closing report file.");
     }
 
     if (errfile && lunrpt != lunerr) {
         close_file(&lunerr, &ierr);
-        if (ierr != 0) std::cerr << "Error closing error file." << std::endl;
+        if (ierr != 0) throw std::runtime_error("Error closing error file.");
     }
 
     return info;
