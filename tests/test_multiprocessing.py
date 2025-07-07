@@ -58,11 +58,12 @@ def test_multiple_processes():
     # multiple processes
     pool = Pool()
     num_jobs = 10
-    solutions = pool.starmap(odr_fit, [case1, case2, case3]*num_jobs)
+    cases = [case1, case2, case3]
+    solutions = pool.starmap(odr_fit, cases*num_jobs)
     pool.close()
     pool.join()
 
-    for i in range(0, len(solutions), 3):
+    for i in range(0, len(solutions), len(cases)):
         assert np.allclose(solutions[i].beta, sol1.beta)
         assert np.allclose(solutions[i+1].beta, sol2.beta)
         assert np.allclose(solutions[i+2].beta, sol3.beta)
