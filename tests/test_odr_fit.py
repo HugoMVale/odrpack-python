@@ -3,6 +3,7 @@ from copy import deepcopy
 
 import numpy as np
 import pytest
+from scipy.odr import odr as odrscipy
 from scipy.optimize import curve_fit
 
 from odrpack import OdrStop, odr_fit
@@ -11,15 +12,20 @@ from odrpack.__odrpack import loc_rwork
 SEED = 1234567890
 
 
-def add_noise(array, noise, seed):
+def add_noise(array, noise, seed=SEED):
     """Adds random noise to an array."""
     rng = np.random.default_rng(seed)
     return array*(1 + noise*rng.uniform(-1, 1, size=array.shape))
 
 
+def flipargs(f):
+    """Flips the order of the arguments of a function."""
+    return lambda x, beta: f(beta, x)
+
+
 @pytest.fixture
 def case1():
-    # m=1, q=1
+    "Made up test case with m=1, q=1"
     def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return beta[0] + beta[1] * x + beta[2] * x**2 + beta[3] * x**3
 
@@ -27,15 +33,15 @@ def case1():
     x = np.linspace(-10., 10., 21)
     y = f(x, beta_star)
 
-    x = add_noise(x, 5e-2, SEED)
-    y = add_noise(y, 10e-2, SEED)
+    x = add_noise(x, 5e-2)
+    y = add_noise(y, 10e-2)
 
     return {'xdata': x, 'ydata': y, 'f': f, 'beta0': np.zeros_like(beta_star)}
 
 
 @pytest.fixture
 def case2():
-    # m=2, q=1
+    "Made up test with m=2, q=1"
     def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return (beta[0] * x[0, :])**3 + x[1, :]**beta[1]
 
@@ -44,15 +50,15 @@ def case2():
     x = np.vstack((x1, 10+x1/2))
     y = f(x, beta_star)
 
-    x = add_noise(x, 5e-2, SEED)
-    y = add_noise(y, 10e-2, SEED)
+    x = add_noise(x, 5e-2)
+    y = add_noise(y, 10e-2)
 
-    return {'xdata': x, 'ydata': y, 'f': f, 'beta0': np.array([1., 1.])}
+    return {'xdata': x, 'ydata': y, 'f': f, 'beta0': np.ones_like(beta_star)}
 
 
 @pytest.fixture
 def case3():
-    # m=3, q=2
+    "Made up test case with m=3, q=2"
     def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         y = np.zeros((2, x.shape[-1]))
         y[0, :] = (beta[0] * x[0, :])**3 + x[1, :]**beta[1] + np.exp(x[2, :]/2)
@@ -64,10 +70,79 @@ def case3():
     x = np.vstack((x1, np.exp(x1), x1**2))
     y = f(x, beta_star)
 
-    x = add_noise(x, 5e-2, SEED)
-    y = add_noise(y, 10e-2, SEED)
+    x = add_noise(x, 5e-2)
+    y = add_noise(y, 10e-2)
 
-    return {'xdata': x, 'ydata': y, 'f': f, 'beta0': np.array([5., 5., 5.])}
+    return {'xdata': x, 'ydata': y, 'f': f, 'beta0': np.full_like(beta_star, 5.)}
+
+
+@pytest.fixture
+def example2():
+    "odrpack's example2"
+    x = np.array([[0.50, -0.12],
+                  [1.20, -0.60],
+                  [1.60, -1.00],
+                  [1.86, -1.40],
+                  [2.12, -2.54],
+                  [2.36, -3.36],
+                  [2.44, -4.00],
+                  [2.36, -4.75],
+                  [2.06, -5.25],
+                  [1.74, -5.64],
+                  [1.34, -5.97],
+                  [0.90, -6.32],
+                  [-0.28, -6.44],
+                  [-0.78, -6.44],
+                  [-1.36, -6.41],
+                  [-1.90, -6.25],
+                  [-2.50, -5.88],
+                  [-2.88, -5.50],
+                  [-3.18, -5.24],
+                  [-3.44, -4.86]]).T
+    y = np.full(x.shape[-1], 0.0)
+    beta0 = np.array([-1.0, -3.0, 0.09, 0.02, 0.08])
+
+    beta_ref = np.array([-9.99380462E-01,
+                         -2.93104890E+00,
+                         8.75730642E-02,
+                         1.62299601E-02,
+                         7.97538109E-02])
+
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
+        v, h = x
+        return beta[2]*(v-beta[0])**2 + 2*beta[3]*(v-beta[0])*(h-beta[1]) \
+            + beta[4]*(h-beta[1])**2 - 1
+
+    return {'xdata': x, 'ydata': y, 'f': f, 'beta0': beta0,
+            'beta_ref': beta_ref}
+
+
+@pytest.fixture
+def example5():
+    "odrpack's example5"
+    x = np.array([0.982, 1.998, 4.978, 6.01])
+    y = np.array([2.7, 7.4, 148.0, 403.0])
+    beta0 = np.array([2., 0.5])
+    bounds = (np.array([0., 0.]), np.array([10., 0.9]))
+
+    beta_ref = np.array([1.63337602, 0.9])
+    delta_ref = np.array([-0.36886137, -0.31273038, 0.029287, 0.11031505])
+
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
+        return beta[0] * np.exp(beta[1]*x)
+
+    def jac_beta(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
+        jac = np.zeros((beta.size, x.size))
+        jac[0, :] = np.exp(beta[1]*x)
+        jac[1, :] = beta[0]*x*np.exp(beta[1]*x)
+        return jac
+
+    def jac_x(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
+        return beta[0] * beta[1] * np.exp(beta[1]*x)
+
+    return {'f': f, 'xdata': x, 'ydata': y, 'beta0': beta0, 'bounds': bounds,
+            'jac_beta': jac_beta, 'jac_x': jac_x, 'beta_ref': beta_ref,
+            'delta_ref': delta_ref}
 
 
 def test_base_cases(case1, case2, case3):
@@ -246,7 +321,7 @@ def test_weight_x(case1, case3):
     sol = odr_fit(**case1, weight_x=1e10)
     assert np.allclose(sol.delta, np.zeros_like(sol.delta))
 
-    # weight_x (n,) and m==1
+    # weight_x (n,) and m=1
     weight_x = np.ones_like(case1['xdata'])
     fix = (4, 7)
     weight_x[fix,] = 1e10
@@ -456,46 +531,35 @@ def test_rptfile_and_errfile(case1):
         os.remove(errfile)
 
 
-def test_jacobians():
+def test_jacobians(example5):
 
-    # model and data are from odrpack's example5
-    xdata = np.array([0.982, 1.998, 4.978, 6.01])
-    ydata = np.array([2.7, 7.4, 148.0, 403.0])
-    beta0 = np.array([2., 0.5])
-    bounds = (np.array([0., 0.]), np.array([10., 0.9]))
-
-    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
-        return beta[0] * np.exp(beta[1]*x)
-
-    def jac_beta(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
-        jac = np.zeros((beta.size, x.size))
-        jac[0, :] = np.exp(beta[1]*x)
-        jac[1, :] = beta[0]*x*np.exp(beta[1]*x)
-        return jac
-
-    def jac_x(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
-        return beta[0] * beta[1] * np.exp(beta[1]*x)
-
-    beta_ref = np.array([1.63337602, 0.9])
-    delta_ref = np.array([-0.36886137, -0.31273038, 0.029287, 0.11031505])
+    xdata = example5['xdata']
+    ydata = example5['ydata']
+    beta0 = example5['beta0']
+    bounds = example5['bounds']
+    f = example5['f']
+    jac_beta = example5['jac_beta']
+    jac_x = example5['jac_x']
+    beta_ref = example5['beta_ref']
+    delta_ref = example5['delta_ref']
 
     # ODR without jacobian
     for diff_scheme in ['forward', 'central']:
         sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds,
                       diff_scheme=diff_scheme)
-        assert np.allclose(sol.beta, beta_ref, rtol=1e-4)
-        assert np.allclose(sol.delta, delta_ref, rtol=1e-3)
+        assert np.allclose(sol.beta, beta_ref, rtol=1e-6)
+        assert np.allclose(sol.delta, delta_ref, rtol=1e-5)
 
     # ODR with jacobian
     sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds,
                   jac_beta=jac_beta, jac_x=jac_x)
-    assert np.allclose(sol.beta, beta_ref, rtol=1e-4)
-    assert np.allclose(sol.delta, delta_ref, rtol=1e-3)
+    assert np.allclose(sol.beta, beta_ref, rtol=1e-6)
+    assert np.allclose(sol.delta, delta_ref, rtol=1e-6)
 
     # OLS with jacobian
     sol1 = odr_fit(f, xdata, ydata, beta0, weight_x=1e100)
     sol2 = odr_fit(f, xdata, ydata, beta0, jac_beta=jac_beta, task='OLS')
-    assert np.allclose(sol2.beta, sol1.beta, rtol=1e-4)
+    assert np.allclose(sol2.beta, sol1.beta)
     assert np.allclose(sol2.delta, np.zeros_like(xdata))
 
     # invalid f shape
@@ -525,49 +589,14 @@ def test_jacobians():
         _ = odr_fit(f, xdata, ydata, beta0, diff_scheme='invalid')
 
 
-def test_implicit_model():
+def test_implicit_model(example2):
 
-    # model and data are from odrpack's example2
-    beta0 = np.array([-1.0, -3.0, 0.09, 0.02, 0.08])
-    x = [[0.50, -0.12],
-         [1.20, -0.60],
-         [1.60, -1.00],
-         [1.86, -1.40],
-         [2.12, -2.54],
-         [2.36, -3.36],
-         [2.44, -4.00],
-         [2.36, -4.75],
-         [2.06, -5.25],
-         [1.74, -5.64],
-         [1.34, -5.97],
-         [0.90, -6.32],
-         [-0.28, -6.44],
-         [-0.78, -6.44],
-         [-1.36, -6.41],
-         [-1.90, -6.25],
-         [-2.50, -5.88],
-         [-2.88, -5.50],
-         [-3.18, -5.24],
-         [-3.44, -4.86]]
-    xdata = np.array(x).T
-    ydata = np.full(xdata.shape[-1], 0.0)
-
-    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
-        v, h = x
-        return beta[2]*(v-beta[0])**2 + 2*beta[3]*(v-beta[0])*(h-beta[1]) \
-            + beta[4]*(h-beta[1])**2 - 1
-
-    beta_ref = np.array([-9.99380462E-01,
-                         -2.93104890E+00,
-                         8.75730642E-02,
-                         1.62299601E-02,
-                         7.97538109E-02])
-
-    sol = odr_fit(f, xdata, ydata, beta0, task='implicit-ODR')
-    assert np.allclose(sol.beta, beta_ref)
+    sol = odr_fit(example2['f'], example2['xdata'], example2['ydata'],
+                  example2['beta0'], task='implicit-ODR')
+    assert np.allclose(sol.beta, example2['beta_ref'])
 
 
-def test_ols(case1):
+def test_OLS(case1):
 
     sol1 = odr_fit(**case1, task='OLS')
     sol2 = odr_fit(**case1, weight_x=1e100)
@@ -577,7 +606,6 @@ def test_ols(case1):
 
 def test_exception_odrstop():
 
-    # model and data are from odrpack's example5
     xdata = np.array([1.0, 2.0, 3.0, 4.0])
     ydata = np.array([1.0, 2.0, 3.0, 4.0])
     beta0 = np.array([1.0, 1.0])
@@ -593,10 +621,35 @@ def test_exception_odrstop():
         assert sol.info == 51000
 
 
-def test_compare_scipy(case1):
+def test_compare_scipy(case1, case2, case3, example2):
 
+    # case1 // scipy.optimize.curve_fit
     sol1 = odr_fit(**case1, task='OLS')
     sol2 = curve_fit(lambda x, *b: case1['f'](x, np.array(b)),
                      case1['xdata'], case1['ydata'], case1['beta0'])
-    print(sol2)
     assert np.allclose(sol1.beta, sol2[0])
+
+    # case1,2,3 // scipy.odr.odr
+    for case in [case3]:
+        for subcase in range(2):
+            if subcase == 0:
+                wd = np.random.uniform(0.1, 1.0)
+                we = np.random.uniform(0.1, 1.0)
+                rtol = 1e-4
+            else:
+                wd = np.random.rand(*case['xdata'].shape)
+                we = np.random.rand(*case['ydata'].shape)
+                rtol = 1e-3  # very tough problem!
+
+            sol1 = odr_fit(**case, weight_x=wd, weight_y=we)
+            sol2 = odrscipy(flipargs(case['f']),
+                            case['beta0'], case['ydata'], case['xdata'],
+                            wd=wd, we=we, full_output=True)
+
+            assert np.allclose(sol1.beta, sol2[0], rtol=1e-5)
+
+            assert np.all(np.max(we*abs(sol1.eps - sol2[3]['eps']), -1) /
+                          (np.max(case['ydata'], -1) - np.min(case['ydata'], -1)) < rtol)
+
+            assert np.all(np.max(wd*abs(sol1.delta - sol2[3]['delta']), -1) /
+                          (np.max(case['xdata'], -1) - np.min(case['xdata'], -1)) < rtol)
