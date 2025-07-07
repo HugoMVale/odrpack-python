@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [windows-latest] #[ubuntu-latest, windows-latest, macos-13, macos-14]
 
     steps:
       - name: Checkout code
@@ -46,7 +46,8 @@ jobs:
         uses: pypa/cibuildwheel@v2.22.0
         env:
           # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
-          CIBW_SKIP: "*-win32 *i686 pp3* *-musllinux_*"
+          #CIBW_SKIP: "*-win32 *i686 pp3* *-musllinux_*"
+          CIBW_SKIP: "*i686 pp3* *-musllinux_*"
           CIBW_BUILD_FRONTEND: build
           CIBW_BUILD_VERBOSITY: 1
           CIBW_TEST_REQUIRES: pytest scipy
@@ -87,23 +88,23 @@ jobs:
           name: cibw-sdist
           path: dist/*.tar.gz
 
-  upload_pypi:
-    name: Publish to PyPI
-    needs: [build_wheels, build_sdist]
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-    permissions:
-      id-token: write
-    # if: github.event_name == 'release' && github.event.action == 'published'
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: cibw-*
-          path: dist
-          merge-multiple: true
+#   upload_pypi:
+#     name: Publish to PyPI
+#     needs: [build_wheels, build_sdist]
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: pypi
+#     permissions:
+#       id-token: write
+#     if: github.event_name == 'release' && github.event.action == 'published'
+#     steps:
+#       - uses: actions/download-artifact@v4
+#         with:
+#           pattern: cibw-*
+#           path: dist
+#           merge-multiple: true
           
-      - uses: pypa/gh-action-pypi-publish@release/v1
+#       - uses: pypa/gh-action-pypi-publish@release/v1
 
 #   upload_test_pypi:
 #     name: Publish to TestPyPI
