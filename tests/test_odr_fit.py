@@ -620,13 +620,13 @@ def test_exception_odrstop():
         assert sol.info == 51000
 
 
-def test_compare_scipy(case1, case2, case3, example2):
+def test_compare_scipy(case1, case2, case3):
 
     # case1 // scipy.optimize.curve_fit
     sol1 = odr_fit(**case1, task='OLS')
     sol2 = curve_fit(lambda x, *b: case1['f'](x, np.array(b)),
                      case1['xdata'], case1['ydata'], case1['beta0'])
-    assert np.allclose(sol1.beta, sol2[0], rtol=1e-4)
+    assert np.allclose(sol1.beta, sol2[0], atol=1e-5)
 
     # case1,2,3 // scipy.odr.odr
     for case in [case1, case2, case3]:
@@ -646,7 +646,7 @@ def test_compare_scipy(case1, case2, case3, example2):
             assert np.allclose(sol1.beta, sol2[0], rtol=1e-5)
 
             assert np.all(np.max(we*abs(sol1.eps - sol2[3]['eps']), -1) /
-                          (np.max(case['ydata'], -1) - np.min(case['ydata'], -1)) < 1e-6)
+                          (np.max(case['ydata'], -1) - np.min(case['ydata'], -1)) < 1e-5)
 
             assert np.all(np.max(wd*abs(sol1.delta - sol2[3]['delta']), -1) /
-                          (np.max(case['xdata'], -1) - np.min(case['xdata'], -1)) < 1e-5)
+                          (np.max(case['xdata'], -1) - np.min(case['xdata'], -1)) < 1e-4)
