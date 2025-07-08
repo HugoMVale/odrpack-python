@@ -68,7 +68,7 @@ def odr(f: Callable[[F64Array, F64Array], F64Array],
         Scalar or array specifying how the errors on `y` are to be weighted.
         If `we` is a scalar, then it is used for all data points. If `we` is
         an array of shape `(n,)` and `q==1`, then `we[i]` represents the weight
-        for `y[i]`. If `we` is an array of shape `(q)`, then it represents the
+        for `y[i]`. If `we` is an array of shape `(q,)`, then it represents the
         diagonal of the covariant weighting matrix for all data points. If `we`
         is an array of shape `(q, q)`, then it represents the full covariant
         weighting matrix for all data points. If `we` is an array of shape
@@ -82,7 +82,7 @@ def odr(f: Callable[[F64Array, F64Array], F64Array],
         Scalar or array specifying how the errors on `x` are to be weighted.
         If `wd` is a scalar, then it is used for all data points. If `wd` is
         an array of shape `(n,)` and `m==1`, then `wd[i]` represents the weight
-        for `x[i]`. If `wd` is an array of shape `(m)`, then it represents the
+        for `x[i]`. If `wd` is an array of shape `(m,)`, then it represents the
         diagonal of the covariant weighting matrix for all data points. If `wd`
         is an array of shape `(m, m)`, then it represents the full covariant
         weighting matrix for all data points. If `wd` is an array of shape
@@ -95,13 +95,13 @@ def odr(f: Callable[[F64Array, F64Array], F64Array],
     fjacb : Callable[[F64Array, F64Array], F64Array] | None
         Jacobian of the function to be fitted with respect to `beta`, with the
         signature `fjacb(beta, x)`. It must return an array with shape 
-        `(n, npar, q)` or compatible. To activate this option, `job` must be
+        `(q, npar, n)` or compatible. To activate this option, `job` must be
         set accordingly. By default, the Jacobian is evaluated numerically
         according to the finite difference scheme defined in `job`.
     fjacd : Callable[[F64Array, F64Array], F64Array] | None
         Jacobian of the function to be fitted with respect to `delta`, with the
         signature `fjacd(beta, x)`. It must return an array with shape 
-        `(n, m, q)` or compatible. To activate this option, `job` must be
+        `(q, m, n)` or compatible. To activate this option, `job` must be
         set accordingly. By default, the Jacobian is evaluated numerically
         according to the finite difference scheme defined in `job`.
     ifixb : I32Array | None

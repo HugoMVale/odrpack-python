@@ -63,7 +63,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         If `weight_x` is a scalar, then it is used for all data points. If
         `weight_x` is an array of shape `(n,)` and `m==1`, then `weight_x[i]`
         represents the weight for `xdata[i]`. If `weight_x` is an array of shape
-        `(m)`, then it represents the diagonal of the covariant weighting matrix
+        `(m,)`, then it represents the diagonal of the covariant weighting matrix
         for all data points. If `weight_x` is an array of shape `(m, m)`, then
         it represents the full covariant weighting matrix for all data points.
         If `weight_x` is an array of shape `(m, n)`, then `weight_x[:, i]`
@@ -78,7 +78,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         If `weight_y` is a scalar, then it is used for all data points. If
         `weight_y` is an array of shape `(n,)` and `q==1`, then `weight_y[i]`
         represents the weight for `ydata[i]`. If `weight_y` is an array of shape
-        `(q)`, then it represents the diagonal of the covariant weighting matrix
+        `(q,)`, then it represents the diagonal of the covariant weighting matrix
         for all data points. If `weight_y` is an array of shape `(q, q)`, then
         it represents the full covariant weighting matrix for all data points.
         If `weight_y` is an array of shape `(q, n)`, then `weight_y[:, i]`
@@ -114,13 +114,13 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
     jac_beta : Callable[[F64Array, F64Array], F64Array] | None
         Jacobian of the function to be fitted with respect to `beta`, with the
         signature `jac_beta(x, beta)`. It must return an array with shape 
-        `(n, npar, q)` or a compatible shape. By default, the Jacobian is
+        `(q, npar, n)` or a compatible shape. By default, the Jacobian is
         approximated numerically using the finite difference scheme specified
         by `diff_scheme`.
     jac_x : Callable[[F64Array, F64Array], F64Array] | None
         Jacobian of the function to be fitted with respect to `x`, with the
         signature `jac_x(x, beta)`. It must return an array with shape 
-        `(n, m, q)` or a compatible shape. By default, the Jacobian is approximated
+        `(q, m, n)` or a compatible shape. By default, the Jacobian is approximated
         numerically using the finite difference scheme specified by `diff_scheme`.
     delta0 : F64Array | None
         Array with the same shape as `xdata`, containing the initial guesses of 
