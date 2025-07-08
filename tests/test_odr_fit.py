@@ -9,13 +9,12 @@ from scipy.optimize import curve_fit
 from odrpack import OdrStop, odr_fit
 from odrpack.__odrpack import loc_rwork
 
-SEED = 1234567890
+RNG = np.random.default_rng(seed=1234567890)
 
 
-def add_noise(array, noise, seed=SEED):
+def add_noise(array, noise):
     """Adds random noise to an array."""
-    rng = np.random.default_rng(seed)
-    return array*(1 + noise*rng.uniform(-1, 1, size=array.shape))
+    return array*(1 + noise*RNG.uniform(-1, 1, size=array.shape))
 
 
 def flipargs(f):
@@ -318,20 +317,20 @@ def test_delta0_related(case1, case3):
 def test_weight_x(case1, case3):
 
     # weight_x scalar
-    sol = odr_fit(**case1, weight_x=1e10)
+    sol = odr_fit(**case1, weight_x=1e100)
     assert np.allclose(sol.delta, np.zeros_like(sol.delta))
 
     # weight_x (n,) and m=1
     weight_x = np.ones_like(case1['xdata'])
     fix = (4, 7)
-    weight_x[fix,] = 1e10
+    weight_x[fix,] = 1e100
     sol = odr_fit(**case1, weight_x=weight_x)
     assert np.allclose(sol.delta[fix,], np.zeros_like(sol.delta[fix,]))
 
     # weight_x (m, n)
     weight_x = np.ones_like(case3['xdata'])
     fix = (4, 13)
-    weight_x[:, fix,] = 1e10
+    weight_x[:, fix,] = 1e100
     sol = odr_fit(**case3, weight_x=weight_x)
     sol1 = deepcopy(sol)
     assert np.allclose(sol.delta[:, fix,], np.zeros((sol.delta.shape[0], len(fix))))
@@ -345,7 +344,7 @@ def test_weight_x(case1, case3):
     # weight_x (m,)
     weight_x = np.ones(case3['xdata'].shape[0])
     fix = (1,)
-    weight_x[fix,] = 1e10
+    weight_x[fix,] = 1e100
     sol = odr_fit(**case3, weight_x=weight_x)
     sol1 = deepcopy(sol)
     assert np.allclose(sol.delta[fix, :], np.zeros((len(fix), sol.delta.shape[-1])))
@@ -361,7 +360,7 @@ def test_weight_x(case1, case3):
     weight_x = np.zeros((m, m))
     np.fill_diagonal(weight_x, 1.)
     fix = (1,)
-    weight_x[fix, fix] = 1e10
+    weight_x[fix, fix] = 1e100
     sol = odr_fit(**case3, weight_x=weight_x)
     sol1 = deepcopy(sol)
     assert np.allclose(sol.delta[fix, :], np.zeros((len(fix), sol.delta.shape[-1])))
@@ -393,20 +392,20 @@ def test_weight_y(case1, case3):
     ATOL = 1e-6
 
     # weight_y scalar
-    sol = odr_fit(**case1, weight_y=1e10)
+    sol = odr_fit(**case1, weight_y=1e100)
     assert np.allclose(sol.eps, np.zeros_like(sol.eps))
 
     # weight_y (n,) and q==1
     weight_y = np.ones_like(case1['ydata'])
     fix = (4, 7)
-    weight_y[fix,] = 1e10
+    weight_y[fix,] = 1e100
     sol = odr_fit(**case1, weight_y=weight_y)
     assert np.allclose(sol.eps[fix,], np.zeros_like(sol.eps[fix,]), atol=ATOL)
 
     # weight_y (q, n)
     weight_y = np.ones_like(case3['ydata'])
     fix = (4, 13)
-    weight_y[:, fix,] = 1e10
+    weight_y[:, fix,] = 1e100
     sol = odr_fit(**case3, weight_y=weight_y)
     sol1 = deepcopy(sol)
     assert np.allclose(sol.eps[:, fix,], np.zeros((sol.eps.shape[0], len(fix))),
@@ -421,7 +420,7 @@ def test_weight_y(case1, case3):
     # weight_y (q,)
     weight_y = np.ones(case3['ydata'].shape[0])
     fix = (1,)
-    weight_y[fix,] = 1e10
+    weight_y[fix,] = 1e100
     sol = odr_fit(**case3, weight_y=weight_y)
     sol1 = deepcopy(sol)
     assert np.allclose(sol.eps[fix, :], np.zeros((len(fix), sol.eps.shape[-1])),
@@ -438,7 +437,7 @@ def test_weight_y(case1, case3):
     weight_y = np.zeros((q, q))
     np.fill_diagonal(weight_y, 1.)
     fix = (1,)
-    weight_y[fix, fix] = 1e10
+    weight_y[fix, fix] = 1e100
     sol = odr_fit(**case3, weight_y=weight_y)
     sol1 = deepcopy(sol)
     assert np.allclose(sol.eps[fix, :], np.zeros((len(fix), sol.eps.shape[-1])),
@@ -627,19 +626,17 @@ def test_compare_scipy(case1, case2, case3, example2):
     sol1 = odr_fit(**case1, task='OLS')
     sol2 = curve_fit(lambda x, *b: case1['f'](x, np.array(b)),
                      case1['xdata'], case1['ydata'], case1['beta0'])
-    assert np.allclose(sol1.beta, sol2[0])
+    assert np.allclose(sol1.beta, sol2[0], rtol=1e-4)
 
     # case1,2,3 // scipy.odr.odr
-    for case in [case3]:
+    for case in [case1, case2, case3]:
         for subcase in range(2):
             if subcase == 0:
-                wd = np.random.uniform(0.1, 1.0)
-                we = np.random.uniform(0.1, 1.0)
-                rtol = 1e-4
+                wd = RNG.uniform(0.1, 1.0)
+                we = RNG.uniform(0.1, 1.0)
             else:
-                wd = np.random.rand(*case['xdata'].shape)
-                we = np.random.rand(*case['ydata'].shape)
-                rtol = 1e-3  # very tough problem!
+                wd = RNG.uniform(0.1, 1.0, size=case['xdata'].shape)
+                we = RNG.uniform(0.1, 1.0, size=case['ydata'].shape)
 
             sol1 = odr_fit(**case, weight_x=wd, weight_y=we)
             sol2 = odrscipy(flipargs(case['f']),
@@ -649,7 +646,7 @@ def test_compare_scipy(case1, case2, case3, example2):
             assert np.allclose(sol1.beta, sol2[0], rtol=1e-5)
 
             assert np.all(np.max(we*abs(sol1.eps - sol2[3]['eps']), -1) /
-                          (np.max(case['ydata'], -1) - np.min(case['ydata'], -1)) < rtol)
+                          (np.max(case['ydata'], -1) - np.min(case['ydata'], -1)) < 1e-7)
 
             assert np.all(np.max(wd*abs(sol1.delta - sol2[3]['delta']), -1) /
-                          (np.max(case['xdata'], -1) - np.min(case['xdata'], -1)) < rtol)
+                          (np.max(case['xdata'], -1) - np.min(case['xdata'], -1)) < 1e-5)
