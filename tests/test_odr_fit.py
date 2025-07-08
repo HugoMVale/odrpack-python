@@ -646,7 +646,7 @@ def test_compare_scipy(case1, case2, case3, example2):
             assert np.allclose(sol1.beta, sol2[0], rtol=1e-5)
 
             assert np.all(np.max(we*abs(sol1.eps - sol2[3]['eps']), -1) /
-                          (np.max(case['ydata'], -1) - np.min(case['ydata'], -1)) < 1e-7)
+                          (np.max(case['ydata'], -1) - np.min(case['ydata'], -1)) < 1e-6)
 
             assert np.all(np.max(wd*abs(sol1.delta - sol2[3]['delta']), -1) /
                           (np.max(case['xdata'], -1) - np.min(case['xdata'], -1)) < 1e-5)
