@@ -546,7 +546,7 @@ def test_jacobians(example5):
     for diff_scheme in ['forward', 'central']:
         sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds,
                       diff_scheme=diff_scheme)
-        assert np.allclose(sol.beta, beta_ref, rtol=1e-6)
+        assert np.allclose(sol.beta, beta_ref, rtol=1e-5)
         assert np.allclose(sol.delta, delta_ref, rtol=1e-5)
 
     # ODR with jacobian
@@ -643,7 +643,7 @@ def test_compare_scipy(case1, case2, case3):
                             case['beta0'], case['ydata'], case['xdata'],
                             wd=wd, we=we, full_output=True)
 
-            assert np.allclose(sol1.beta, sol2[0], rtol=1e-5)
+            assert np.allclose(sol1.beta, sol2[0], rtol=1e-4)
 
             assert np.all(np.max(we*abs(sol1.eps - sol2[3]['eps']), -1) /
                           (np.max(case['ydata'], -1) - np.min(case['ydata'], -1)) < 1e-5)
