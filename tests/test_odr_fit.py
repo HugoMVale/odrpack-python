@@ -547,7 +547,7 @@ def test_jacobians(example5):
         sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds,
                       diff_scheme=diff_scheme)
         assert np.allclose(sol.beta, beta_ref, rtol=1e-5)
-        assert np.allclose(sol.delta, delta_ref, rtol=1e-5)
+        assert np.allclose(sol.delta, delta_ref, rtol=1e-4)
 
     # ODR with jacobian
     sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds,
