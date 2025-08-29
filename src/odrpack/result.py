@@ -7,7 +7,7 @@ __all__ = ['OdrResult']
 
 F64Array = NDArray[np.float64]
 I32Array = NDArray[np.int32]
-BoolArray = NDArray[bool]
+BoolArray = NDArray[np.bool_]
 
 
 @dataclass(frozen=True)
