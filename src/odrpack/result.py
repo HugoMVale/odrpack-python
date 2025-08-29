@@ -76,24 +76,10 @@ class OdrResult():
     irank: int
     inv_condnum: float
     info: int
+    stopreason: str
     success: bool
     sum_square: float
     sum_square_delta: float
     sum_square_eps: float
     iwork: I32Array
     rwork: F64Array
-
-    @property
-    def stopreason(self) -> str:
-        message = ""
-        if self.info == 1:
-            message = "Sum of squares convergence."
-        elif self.info == 2:
-            message = "Parameter convergence."
-        elif self.info == 3:
-            message = "Sum of squares and parameter convergence."
-        elif self.info == 4:
-            message = "Iteration limit reached."
-        elif self.info >= 5:
-            message = "Questionable results or fatal errors detected. See report and error message."
-        return message

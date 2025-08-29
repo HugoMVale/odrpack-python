@@ -4,52 +4,6 @@ from typing import Annotated
 from numpy.typing import ArrayLike
 
 
-def loc_iwork(m: int, q: int, npar: int) -> dict[str, int]:
-    """
-    Get storage locations within the integer work space.
-
-    Parameters
-    ----------
-    m : int
-        Number of columns of data in the explanatory variable.
-    q : int
-        Number of responses per observation.
-    npar : int
-        Number of function parameters.
-
-    Returns
-    -------
-    dict[str, int]
-        A dictionary containing the 0-based indexes of the integer work array.
-    """
-
-def loc_rwork(n: int, m: int, q: int, npar: int, ldwe: int, ld2we: int, isodr: bool) -> dict[str, int]:
-    """
-    Get storage locations within the real work space.
-
-    Parameters
-    ----------
-    n : int
-        Number of observations.
-    m : int
-        Number of columns of data in the explanatory variable.
-    q : int
-        Number of responses per observation.
-    npar : int
-        Number of function parameters.
-    ldwe : int
-        Leading dimension of the `we` array.
-    ld2we : int
-        Second dimension of the `we` array.
-    isodr : bool
-        Indicates whether the solution is by ODR (True) or by OLS (False).
-
-    Returns
-    -------
-    dict[str, int]
-        A dictionary containing the 0-based indexes of the real work array.
-    """
-
 def odr(n: int, m: int, q: int, npar: int, ldwe: int, ld2we: int, ldwd: int, ld2wd: int, ldifx: int, ldstpd: int, ldscld: int, f: Callable, fjacb: Callable, fjacd: Callable, beta: Annotated[ArrayLike, dict(dtype='float64', order='C')], y: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)], x: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)], delta: Annotated[ArrayLike, dict(dtype='float64', order='C')], we: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, wd: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, ifixb: Annotated[ArrayLike, dict(dtype='int32', order='C', writable=False)] | None = None, ifixx: Annotated[ArrayLike, dict(dtype='int32', order='C', writable=False)] | None = None, stpb: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, stpd: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, sclb: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, scld: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, lower: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, upper: Annotated[ArrayLike, dict(dtype='float64', order='C', writable=False)] | None = None, rwork: Annotated[ArrayLike, dict(dtype='float64', order='C')] | None = None, iwork: Annotated[ArrayLike, dict(dtype='int32', order='C')] | None = None, job: int | None = None, ndigit: int | None = None, taufac: float | None = None, sstol: float | None = None, partol: float | None = None, maxit: int | None = None, iprint: int | None = None, errfile: str | None = None, rptfile: str | None = None) -> int:
     """
     C++ wrapper for the Orthogonal Distance Regression (ODR) routine.
@@ -169,4 +123,65 @@ def workspace_dimensions(n: int, m: int, q: int, npar: int, isodr: bool) -> tupl
     -------
     tuple[int, int]
         A tuple containing the lengths of the work arrays (`lrwork`, `liwork`).
+    """
+
+def loc_iwork(m: int, q: int, npar: int) -> dict[str, int]:
+    """
+    Get storage locations within the integer work space.
+
+    Parameters
+    ----------
+    m : int
+        Number of columns of data in the explanatory variable.
+    q : int
+        Number of responses per observation.
+    npar : int
+        Number of function parameters.
+
+    Returns
+    -------
+    dict[str, int]
+        A dictionary containing the 0-based indexes of the integer work array.
+    """
+
+def loc_rwork(n: int, m: int, q: int, npar: int, ldwe: int, ld2we: int, isodr: bool) -> dict[str, int]:
+    """
+    Get storage locations within the real work space.
+
+    Parameters
+    ----------
+    n : int
+        Number of observations.
+    m : int
+        Number of columns of data in the explanatory variable.
+    q : int
+        Number of responses per observation.
+    npar : int
+        Number of function parameters.
+    ldwe : int
+        Leading dimension of the `we` array.
+    ld2we : int
+        Second dimension of the `we` array.
+    isodr : bool
+        Indicates whether the solution is by ODR (True) or by OLS (False).
+
+    Returns
+    -------
+    dict[str, int]
+        A dictionary containing the 0-based indexes of the real work array.
+    """
+
+def stop_message(info: int) -> str:
+    """
+    Get a message corresponding to a given info code.
+
+    Parameters
+    ----------
+    info : int
+        Integer code designating why the computations were stopped.
+
+    Returns
+    -------
+    str
+        The message string corresponding to the given info code.
     """

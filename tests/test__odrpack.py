@@ -1,6 +1,7 @@
 import numpy as np
 
-from odrpack.__odrpack import loc_iwork, loc_rwork, odr, workspace_dimensions
+from odrpack.__odrpack import (loc_iwork, loc_rwork, odr, stop_message,
+                               workspace_dimensions)
 
 
 def test_loc_iwork():
@@ -87,3 +88,8 @@ def test_odr():
                lower=lower, upper=upper, job=20)
     assert info == 1
     np.allclose(beta, beta_ref)
+
+
+def test_stop_message():
+    assert "Parameter" in stop_message(2)
+    assert "Unknown" in stop_message(-1)

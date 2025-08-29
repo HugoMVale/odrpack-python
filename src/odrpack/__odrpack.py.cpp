@@ -4,6 +4,7 @@
 #include <nanobind/stl/optional.h>
 #include <nanobind/stl/string.h>
 
+#include <array>
 #include <iostream>
 #include <map>
 #include <optional>
@@ -532,4 +533,27 @@ dict[str, int]
     )doc",
         nb::arg("n"), nb::arg("m"), nb::arg("q"), nb::arg("npar"),
         nb::arg("ldwe"), nb::arg("ld2we"), nb::arg("isodr"));
+
+    // Get a message corresponding to a given info code
+    m.def(
+        "stop_message",
+        [](int info) {
+            std::array<char, 256> message;
+            stop_message_c(info, message.data(), message.size());
+            return std::string(message.data());
+        },
+        R"doc(
+    Get a message corresponding to a given info code.
+
+    Parameters
+    ----------
+    info : int
+        Integer code designating why the computations were stopped.
+
+    Returns
+    -------
+    str
+        The message string corresponding to the given info code.
+    )doc",
+        nb::arg("info"));
 }
