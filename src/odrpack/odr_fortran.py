@@ -5,7 +5,7 @@ import numpy as np
 
 from odrpack.__odrpack import loc_iwork, loc_rwork
 from odrpack.__odrpack import odr as _odr
-from odrpack.__odrpack import workspace_dimensions
+from odrpack.__odrpack import stop_message, workspace_dimensions
 from odrpack.result import F64Array, I32Array, OdrResult
 
 __all__ = ['odr']
@@ -488,6 +488,8 @@ def odr(f: Callable[[F64Array, F64Array], F64Array],
                 beta=beta, y=y, x=x,
                 delta=delta,
                 we=we, wd=wd, ifixb=ifixb, ifixx=ifixx,
+                stpb=stpb, stpd=stpd,
+                sclb=sclb, scld=scld,
                 lower=lower, upper=upper,
                 rwork=rwork, iwork=iwork,
                 job=job,
@@ -528,6 +530,7 @@ def odr(f: Callable[[F64Array, F64Array], F64Array],
         niter=iwork[iwork_idx['niter']],
         irank=iwork[iwork_idx['irank']],
         inv_condnum=rwork[rwork_idx['rcond']],
+        stopreason=stop_message(info),
         sum_square=rwork[rwork_idx['wss']],
         sum_square_delta=rwork[rwork_idx['wssdel']],
         sum_square_eps=rwork[rwork_idx['wsseps']],
