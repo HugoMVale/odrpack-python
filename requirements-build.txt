@@ -1,9 +1,0 @@
-meson
-meson-python
-ninja
-nanobind
-numpy
-# test
-pytest
-pytest-cov
-scipy
