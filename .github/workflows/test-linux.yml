@@ -46,6 +46,7 @@ jobs:
           
       - name: Build package
         run: |
+          uv sync
           uv pip install -ve . --no-build-isolation
           
       - name: Run tests and collect coverage
