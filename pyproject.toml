@@ -31,8 +31,8 @@ dependencies = ['numpy']
 Repository = "https://github.com/HugoMVale/odrpack-python"
 Documentation = "https://hugomvale.github.io/odrpack-python/"
 
-[project.optional-dependencies]
-test = ["pytest", "pytest-cov", "scipy"]
+[dependency-groups]
+dev = ["nanobind", "meson-python", "pytest", "pytest-cov", "scipy"]
 docs = [
     "mkdocs-material",
     "mkdocstrings-python",
@@ -46,7 +46,7 @@ build-backend = "mesonpy"
 requires = ["meson-python>=0.15.0"]
 
 [tool.pytest.ini_options]
-norecursedirs = ["extern", "subprojects"]
+norecursedirs = ["subprojects"]
 addopts = "-v -s"
 
 [tool.coverage.run]
