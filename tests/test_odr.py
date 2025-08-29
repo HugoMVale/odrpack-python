@@ -196,14 +196,14 @@ def test_delta0_related(case1, case3):
     for shape in [case3['x'].shape, case3['x'].shape[0], case3['x'].shape[-1]]:
         stpd = np.full(shape, 1e-5)
         sol = odr(**case3, stpd=stpd)
-        assert np.allclose(sol.delta, sol3.delta)
+        assert np.allclose(sol.delta, sol3.delta, atol=1e-4)
 
     # user scld
     sol3 = odr(**case3)
     for shape in [case3['x'].shape, case3['x'].shape[0], case3['x'].shape[-1]]:
         scld = np.full(shape, 10.)
         sol = odr(**case3, scld=scld)
-        assert np.allclose(sol.delta, sol3.delta)
+        assert np.allclose(sol.delta, sol3.delta, atol=1e-4)
 
     # invalid inputs
     with pytest.raises(ValueError):

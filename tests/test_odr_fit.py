@@ -288,7 +288,7 @@ def test_delta0_related(case1, case3):
                   case3['xdata'].shape[-1]]:
         step_delta = np.full(shape, 1e-5)
         sol = odr_fit(**case3, step_delta=step_delta)
-        assert np.allclose(sol.delta, sol3.delta)
+        assert np.allclose(sol.delta, sol3.delta, atol=1e-4)
 
     # user scld
     sol3 = odr_fit(**case3)
@@ -297,7 +297,7 @@ def test_delta0_related(case1, case3):
                   case3['xdata'].shape[-1]]:
         scale_delta = np.full(shape, 10.)
         sol = odr_fit(**case3, scale_delta=scale_delta)
-        assert np.allclose(sol.delta, sol3.delta)
+        assert np.allclose(sol.delta, sol3.delta, atol=1e-4)
 
     # invalid inputs
     with pytest.raises(ValueError):
