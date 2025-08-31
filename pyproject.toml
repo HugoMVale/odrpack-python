@@ -39,6 +39,7 @@ docs = [
     "mkdocs-jupyter",
     "black",
     "matplotlib",
+    "ipykernel",
 ]
 
 [build-system]
