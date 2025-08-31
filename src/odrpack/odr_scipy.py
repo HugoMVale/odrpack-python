@@ -515,14 +515,15 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
     # Return the result
     # Extract results without messing up the original work arrays
     i0_eps = rwork_idx['eps']
-    eps = np.reshape(rwork[i0_eps:i0_eps+ydata.size], ydata.shape, copy=True)
+    eps = rwork[i0_eps:i0_eps+ydata.size].copy()
+    eps = np.reshape(eps, ydata.shape)
 
     i0_sd = rwork_idx['sd']
     sd_beta = rwork[i0_sd:i0_sd+beta.size].copy()
 
     i0_vcv = rwork_idx['vcv']
-    cov_beta = np.reshape(rwork[i0_vcv:i0_vcv+beta.size**2],
-                          (beta.size, beta.size), copy=True)
+    cov_beta = rwork[i0_vcv:i0_vcv+beta.size**2].copy()
+    cov_beta = np.reshape(cov_beta, (beta.size, beta.size))
 
     result = OdrResult(
         beta=beta,
