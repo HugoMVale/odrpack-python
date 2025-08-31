@@ -47,7 +47,7 @@ jobs:
           
       - name: Build package
         run: |
-          uv sync --resolution ${{ matrix.resolution }} --no-group docs
+          uv sync --resolution ${{ matrix.resolution }}
           uv pip install -ve . --no-build-isolation
           
       - name: Run tests and collect coverage
