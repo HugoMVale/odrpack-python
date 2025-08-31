@@ -28,8 +28,8 @@ def case1():
     def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return beta[0] + beta[1] * x + beta[2] * x**2 + beta[3] * x**3
 
-    beta_star = np.array([1, -2., 0.1, -0.1])
-    x = np.linspace(-10., 10., 21)
+    beta_star = np.array([1.0, -2.0, 0.1, -0.1])
+    x = np.linspace(-10.0, 10.0, 21)
     y = f(x, beta_star)
 
     x = add_noise(x, 5e-2)
@@ -44,8 +44,8 @@ def case2():
     def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return (beta[0] * x[0, :])**3 + x[1, :]**beta[1]
 
-    beta_star = np.array([2., 2.])
-    x1 = np.linspace(-10., 10., 41)
+    beta_star = np.array([2.0, 2.0])
+    x1 = np.linspace(-10.0, 10.0, 41)
     x = np.vstack((x1, 10+x1/2))
     y = f(x, beta_star)
 
@@ -64,15 +64,15 @@ def case3():
         y[1, :] = (beta[2] * x[0, :])**2 + x[1, :]**beta[1]
         return y
 
-    beta_star = np.array([1., 2., 3.])
-    x1 = np.linspace(-1., 1., 31)
+    beta_star = np.array([1.0, 2.0, 3.0])
+    x1 = np.linspace(-1.0, 1.0, 31)
     x = np.vstack((x1, np.exp(x1), x1**2))
     y = f(x, beta_star)
 
     x = add_noise(x, 5e-2)
     y = add_noise(y, 10e-2)
 
-    return {'xdata': x, 'ydata': y, 'f': f, 'beta0': np.full_like(beta_star, 5.)}
+    return {'xdata': x, 'ydata': y, 'f': f, 'beta0': np.full_like(beta_star, 5.0)}
 
 
 @pytest.fixture
@@ -121,8 +121,8 @@ def example5():
     "odrpack's example5"
     x = np.array([0.982, 1.998, 4.978, 6.01])
     y = np.array([2.7, 7.4, 148.0, 403.0])
-    beta0 = np.array([2., 0.5])
-    bounds = (np.array([0., 0.]), np.array([10., 0.9]))
+    beta0 = np.array([2.0, 0.5])
+    bounds = (np.array([0.0, 0.0]), np.array([10.0, 0.9]))
 
     beta_ref = np.array([1.63337602, 0.9])
     delta_ref = np.array([-0.36886137, -0.31273038, 0.029287, 0.11031505])
@@ -191,15 +191,15 @@ def test_beta0_related(case1):
     # fix all parameters
     sol = odr_fit(**case1,
                   fix_beta=np.array([True, True, True, True]))
-    assert np.allclose(sol.beta, [0]*4)
+    assert np.allclose(sol.beta, np.zeros_like(sol.beta))
 
-    # user-defined stpb
+    # user-defined step_beta
     sol = odr_fit(**case1,
                   step_beta=np.full(4, 1e-5))
     assert sol.info == 1
     assert np.allclose(sol.beta, sol1.beta)
 
-    # user-defined sclb
+    # user-defined scale_beta
     sol = odr_fit(**case1,
                   scale_beta=np.array([2, 2, 20, 20]))
     assert sol.info == 1
@@ -231,14 +231,14 @@ def test_beta0_related(case1):
         # upper has invalid shape
         _ = odr_fit(**case1, bounds=(None, np.zeros((1, 4))))
     with pytest.raises(ValueError):
-        # ifixb has invalid shape
+        # fix_beta has invalid shape
         _ = odr_fit(**case1, fix_beta=np.array([True, False, True]))
     with pytest.raises(ValueError):
-        # stpb has invalid shape
-        _ = odr_fit(**case1, step_beta=np.array([1e-4, 1., 2.]))
+        # step_beta has invalid shape
+        _ = odr_fit(**case1, step_beta=np.array([1e-4, 1.0, 2.0]))
     with pytest.raises(ValueError):
-        # sclb has invalid shape
-        _ = odr_fit(**case1, scale_beta=np.array([1., 1., 1., 1., 1.]))
+        # scale_beta has invalid shape
+        _ = odr_fit(**case1, scale_beta=np.ones(5))
     with pytest.raises(ValueError):
         # invalid task
         _ = odr_fit(**case1, task='invalid')
@@ -251,37 +251,37 @@ def test_delta0_related(case1, case3):
     assert sol.info == 1
 
     # fix some x
-    fix_x = np.zeros_like(case1['xdata'], dtype=np.bool)
+    fix_x = np.zeros_like(case1['xdata'], dtype=np.bool_)
     fix = (4, 8)
     fix_x[fix,] = True
     sol = odr_fit(**case1, fix_x=fix_x)
     assert np.allclose(sol.delta[fix,], [0, 0])
 
     # fix some x, broadcast (m,)
-    fix_x = np.zeros(case3['xdata'].shape[0], dtype=np.bool)
+    fix_x = np.zeros(case3['xdata'].shape[0], dtype=np.bool_)
     fix = (1)
     fix_x[fix,] = True
     sol = odr_fit(**case3, fix_x=fix_x)
-    assert np.allclose(sol.delta[fix, :], np.zeros(sol.delta.shape[1]))
+    assert np.allclose(sol.delta[fix, :], np.zeros_like(sol.delta[fix, :]))
 
     # fix some x, broadcast (n,)
-    fix_x = np.zeros(case3['xdata'].shape[-1], dtype=np.bool)
+    fix_x = np.zeros(case3['xdata'].shape[-1], dtype=np.bool_)
     fix = (2, 7, 13)
     fix_x[fix,] = True
     sol = odr_fit(**case3, fix_x=fix_x)
-    assert np.allclose(sol.delta[:, fix], np.zeros((sol.delta.shape[0], len(fix))))
+    assert np.allclose(sol.delta[:, fix], np.zeros_like(sol.delta[:, fix]))
 
     # fix all x (n,)
-    fix_x = np.ones_like(case1['xdata'], dtype=np.bool)
+    fix_x = np.ones_like(case1['xdata'], dtype=np.bool_)
     sol = odr_fit(**case1, fix_x=fix_x)
     assert np.allclose(sol.delta, np.zeros_like(sol.delta))
 
     # fix all x (m, n)
-    fix_x = np.ones_like(case3['xdata'], dtype=np.bool)
+    fix_x = np.ones_like(case3['xdata'], dtype=np.bool_)
     sol = odr_fit(**case3, fix_x=fix_x)
     assert np.allclose(sol.delta, np.zeros_like(sol.delta))
 
-    # user stpd
+    # user step_delta
     sol3 = odr_fit(**case3)
     for shape in [case3['xdata'].shape,
                   case3['xdata'].shape[0],
@@ -290,7 +290,7 @@ def test_delta0_related(case1, case3):
         sol = odr_fit(**case3, step_delta=step_delta)
         assert np.allclose(sol.delta, sol3.delta, atol=1e-4)
 
-    # user scld
+    # user scale_delta
     sol3 = odr_fit(**case3)
     for shape in [case3['xdata'].shape,
                   case3['xdata'].shape[0],
@@ -305,10 +305,10 @@ def test_delta0_related(case1, case3):
         _ = odr_fit(**case1, fix_x=np.array([True, False, True]))
     with pytest.raises(ValueError):
         # step_delta has invalid shape
-        _ = odr_fit(**case3, step_delta=np.array([1e-4, 1.]))
+        _ = odr_fit(**case3, step_delta=np.array([1e-4, 1.0]))
     with pytest.raises(ValueError):
-        # sclale_delta has invalid shape
-        _ = odr_fit(**case3, scale_delta=np.array([1., 1., 1., 1.]))
+        # scale_delta has invalid shape
+        _ = odr_fit(**case3, scale_delta=np.ones(4))
     with pytest.raises(ValueError):
         # delta0 has invalid shape
         _ = odr_fit(**case3, delta0=np.zeros_like(case1['ydata']))
@@ -333,7 +333,7 @@ def test_weight_x(case1, case3):
     weight_x[:, fix,] = 1e100
     sol = odr_fit(**case3, weight_x=weight_x)
     sol1 = deepcopy(sol)
-    assert np.allclose(sol.delta[:, fix,], np.zeros((sol.delta.shape[0], len(fix))))
+    assert np.allclose(sol.delta[:, fix,], np.zeros_like(sol.delta[:, fix,]))
 
     # weight_x (m, 1, n)
     weight_x = np.expand_dims(weight_x, axis=1)
@@ -347,7 +347,7 @@ def test_weight_x(case1, case3):
     weight_x[fix,] = 1e100
     sol = odr_fit(**case3, weight_x=weight_x)
     sol1 = deepcopy(sol)
-    assert np.allclose(sol.delta[fix, :], np.zeros((len(fix), sol.delta.shape[-1])))
+    assert np.allclose(sol.delta[fix, :], np.zeros_like(sol.delta[fix, :]))
 
     # weight_x (m, 1, 1)
     weight_x = weight_x[..., np.newaxis, np.newaxis]
@@ -358,12 +358,12 @@ def test_weight_x(case1, case3):
     # weight_x (m, m)
     m = case3['xdata'].shape[0]
     weight_x = np.zeros((m, m))
-    np.fill_diagonal(weight_x, 1.)
+    np.fill_diagonal(weight_x, 1.0)
     fix = (1,)
     weight_x[fix, fix] = 1e100
     sol = odr_fit(**case3, weight_x=weight_x)
     sol1 = deepcopy(sol)
-    assert np.allclose(sol.delta[fix, :], np.zeros((len(fix), sol.delta.shape[-1])))
+    assert np.allclose(sol.delta[fix, :], np.zeros_like(sol.delta[fix, :]))
 
     # weight_x (m, m, 1)
     weight_x = weight_x[..., np.newaxis]
@@ -384,7 +384,7 @@ def test_weight_x(case1, case3):
 
     # weight_x has invalid tye
     with pytest.raises(TypeError):
-        _ = odr_fit(**case3, weight_x=[1., 1., 1.])
+        _ = odr_fit(**case3, weight_x=[1.0, 1.0, 1.0])
 
 
 def test_weight_y(case1, case3):
@@ -395,7 +395,7 @@ def test_weight_y(case1, case3):
     sol = odr_fit(**case1, weight_y=1e100)
     assert np.allclose(sol.eps, np.zeros_like(sol.eps))
 
-    # weight_y (n,) and q==1
+    # weight_y (n,) and q=1
     weight_y = np.ones_like(case1['ydata'])
     fix = (4, 7)
     weight_y[fix,] = 1e100
@@ -408,8 +408,7 @@ def test_weight_y(case1, case3):
     weight_y[:, fix,] = 1e100
     sol = odr_fit(**case3, weight_y=weight_y)
     sol1 = deepcopy(sol)
-    assert np.allclose(sol.eps[:, fix,], np.zeros((sol.eps.shape[0], len(fix))),
-                       atol=ATOL)
+    assert np.allclose(sol.eps[:, fix,], np.zeros_like(sol.eps[:, fix,]), atol=ATOL)
 
     # weight_y (q, 1, n)
     weight_y = np.expand_dims(weight_y, axis=1)
@@ -423,8 +422,7 @@ def test_weight_y(case1, case3):
     weight_y[fix,] = 1e100
     sol = odr_fit(**case3, weight_y=weight_y)
     sol1 = deepcopy(sol)
-    assert np.allclose(sol.eps[fix, :], np.zeros((len(fix), sol.eps.shape[-1])),
-                       atol=ATOL)
+    assert np.allclose(sol.eps[fix, :], np.zeros_like(sol.eps[fix, :]), atol=ATOL)
 
     # weight_y (q, 1, 1)
     weight_y = weight_y[..., np.newaxis, np.newaxis]
@@ -435,13 +433,12 @@ def test_weight_y(case1, case3):
     # weight_y (q, q)
     q = case3['ydata'].shape[0]
     weight_y = np.zeros((q, q))
-    np.fill_diagonal(weight_y, 1.)
+    np.fill_diagonal(weight_y, 1.0)
     fix = (1,)
     weight_y[fix, fix] = 1e100
     sol = odr_fit(**case3, weight_y=weight_y)
     sol1 = deepcopy(sol)
-    assert np.allclose(sol.eps[fix, :], np.zeros((len(fix), sol.eps.shape[-1])),
-                       atol=ATOL)
+    assert np.allclose(sol.eps[fix, :], np.zeros_like(sol.eps[fix, :]), atol=ATOL)
 
     # weight_y (q, q, 1)
     weight_y = weight_y[..., np.newaxis]
@@ -460,9 +457,9 @@ def test_weight_y(case1, case3):
     with pytest.raises(ValueError):
         _ = odr_fit(**case3, weight_y=weight_y)
 
-    # weight_y has invalid tye
+    # weight_y has invalid type
     with pytest.raises(TypeError):
-        _ = odr_fit(**case3, weight_y=[1., 1., 1.])
+        _ = odr_fit(**case3, weight_y=[1.0, 1.0, 1.0])
 
 
 def test_parameters(case1):
