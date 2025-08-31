@@ -32,7 +32,13 @@ Repository = "https://github.com/HugoMVale/odrpack-python"
 Documentation = "https://hugomvale.github.io/odrpack-python/"
 
 [dependency-groups]
-dev = ["nanobind", "meson-python", "pytest", "pytest-cov", "scipy"]
+dev = [
+    "nanobind>=2.8.0",
+    "meson-python>=0.18.0",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "scipy>=1.16.1",
+]
 docs = [
     "mkdocs-material",
     "mkdocstrings-python",
