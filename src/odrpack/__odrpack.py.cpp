@@ -4,6 +4,7 @@
 #include <nanobind/stl/optional.h>
 #include <nanobind/stl/string.h>
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <map>
@@ -17,16 +18,73 @@ namespace nb = nanobind;
 using namespace nanobind::literals;
 
 /*
-The following class is necessary to ensure that the static variables used to store the callback
-functions are automatically reset upon normal or abnormal exit from the `odr_wrapper` function.
-From: https://github.com/libprima/prima/blob/main/python/_prima.cpp
+A container used to pass around the model function and its jacobians without creating a closure.
 */
-class SelfCleaningPyObject {
-    nb::object &obj;
+struct Context {
+    nb::callable fcn_f;
+    nb::callable fcn_fjacb;
+    nb::callable fcn_fjacd;
+};
 
-   public:
-    SelfCleaningPyObject(nb::object &obj) : obj(obj) {}
-    ~SelfCleaningPyObject() { obj = nb::none(); }
+/*
+Callback function invoked from `odrpack` to evaluate the model function and, optionally, its
+Jacobians. The actual python functions are stored in the `Context` struct, which is passed through
+the void pointer argument `data`. This is used to call the appropriate functions without
+creating closures.
+ */
+void fcn(const int *n_ptr, const int *m_ptr, const int *q_ptr, const int *npar_ptr, const int *ldifx_ptr,
+         const double beta[], const double xplusd[], const int ifixb[], const int ifixx[],
+         const int *ideval_ptr, double f[], double fjacb[], double fjacd[], int *istop,
+         void *data) {
+    // Dereference/cast scalar inputs
+    auto n = static_cast<size_t>(*n_ptr);
+    auto m = static_cast<size_t>(*m_ptr);
+    auto q = static_cast<size_t>(*q_ptr);
+    auto npar = static_cast<size_t>(*npar_ptr);
+    auto ideval = *ideval_ptr;
+
+    // Create NumPy arrays that wrap the input C-style arrays, without copying the data
+    nb::ndarray<const double, nb::numpy> beta_ndarray(beta, {npar});
+    nb::ndarray<const double, nb::numpy> xplusd_ndarray(
+        xplusd,
+        (m == 1) ? std::initializer_list<size_t>{n} : std::initializer_list<size_t>{m, n});
+
+    // Retrieve the model context
+    const auto *context = static_cast<const Context *>(data);
+
+    *istop = 0;
+    try {
+        // Evaluate model function
+        if (ideval % 10 > 0) {
+            auto f_pyobject = context->fcn_f(xplusd_ndarray, beta_ndarray);
+            auto f_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(f_pyobject);
+            std::copy_n(f_ndarray.data(), q * n, f);
+        }
+
+        // Model partial derivatives wrt `beta`
+        if ((ideval / 10) % 10 != 0) {
+            auto fjacb_pyobject = context->fcn_fjacb(xplusd_ndarray, beta_ndarray);
+            auto fjacb_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacb_pyobject);
+            std::copy_n(fjacb_ndarray.data(), q * npar * n, fjacb);
+        }
+
+        // Model partial derivatives wrt `delta`
+        if ((ideval / 100) % 10 != 0) {
+            auto fjacd_pyobject = context->fcn_fjacd(xplusd_ndarray, beta_ndarray);
+            auto fjacd_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacd_pyobject);
+            std::copy_n(fjacd_ndarray.data(), q * m * n, fjacd);
+        }
+
+    } catch (const nb::python_error &e) {
+        // temporary solution: need to figure out how to do this the right way
+        std::string ewhat = e.what();
+        if (ewhat.find("OdrStop") != std::string::npos) {
+            std::cerr << ewhat << std::endl;
+            *istop = 1;
+        } else {
+            throw;
+        }
+    }
 };
 
 /*
@@ -38,45 +96,46 @@ Some arguments have a default value of `nullptr` — this is by design, as the F
 automatically interprets `nullptr` as an absent optional argument. This approach avoids the
 redundant definition of default values in multiple places.
 */
-int odr_wrapper(int n,
-                int m,
-                int q,
-                int npar,
-                int ldwe,
-                int ld2we,
-                int ldwd,
-                int ld2wd,
-                int ldifx,
-                int ldstpd,
-                int ldscld,
-                const nb::callable fcn_f,
-                const nb::callable fcn_fjacb,
-                const nb::callable fcn_fjacd,
-                nb::ndarray<double, nb::c_contig> beta,
-                nb::ndarray<const double, nb::c_contig> y,
-                nb::ndarray<const double, nb::c_contig> x,
-                nb::ndarray<double, nb::c_contig> delta,
-                std::optional<nb::ndarray<const double, nb::c_contig>> we,
-                std::optional<nb::ndarray<const double, nb::c_contig>> wd,
-                std::optional<nb::ndarray<const int, nb::c_contig>> ifixb,
-                std::optional<nb::ndarray<const int, nb::c_contig>> ifixx,
-                std::optional<nb::ndarray<const double, nb::c_contig>> stpb,
-                std::optional<nb::ndarray<const double, nb::c_contig>> stpd,
-                std::optional<nb::ndarray<const double, nb::c_contig>> sclb,
-                std::optional<nb::ndarray<const double, nb::c_contig>> scld,
-                std::optional<nb::ndarray<const double, nb::c_contig>> lower,
-                std::optional<nb::ndarray<const double, nb::c_contig>> upper,
-                std::optional<nb::ndarray<double, nb::c_contig>> rwork,
-                std::optional<nb::ndarray<int, nb::c_contig>> iwork,
-                std::optional<int> job,
-                std::optional<int> ndigit,
-                std::optional<double> taufac,
-                std::optional<double> sstol,
-                std::optional<double> partol,
-                std::optional<int> maxit,
-                std::optional<int> iprint,
-                std::optional<std::string> errfile,
-                std::optional<std::string> rptfile)
+int odr_wrapper(
+    int n,
+    int m,
+    int q,
+    int npar,
+    int ldwe,
+    int ld2we,
+    int ldwd,
+    int ld2wd,
+    int ldifx,
+    int ldstpd,
+    int ldscld,
+    const nb::callable fcn_f,
+    const nb::callable fcn_fjacb,
+    const nb::callable fcn_fjacd,
+    nb::ndarray<double, nb::c_contig> beta,
+    nb::ndarray<const double, nb::c_contig> y,
+    nb::ndarray<const double, nb::c_contig> x,
+    nb::ndarray<double, nb::c_contig> delta,
+    std::optional<nb::ndarray<const double, nb::c_contig>> we,
+    std::optional<nb::ndarray<const double, nb::c_contig>> wd,
+    std::optional<nb::ndarray<const int, nb::c_contig>> ifixb,
+    std::optional<nb::ndarray<const int, nb::c_contig>> ifixx,
+    std::optional<nb::ndarray<const double, nb::c_contig>> stpb,
+    std::optional<nb::ndarray<const double, nb::c_contig>> stpd,
+    std::optional<nb::ndarray<const double, nb::c_contig>> sclb,
+    std::optional<nb::ndarray<const double, nb::c_contig>> scld,
+    std::optional<nb::ndarray<const double, nb::c_contig>> lower,
+    std::optional<nb::ndarray<const double, nb::c_contig>> upper,
+    std::optional<nb::ndarray<double, nb::c_contig>> rwork,
+    std::optional<nb::ndarray<int, nb::c_contig>> iwork,
+    std::optional<int> job,
+    std::optional<int> ndigit,
+    std::optional<double> taufac,
+    std::optional<double> sstol,
+    std::optional<double> partol,
+    std::optional<int> maxit,
+    std::optional<int> iprint,
+    std::optional<std::string> errfile,
+    std::optional<std::string> rptfile)
 
 {
     // Create pointers to the NumPy arrays and scalar arguments
@@ -116,87 +175,8 @@ int odr_wrapper(int n,
     if (rwork) lrwork = rwork.value().size();
     if (iwork) liwork = iwork.value().size();
 
-    // Build static pointers to the Python functions
-    // The static variables are necessary to ensure that the Python functions can be accessed
-    // within the C-style function 'fcn'
-    static nb::callable fcn_f_holder;
-    fcn_f_holder = std::move(fcn_f);
-    auto cleaner_1 = SelfCleaningPyObject(fcn_f_holder);
-
-    static nb::callable fcn_fjacb_holder;
-    fcn_fjacb_holder = std::move(fcn_fjacb);
-    auto cleaner_2 = SelfCleaningPyObject(fcn_fjacb_holder);
-
-    static nb::callable fcn_fjacd_holder;
-    fcn_fjacd_holder = std::move(fcn_fjacd);
-    auto cleaner_3 = SelfCleaningPyObject(fcn_fjacd_holder);
-
-    // Define the overall user-supplied model function 'fcn'.
-    // The model function and its Jacobians are still passed through the closure environment.
-    // In a future version, we should pass them via the thunk argument instead.
-    odrpack_fcn_t fcn = nullptr;
-
-    fcn = [](const int *n_ptr, const int *m_ptr, const int *q_ptr, const int *npar_ptr, const int *ldifx_ptr,
-             const double beta[], const double xplusd[], const int ifixb[], const int ifixx[],
-             const int *ideval_ptr, double f[], double fjacb[], double fjacd[], int *istop,
-             void *thunk) {
-        // Dereference scalar inputs
-        auto n = *n_ptr;
-        auto m = *m_ptr;
-        auto q = *q_ptr;
-        auto npar = *npar_ptr;
-        auto ideval = *ideval_ptr;
-
-        // Create NumPy arrays that wrap the input C-style arrays, without copying the data
-        nb::ndarray<const double, nb::numpy> beta_ndarray(beta, {static_cast<size_t>(npar)});
-        nb::ndarray<const double, nb::numpy> xplusd_ndarray(
-            xplusd,
-            (m == 1) ? std::initializer_list<size_t>{static_cast<size_t>(n)}
-                     : std::initializer_list<size_t>{static_cast<size_t>(m), static_cast<size_t>(n)});
-
-        *istop = 0;
-        try {
-            // Evaluate model function
-            if (ideval % 10 > 0) {
-                auto f_object = fcn_f_holder(xplusd_ndarray, beta_ndarray);
-                auto f_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(f_object);
-                auto f_ndarray_ptr = f_ndarray.data();
-                for (auto i = 0; i < q * n; i++) {
-                    f[i] = f_ndarray_ptr[i];
-                }
-            }
-
-            // Model partial derivatives wrt `beta`
-            if ((ideval / 10) % 10 != 0) {
-                auto fjacb_object = fcn_fjacb_holder(xplusd_ndarray, beta_ndarray);
-                auto fjacb_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacb_object);
-                auto fjacb_ndarray_ptr = fjacb_ndarray.data();
-                for (auto i = 0; i < q * npar * n; i++) {
-                    fjacb[i] = fjacb_ndarray_ptr[i];
-                }
-            }
-
-            // Model partial derivatives wrt `delta`
-            if ((ideval / 100) % 10 != 0) {
-                auto fjacd_object = fcn_fjacd_holder(xplusd_ndarray, beta_ndarray);
-                auto fjacd_ndarray = nb::cast<nb::ndarray<const double, nb::c_contig>>(fjacd_object);
-                auto fjacd_ndarray_ptr = fjacd_ndarray.data();
-                for (auto i = 0; i < q * npar * n; i++) {
-                    fjacd[i] = fjacd_ndarray_ptr[i];
-                }
-            }
-
-        } catch (const nb::python_error &e) {
-            // temporary solution: need to figure out how to do this the right way
-            std::string ewhat = e.what();
-            if (ewhat.find("OdrStop") != std::string::npos) {
-                std::cerr << ewhat << std::endl;
-                *istop = 1;
-            } else {
-                throw;
-            }
-        }
-    };
+    // Define the context for the user-supplied model function and its Jacobians.
+    Context context = {fcn_f, fcn_fjacb, fcn_fjacd};
 
     // Open files
     int lunrpt = 6;
@@ -221,13 +201,14 @@ int odr_wrapper(int n,
 
     // Call the C function
     int info = -1;
-    void *thunk = nullptr;
-    odr_long_c(fcn, &n, &m, &q, &npar, &ldwe, &ld2we, &ldwd, &ld2wd, &ldifx,
-               &ldstpd, &ldscld, &lrwork, &liwork, beta_ptr, y_ptr, x_ptr, we_ptr,
-               wd_ptr, ifixb_ptr, ifixx_ptr, stpb_ptr, stpd_ptr, sclb_ptr,
-               scld_ptr, delta_ptr, lower_ptr, upper_ptr, rwork_ptr, iwork_ptr,
-               job_ptr, ndigit_ptr, taufac_ptr, sstol_ptr, partol_ptr, maxit_ptr,
-               iprint_ptr, &lunerr, &lunrpt, &info, thunk);
+    odr_long_c(
+        fcn, static_cast<void *>(&context),
+        &n, &m, &q, &npar, &ldwe, &ld2we, &ldwd, &ld2wd, &ldifx,
+        &ldstpd, &ldscld, &lrwork, &liwork, beta_ptr, y_ptr, x_ptr, we_ptr,
+        wd_ptr, ifixb_ptr, ifixx_ptr, stpb_ptr, stpd_ptr, sclb_ptr,
+        scld_ptr, delta_ptr, lower_ptr, upper_ptr, rwork_ptr, iwork_ptr,
+        job_ptr, ndigit_ptr, taufac_ptr, sstol_ptr, partol_ptr, maxit_ptr,
+        iprint_ptr, &lunerr, &lunrpt, &info);
 
     // Close files
     if (rptfile) {
