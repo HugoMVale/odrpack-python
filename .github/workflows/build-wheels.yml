@@ -47,7 +47,6 @@ jobs:
         env:
           # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
           CIBW_SKIP: "*-win32 *i686 pp3*"
-          # CIBW_SKIP: "*-win32 *i686 pp3* *-musllinux_*"
           CIBW_BUILD_FRONTEND: build
           CIBW_BUILD_VERBOSITY: 1
           CIBW_TEST_REQUIRES: pytest scipy
