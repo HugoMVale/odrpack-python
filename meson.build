@@ -1,7 +1,7 @@
 project(
   'odrpack',
   ['cpp'],
-  version : '0.3.5',
+  version : '0.4.0',
   meson_version: '>=1.5.0',
   default_options: [
     'buildtype=release',
