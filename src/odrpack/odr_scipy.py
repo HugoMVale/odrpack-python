@@ -404,6 +404,24 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         ldwe = 1
         ld2we = 1
 
+    # Check all arrays for NaNs
+    for array, name in [(xdata, 'xdata'),
+                        (ydata, 'ydata'),
+                        (beta0, 'beta0'),
+                        (weight_x, 'weight_x'),
+                        (weight_y, 'weight_y'),
+                        (lower, 'bounds[0]'),
+                        (upper, 'bounds[1]'),
+                        (fix_beta, 'fix_beta'),
+                        (fix_x, 'fix_x'),
+                        (delta0, 'delta0'),
+                        (step_beta, 'step_beta'),
+                        (step_delta, 'step_delta'),
+                        (scale_beta, 'scale_beta'),
+                        (scale_delta, 'scale_delta')]:
+        if array is not None and np.isnan(array).any():
+            raise ValueError(f"`{name}` contains NaN values.")
+
     # Check model function
     f0 = f(xdata, beta0)
     if f0.shape != ydata.shape:

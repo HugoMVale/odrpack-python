@@ -176,6 +176,18 @@ def test_base_cases(case1, case2, case3):
         # y has invalid shape
         _ = odr_fit(f=case2['f'], xdata=np.ones((2, 10)), ydata=np.ones((1, 2, 10)),
                     beta0=case2['beta0'])
+    with pytest.raises(ValueError):
+        # x has nan values
+        xdata = case1['xdata'].copy()
+        xdata[0] = np.nan
+        _ = odr_fit(f=case1['f'], xdata=xdata, ydata=case1['ydata'],
+                    beta0=case1['beta0'])
+    with pytest.raises(ValueError):
+        # y has nan values
+        ydata = case1['ydata'].copy()
+        ydata[-1] = np.nan
+        _ = odr_fit(f=case1['f'], xdata=case1['xdata'], ydata=ydata,
+                    beta0=case1['beta0'])
 
 
 def test_beta0_related(case1):
@@ -242,6 +254,36 @@ def test_beta0_related(case1):
     with pytest.raises(ValueError):
         # invalid task
         _ = odr_fit(**case1, task='invalid')
+    with pytest.raises(ValueError):
+        # beta0 has nan values
+        beta0 = case1['beta0'].copy()
+        beta0[0] = np.nan
+        _ = odr_fit(f=case1['f'], xdata=case1['xdata'], ydata=case1['ydata'],
+                    beta0=beta0)
+    with pytest.raises(ValueError):
+        # lower has nan values
+        lower = case1['beta0'].copy() - 1.0
+        lower[-1] = np.nan
+        _ = odr_fit(**case1, bounds=(lower, None))
+    with pytest.raises(ValueError):
+        # upper has nan values
+        upper = case1['beta0'].copy() + 1.0
+        upper[0] = np.nan
+        _ = odr_fit(**case1, bounds=(None, upper))
+    with pytest.raises(ValueError):
+        # fix_beta has nan values
+        fix_beta = np.array([True, np.nan, False, False])
+        _ = odr_fit(**case1, fix_beta=fix_beta)
+    with pytest.raises(ValueError):
+        # step_beta has nan values
+        step_beta = case1['beta0'].copy()
+        step_beta[2] = np.nan
+        _ = odr_fit(**case1, step_beta=step_beta)
+    with pytest.raises(ValueError):
+        # scale_beta has nan values
+        scale_beta = case1['beta0'].copy()
+        scale_beta[2] = np.nan
+        _ = odr_fit(**case1, scale_beta=scale_beta)
 
 
 def test_delta0_related(case1, case3):
@@ -312,6 +354,26 @@ def test_delta0_related(case1, case3):
     with pytest.raises(ValueError):
         # delta0 has invalid shape
         _ = odr_fit(**case3, delta0=np.zeros_like(case1['ydata']))
+    with pytest.raises(ValueError):
+        # fix_x has nan values
+        fix_x = np.ones_like(case1['xdata'])
+        fix_x[0] = np.nan
+        _ = odr_fit(**case1, fix_x=fix_x)
+    with pytest.raises(ValueError):
+        # step_delta has nan values
+        step_delta = np.ones_like(case3['xdata'])
+        step_delta[0, 0] = np.nan
+        _ = odr_fit(**case3, step_delta=step_delta)
+    with pytest.raises(ValueError):
+        # scale_delta has nan values
+        scale_delta = np.ones_like(case3['xdata'])
+        scale_delta[1, 1] = np.nan
+        _ = odr_fit(**case3, scale_delta=scale_delta)
+    with pytest.raises(ValueError):
+        # delta0 has nan values
+        delta0 = np.ones_like(case3['xdata'])
+        delta0[2, 2] = np.nan
+        _ = odr_fit(**case3, delta0=delta0)
 
 
 def test_weight_x(case1, case3):
@@ -385,6 +447,12 @@ def test_weight_x(case1, case3):
     # weight_x has invalid tye
     with pytest.raises(TypeError):
         _ = odr_fit(**case3, weight_x=[1.0, 1.0, 1.0])
+
+    # weight_x has nan values
+    weight_x = np.ones_like(case1['xdata'])
+    weight_x[0] = np.nan
+    with pytest.raises(ValueError):
+        _ = odr_fit(**case1, weight_x=weight_x)
 
 
 def test_weight_y(case1, case3):
@@ -460,6 +528,12 @@ def test_weight_y(case1, case3):
     # weight_y has invalid type
     with pytest.raises(TypeError):
         _ = odr_fit(**case3, weight_y=[1.0, 1.0, 1.0])
+
+    # weight_y has nan values
+    weight_y = np.ones_like(case1['ydata'])
+    weight_y[-1] = np.nan
+    with pytest.raises(ValueError):
+        _ = odr_fit(**case1, weight_y=weight_y)
 
 
 def test_parameters(case1):
