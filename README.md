@@ -13,10 +13,10 @@ This Python package provides bindings for the well-known weighted orthogonal dis
 of the original Fortran implementation, while working within the modern Python ecosystem.  
 
 ODR, also known as [errors-in-variables regression], is designed primarily for instances when both
-the explanatory and response variables have significant errors. 
+the explanatory and response variables have significant errors.
 
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Total_least_squares.svg/220px-Total_least_squares.svg.png" width="250" alt="Deming regression; special case of ODR." style="margin-right: 10px;">
+  <img src="https://github.com/HugoMVale/odrpack-python/blob/main/docs/odr.png" width="250" alt="Deming regression; special case of ODR." style="margin-right: 10px;">
 </p>
 
 [errors-in-variables regression]: https://en.wikipedia.org/wiki/Errors-in-variables_models
