@@ -37,7 +37,7 @@ dev = [
     "meson-python>=0.18.0",
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
-    "scipy<1.17",
+    "scipy>=1.10,<1.17",
 ]
 docs = [
     "mkdocs-material>=9.6.18",
