@@ -20,7 +20,8 @@ jobs:
             resolution: "lowest-direct"
           - python-version: "3.13"
             resolution: "lowest-direct"
-            
+          - python-version: "3.14"
+            resolution: "lowest-direct"            
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
