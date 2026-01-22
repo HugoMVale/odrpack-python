@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: macOS - Set up Fortran
         if: runner.os == 'macOS'
@@ -43,7 +43,7 @@ jobs:
           # echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v3.3.1
         env:
           # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
