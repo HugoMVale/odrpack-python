@@ -532,7 +532,7 @@ dict[str, int]
         "stop_message",
         [](int info) {
             std::array<char, 256> message;
-            stop_message_c(info, message.data(), message.size());
+            stop_message_c(info, message.size(), message.data());
             return std::string(message.data());
         },
         R"doc(
