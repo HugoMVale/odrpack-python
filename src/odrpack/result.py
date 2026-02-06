@@ -1,16 +1,18 @@
 from dataclasses import dataclass
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import NDArray, ArrayLike
 
 __all__ = ['OdrResult']
 
 F64Array = NDArray[np.float64]
+F64ArrayLike = ArrayLike
 I32Array = NDArray[np.int32]
 BoolArray = NDArray[np.bool_]
+BoolArrayLike = ArrayLike
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=False)
 class OdrResult():
     """
     Results of an Orthogonal Distance Regression (ODR) computation.
