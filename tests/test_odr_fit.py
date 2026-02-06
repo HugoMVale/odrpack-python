@@ -44,7 +44,7 @@ def case2():
     def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
         return (beta[0] * x[0, :])**3 + x[1, :]**beta[1]
 
-    beta_star = np.array([2.0, 2.0])
+    beta_star = np.array([2, 2])  # ints on purpose to test type handling
     x1 = np.linspace(-10.0, 10.0, 41)
     x = np.vstack((x1, 10+x1/2))
     y = f(x, beta_star)

@@ -232,7 +232,8 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
     array([1.63336897, 0.9       ])
     """
 
-    # Check xdata and ydata
+    # Check xdata
+    xdata = np.asarray(xdata, dtype=np.float64)
     if xdata.ndim == 1:
         m = 1
     elif xdata.ndim == 2:
@@ -241,6 +242,8 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         raise ValueError(
             f"`xdata` must be a rank-1 array of shape `(n,)` or a rank-2 array of shape `(m, n)`, but has shape {xdata.shape}.")
 
+    # Check ydata
+    ydata = np.asarray(ydata, dtype=np.float64)
     if ydata.ndim == 1:
         q = 1
     elif ydata.ndim == 2:
@@ -249,6 +252,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         raise ValueError(
             f"`ydata` must be a rank-1 array of shape `(n,)` or a rank-2 array of shape `(q, n)`, but has shape {ydata.shape}.")
 
+    # Check xdata vs ydata
     if xdata.shape[-1] == ydata.shape[-1]:
         n = xdata.shape[-1]
     else:
@@ -256,6 +260,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
             f"The last dimension of `xdata` and `ydata` must be identical, but x.shape={xdata.shape} and y.shape={ydata.shape}.")
 
     # Check beta0
+    beta0 = np.asarray(beta0, dtype=np.float64)
     if beta0.ndim == 1:
         npar = beta0.size
         beta = beta0.copy()
@@ -267,6 +272,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
     if bounds is not None:
         lower, upper = bounds
         if lower is not None:
+            lower = np.asarray(lower, dtype=np.float64)
             if lower.shape != beta0.shape:
                 raise ValueError(
                     "The lower bound `bounds[0]` must have the same shape as `beta0`.")
@@ -274,6 +280,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
                 raise ValueError(
                     "The lower bound `bounds[0]` must be less than `beta0`.")
         if upper is not None:
+            upper = np.asarray(upper, dtype=np.float64)
             if upper.shape != beta0.shape:
                 raise ValueError(
                     "The upper bound `bounds[1]` must have the same shape as `beta0`.")
@@ -284,17 +291,24 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
         lower, upper = None, None
 
     # Check other beta related arguments
-    if fix_beta is not None and fix_beta.shape != beta0.shape:
-        raise ValueError("`fix_beta` must have the same shape as `beta0`.")
+    if fix_beta is not None:
+        fix_beta = np.asarray(fix_beta, dtype=np.bool_)
+        if fix_beta.shape != beta0.shape:
+            raise ValueError("`fix_beta` must have the same shape as `beta0`.")
 
-    if step_beta is not None and step_beta.shape != beta0.shape:
-        raise ValueError("`step_beta` must have the same shape as `beta0`.")
+    if step_beta is not None:
+        step_beta = np.asarray(step_beta, dtype=np.float64)
+        if step_beta.shape != beta0.shape:
+            raise ValueError("`step_beta` must have the same shape as `beta0`.")
 
-    if scale_beta is not None and scale_beta.shape != beta0.shape:
-        raise ValueError("`scale_beta` must have the same shape as `beta0`.")
+    if scale_beta is not None:
+        scale_beta = np.asarray(scale_beta, dtype=np.float64)
+        if scale_beta.shape != beta0.shape:
+            raise ValueError("`scale_beta` must have the same shape as `beta0`.")
 
     # Check delta0
     if delta0 is not None:
+        delta0 = np.asarray(delta0, dtype=np.float64)
         if delta0.shape != xdata.shape:
             raise ValueError("`delta0` must have the same shape as `xdata`.")
         delta = delta0.copy()
@@ -305,6 +319,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
 
     # Check fix_x
     if fix_x is not None:
+        fix_x = np.asarray(fix_x, dtype=np.bool_)
         if fix_x.shape == xdata.shape:
             ldifx = n
         elif fix_x.shape == (m,) and m > 1 and n != m:
@@ -320,6 +335,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
 
     # Check step_delta
     if step_delta is not None:
+        step_delta = np.asarray(step_delta, dtype=np.float64)
         if step_delta.shape == xdata.shape:
             ldstpd = n
         elif step_delta.shape == (m,) and m > 1 and n != m:
@@ -335,6 +351,7 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
 
     # Check scale_delta
     if scale_delta is not None:
+        scale_delta = np.asarray(scale_delta, dtype=np.float64)
         if scale_delta.shape == xdata.shape:
             ldscld = n
         elif scale_delta.shape == (m,) and m > 1 and n != m:
@@ -350,56 +367,52 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
 
     # Check weight_x
     if weight_x is not None:
-        if isinstance(weight_x, (float, int)):
+        weight_x = np.asarray(weight_x, dtype=np.float64)
+        if weight_x.shape == ():
             ldwd = 1
             ld2wd = 1
             weight_x = np.full((m,), weight_x, dtype=np.float64)
-        elif isinstance(weight_x, np.ndarray):
-            if weight_x.shape == (m,):
-                ldwd = 1
-                ld2wd = 1
-            elif weight_x.shape == (m, m):
-                ldwd = 1
-                ld2wd = m
-            elif weight_x.shape == (m, n) or (weight_x.shape == (n,) and m == 1):
-                ldwd = n
-                ld2wd = 1
-            elif weight_x.shape in ((m, 1, 1), (m, 1, n), (m, m, 1), (m, m, n)):
-                ldwd = weight_x.shape[2]
-                ld2wd = weight_x.shape[1]
-            else:
-                raise ValueError(
-                    r"`weight_x` must be a array of shape `(m,)`, `(n,)`, `(m, m)`, `(m, n)`, `(m, 1, 1)`, `(m, 1, n)`, `(m, m, 1)`, or `(m, m, n)`. See page 26 of the ODRPACK95 User Guide.")
+        elif weight_x.shape == (m,):
+            ldwd = 1
+            ld2wd = 1
+        elif weight_x.shape == (m, m):
+            ldwd = 1
+            ld2wd = m
+        elif weight_x.shape == (m, n) or (weight_x.shape == (n,) and m == 1):
+            ldwd = n
+            ld2wd = 1
+        elif weight_x.shape in ((m, 1, 1), (m, 1, n), (m, m, 1), (m, m, n)):
+            ldwd = weight_x.shape[2]
+            ld2wd = weight_x.shape[1]
         else:
-            raise TypeError("`weight_x` must be a float or an array.")
+            raise ValueError(
+                r"`weight_x` must be a array of shape `(m,)`, `(n,)`, `(m, m)`, `(m, n)`, `(m, 1, 1)`, `(m, 1, n)`, `(m, m, 1)`, or `(m, m, n)`. See page 26 of the ODRPACK95 User Guide.")
     else:
         ldwd = 1
         ld2wd = 1
 
     # Check weight_y
     if weight_y is not None:
-        if isinstance(weight_y, (float, int)):
+        weight_y = np.asarray(weight_y, dtype=np.float64)
+        if weight_y.shape == ():
             ldwe = 1
             ld2we = 1
             weight_y = np.full((q,), weight_y, dtype=np.float64)
-        elif isinstance(weight_y, np.ndarray):
-            if weight_y.shape == (q,):
-                ldwe = 1
-                ld2we = 1
-            elif weight_y.shape == (q, q):
-                ldwe = 1
-                ld2we = q
-            elif weight_y.shape == (q, n) or (weight_y.shape == (n,) and q == 1):
-                ldwe = n
-                ld2we = 1
-            elif weight_y.shape in ((q, 1, 1), (q, 1, n), (q, q, 1), (q, q, n)):
-                ldwe = weight_y.shape[2]
-                ld2we = weight_y.shape[1]
-            else:
-                raise ValueError(
-                    r"`weight_y` must be a array of shape `(q,)`, `(n,)`, `(q, q)`, `(q, n)`, `(q, 1, 1)`, `(q, 1, n)`, `(q, q, 1)`, or `(q, q, n)`. See page 25 of the ODRPACK95 User Guide.")
+        elif weight_y.shape == (q,):
+            ldwe = 1
+            ld2we = 1
+        elif weight_y.shape == (q, q):
+            ldwe = 1
+            ld2we = q
+        elif weight_y.shape == (q, n) or (weight_y.shape == (n,) and q == 1):
+            ldwe = n
+            ld2we = 1
+        elif weight_y.shape in ((q, 1, 1), (q, 1, n), (q, q, 1), (q, q, n)):
+            ldwe = weight_y.shape[2]
+            ld2we = weight_y.shape[1]
         else:
-            raise TypeError("`weight_y` must be a float or an array.")
+            raise ValueError(
+                r"`weight_y` must be a array of shape `(q,)`, `(n,)`, `(q, q)`, `(q, n)`, `(q, 1, 1)`, `(q, 1, n)`, `(q, q, 1)`, or `(q, q, n)`. See page 25 of the ODRPACK95 User Guide.")
     else:
         ldwe = 1
         ld2we = 1
@@ -412,8 +425,6 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
                         (weight_y, 'weight_y'),
                         (lower, 'bounds[0]'),
                         (upper, 'bounds[1]'),
-                        (fix_beta, 'fix_beta'),
-                        (fix_x, 'fix_x'),
                         (delta0, 'delta0'),
                         (step_beta, 'step_beta'),
                         (step_delta, 'step_delta'),
