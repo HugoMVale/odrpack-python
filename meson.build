@@ -37,7 +37,6 @@ python.install_sources(
   [
   'src/odrpack/__init__.py',
   'src/odrpack/__odrpack.pyi',
-  'src/odrpack/odr_fortran.py',
   'src/odrpack/odr_scipy.py',
   'src/odrpack/exceptions.py',
   'src/odrpack/result.py',
