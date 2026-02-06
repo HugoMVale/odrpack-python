@@ -11,7 +11,6 @@ to the observations of the dependent variable.
 import importlib.metadata
 
 from odrpack.exceptions import *
-from odrpack.odr_fortran import *
 from odrpack.odr_scipy import *
 from odrpack.result import *
 
