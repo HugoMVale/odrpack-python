@@ -221,10 +221,10 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
     --------
     >>> import numpy as np
     >>> from odrpack import odr_fit
-    >>> xdata = np.array([0.982, 1.998, 4.978, 6.01])
-    >>> ydata = np.array([2.7, 7.4, 148.0, 403.0])
-    >>> beta0 = np.array([2., 0.5])
-    >>> bounds = (np.array([0., 0.]), np.array([10., 0.9]))
+    >>> xdata = [0.982, 1.998, 4.978, 6.01]
+    >>> ydata = [2.7, 7.4, 148.0, 403.0]
+    >>> beta0 = [2., 0.5]
+    >>> bounds = ([0., 0.], [10., 0.9])
     >>> def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
     ...     return beta[0] * np.exp(beta[1]*x)
     >>> sol = odr_fit(f, xdata, ydata, beta0, bounds=bounds)
