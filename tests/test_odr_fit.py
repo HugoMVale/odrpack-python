@@ -65,7 +65,7 @@ def case3():
         return y
 
     beta_star = np.array([1.0, 2.0, 3.0])
-    x1 = np.linspace(-1.0, 1.0, 31)
+    x1 = np.linspace(0.5, 2.0, 31)
     x = np.vstack((x1, np.exp(x1), x1**2))
     y = f(x, beta_star)
 
