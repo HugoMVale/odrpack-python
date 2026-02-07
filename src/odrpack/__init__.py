@@ -11,7 +11,7 @@ to the observations of the dependent variable.
 import importlib.metadata
 
 from odrpack.exceptions import *
-from odrpack.odr_scipy import *
+from odrpack.odr import *
 from odrpack.result import *
 
 __version__ = importlib.metadata.version(__name__)
