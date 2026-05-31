@@ -17,7 +17,7 @@ def add_noise(array, noise):
     return array*(1 + noise*RNG.uniform(-1, 1, size=array.shape))
 
 
-def flipargs(f):
+def flip_args(f):
     """Flips the order of the arguments of a function."""
     return lambda x, beta: f(beta, x)
 
@@ -221,12 +221,12 @@ def test_beta0_related(case1):
     with pytest.raises(ValueError):
         # lower > beta0
         lower = case1['beta0'].copy()
-        lower[1:] -= 1
+        lower[0] += 1
         _ = odr_fit(**case1, bounds=(lower, None))
     with pytest.raises(ValueError):
         # upper < beta0
         upper = case1['beta0'].copy()
-        upper[1:] += 1
+        upper[-1] -= 1
         _ = odr_fit(**case1, bounds=(None, upper))
     with pytest.raises(ValueError):
         # beta0 has invalid shape
@@ -694,7 +694,7 @@ def test_compare_scipy(case1, case2, case3):
                 we = RNG.uniform(0.1, 1.0, size=case['ydata'].shape)
 
             sol1 = odr_fit(**case, weight_x=wd, weight_y=we)
-            sol2 = odrscipy(flipargs(case['f']),
+            sol2 = odrscipy(flip_args(case['f']),
                             case['beta0'], case['ydata'], case['xdata'],
                             wd=wd, we=we, full_output=True)
 
