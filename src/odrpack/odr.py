@@ -10,34 +10,35 @@ from odrpack.result import BoolArrayLike, F64Array, F64ArrayLike, OdrResult
 __all__ = ['odr_fit']
 
 
-def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
-            xdata: F64ArrayLike,
-            ydata: F64ArrayLike,
-            beta0: F64ArrayLike,
-            *,
-            weight_x: float | F64ArrayLike | None = None,
-            weight_y: float | F64ArrayLike | None = None,
-            bounds: tuple[F64ArrayLike | None, F64ArrayLike | None] | None = None,
-            task: Literal['explicit-ODR', 'implicit-ODR', 'OLS'] = 'explicit-ODR',
-            fix_beta: BoolArrayLike | None = None,
-            fix_x: BoolArrayLike | None = None,
-            jac_beta: Callable[[F64Array, F64Array], F64Array] | None = None,
-            jac_x: Callable[[F64Array, F64Array], F64Array] | None = None,
-            delta0: F64ArrayLike | None = None,
-            diff_scheme: Literal['forward', 'central'] = 'forward',
-            report: Literal['none', 'short', 'long', 'iteration'] = 'none',
-            maxit: int = 50,
-            ndigit: int | None = None,
-            taufac: float | None = None,
-            sstol: float | None = None,
-            partol: float | None = None,
-            step_beta: F64ArrayLike | None = None,
-            step_delta: F64ArrayLike | None = None,
-            scale_beta: F64ArrayLike | None = None,
-            scale_delta: F64ArrayLike | None = None,
-            rptfile: str | None = None,
-            errfile: str | None = None,
-            ) -> OdrResult:
+def odr_fit(
+    f: Callable[[F64Array, F64Array], F64Array],
+    xdata: F64ArrayLike,
+    ydata: F64ArrayLike,
+    beta0: F64ArrayLike,
+    *,
+    weight_x: float | F64ArrayLike | None = None,
+    weight_y: float | F64ArrayLike | None = None,
+    bounds: tuple[F64ArrayLike | None, F64ArrayLike | None] | None = None,
+    task: Literal['explicit-ODR', 'implicit-ODR', 'OLS'] = 'explicit-ODR',
+    fix_beta: BoolArrayLike | None = None,
+    fix_x: BoolArrayLike | None = None,
+    jac_beta: Callable[[F64Array, F64Array], F64Array] | None = None,
+    jac_x: Callable[[F64Array, F64Array], F64Array] | None = None,
+    delta0: F64ArrayLike | None = None,
+    diff_scheme: Literal['forward', 'central'] = 'forward',
+    report: Literal['none', 'short', 'long', 'iteration'] = 'none',
+    maxit: int = 50,
+    ndigit: int | None = None,
+    taufac: float | None = None,
+    sstol: float | None = None,
+    partol: float | None = None,
+    step_beta: F64ArrayLike | None = None,
+    step_delta: F64ArrayLike | None = None,
+    scale_beta: F64ArrayLike | None = None,
+    scale_delta: F64ArrayLike | None = None,
+    rptfile: str | None = None,
+    errfile: str | None = None,
+) -> OdrResult:
     r"""Solve a weighted orthogonal distance regression (ODR) problem, also
     known as errors-in-variables regression.
 
@@ -276,17 +277,17 @@ def odr_fit(f: Callable[[F64Array, F64Array], F64Array],
             if lower.shape != beta0.shape:
                 raise ValueError(
                     "The lower bound `bounds[0]` must have the same shape as `beta0`.")
-            if np.any(lower >= beta0):
+            if np.any(lower > beta0):
                 raise ValueError(
-                    "The lower bound `bounds[0]` must be less than `beta0`.")
+                    "The lower bound `bounds[0]` must be less or equal than `beta0`.")
         if upper is not None:
             upper = np.asarray(upper, dtype=np.float64)
             if upper.shape != beta0.shape:
                 raise ValueError(
                     "The upper bound `bounds[1]` must have the same shape as `beta0`.")
-            if np.any(upper <= beta0):
+            if np.any(upper < beta0):
                 raise ValueError(
-                    "The upper bound `bounds[1]` must be greater than `beta0`.")
+                    "The upper bound `bounds[1]` must be greater or equal than `beta0`.")
     else:
         lower, upper = None, None
 
