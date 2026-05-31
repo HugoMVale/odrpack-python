@@ -46,6 +46,9 @@ jobs:
         uses: pypa/cibuildwheel@v3.3.1
         env:
           # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
+          # Hybrid strategy: keep per-version wheels for 3.10/3.11,
+          # and build one cp312-based abi3 wheel for 3.12+.
+          CIBW_BUILD: "cp310-* cp311-* cp312-*"
           CIBW_SKIP: "*-win32 *i686"
           CIBW_BUILD_FRONTEND: build
           CIBW_BUILD_VERBOSITY: 3

@@ -29,7 +29,7 @@ nanobind_ext = python.extension_module(
   'src/odrpack/__odrpack.py.cpp',
   dependencies : [python_dep, nanobind_dep, odrpack_dep],
   install: true,
-  # limited_api: '3.12',
+  limited_api: '3.12',
   subdir: 'odrpack'
 )
 
