@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+title: odrpack
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Hugo
+    family-names: Vale
+    name-particle: M.
+    orcid: 'https://orcid.org/0000-0003-1869-7355'
+repository-code: 'https://github.com/HugoMVale/odrpack-python'
+url: 'https://hugomvale.github.io/odrpack-python/'
+license: MIT
