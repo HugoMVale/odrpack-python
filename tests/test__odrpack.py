@@ -91,5 +91,15 @@ def test_odr():
 
 
 def test_stop_message():
-    assert "Parameter" in stop_message(2)
-    assert "Unknown" in stop_message(-1)
+    info_messages = [
+        (1, "sum of squares"),
+        (2, "parameter"),
+        (3, "squares and parameter"),
+        (4, "iteration limit"),
+        (20, "not full rank"),
+        (60000, "discontinuity"),
+        (-1, "unknown"),
+    ]
+    for info, expected in info_messages:
+        message = stop_message(info)
+        assert expected in message.lower()
