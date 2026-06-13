@@ -58,8 +58,7 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: |
             bash {project}/cibw-scripts/before_all_linux.sh {project}
           CIBW_ENVIRONMENT_WINDOWS: >
-            CCACHE_DISABLE=1
-            MESON_ARGS="-Dcmake.minimal-version=99.0"
+            MESON_ARGS="-Dodrpack95:blas=refblas"
           CIBW_BEFORE_ALL_WINDOWS: |
             bash {project}/cibw-scripts/before_all_windows.sh
           CIBW_BEFORE_BUILD_WINDOWS: |
