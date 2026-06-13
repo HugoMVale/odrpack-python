@@ -37,7 +37,7 @@ jobs:
 
       - name: Windows - Set up pkg-config and CMake
         if: runner.os == 'windows'
-        # shell: bash
+        shell: bash
         run: |
           choco install cmake --version=3.31.5 --allow-downgrade -y --no-progress
           choco install -y --no-progress --stoponfirstfailure pkgconfiglite
