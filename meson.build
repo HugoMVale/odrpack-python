@@ -1,7 +1,7 @@
 project(
   'odrpack',
   ['cpp', 'fortran'],
-  version : '0.6.0',
+  version : '0.6.1',
   meson_version: '>=1.5.0',
   default_options: [
     'buildtype=release',
@@ -9,9 +9,6 @@ project(
     'cpp_std=c++17'
   ],
 )
-
-# compilers
-# add_languages('fortran', native: false)
 
 # python
 python = import('python').find_installation(pure: false)
