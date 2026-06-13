@@ -24,24 +24,13 @@ nanobind_dep = dependency('nanobind', static: true)
 odrpack_dep = dependency('odrpack95', static: true)
 
 # build extension module
-if python.language_version().version_compare('>=3.12')
-  nanobind_ext = python.extension_module(
-    '__odrpack',
-    'src/odrpack/__odrpack.py.cpp',
-    dependencies : [python_dep, nanobind_dep, odrpack_dep],
-    install: true,
-    limited_api: '3.12',
-    subdir: 'odrpack'
-  )
-else
-  nanobind_ext = python.extension_module(
-    '__odrpack',
-    'src/odrpack/__odrpack.py.cpp',
-    dependencies : [python_dep, nanobind_dep, odrpack_dep],
-    install: true,
-    subdir: 'odrpack'
-  )
-endif
+nanobind_ext = python.extension_module(
+'__odrpack',
+'src/odrpack/__odrpack.py.cpp',
+dependencies : [python_dep, nanobind_dep, odrpack_dep],
+install: true,
+subdir: 'odrpack'
+)
 
 python.install_sources(
   [
