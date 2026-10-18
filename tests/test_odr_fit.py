@@ -3,8 +3,6 @@ from copy import deepcopy
 
 import numpy as np
 import pytest
-from scipy.odr import odr as odrscipy
-from scipy.optimize import curve_fit
 
 from odrpack import OdrStop, odr_fit
 from odrpack.__odrpack import loc_rwork
@@ -676,6 +674,9 @@ def test_exception_odrstop():
 
 @pytest.mark.xfail(reason="Fails in conda-forge::linux_aarch64")
 def test_compare_scipy(case1, case2, case3):
+
+    odrscipy = pytest.importorskip("scipy.odr").odr
+    curve_fit = pytest.importorskip("scipy.optimize").curve_fit
 
     # case1 // scipy.optimize.curve_fit
     sol1 = odr_fit(**case1, task='OLS')
