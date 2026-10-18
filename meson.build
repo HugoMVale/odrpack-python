@@ -6,7 +6,8 @@ project(
   default_options: [
     'buildtype=release',
     'b_ndebug=if-release',
-    'cpp_std=c++17'
+    'cpp_std=c++17',
+    'odrpack95:blas_option=refblas'
   ],
 )
 
