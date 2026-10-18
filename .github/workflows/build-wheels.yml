@@ -44,7 +44,7 @@ jobs:
           echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $GITHUB_ENV
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.4.1
+        uses: pypa/cibuildwheel@v4.3.1
         env:
           # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
           CIBW_SKIP: "*-win32 *i686 cp3??t-*"
