@@ -35,14 +35,6 @@ jobs:
           echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           # This does not work inside CIBW_BEFORE_ALL_MACOS; Without it, the wheel repair fails.
 
-      - name: Windows - Set up pkg-config and CMake
-        if: runner.os == 'windows'
-        shell: bash
-        run: |
-          choco install cmake --version=3.31.5 --allow-downgrade -y --no-progress
-          choco install -y --no-progress --stoponfirstfailure pkgconfiglite
-          echo "PKG_CONFIG_PATH=C:/mingw64/lib/pkgconfig" >> $GITHUB_ENV
-
       - name: Build wheels
         uses: pypa/cibuildwheel@v4.3.1
         env:
@@ -51,18 +43,10 @@ jobs:
           CIBW_BUILD_FRONTEND: build
           CIBW_BUILD_VERBOSITY: 3
           CIBW_TEST_REQUIRES: pytest scipy
-          CIBW_TEST_COMMAND: |
-            pytest {project}/tests
+          CIBW_TEST_COMMAND: pytest {project}/tests
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
           CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2
-          CIBW_BEFORE_ALL_LINUX: |
-            bash {project}/cibw-scripts/before_all_linux.sh {project}
-        #   CIBW_ENVIRONMENT_WINDOWS: >
-        #     MESON_ARGS="-Dodrpack95:blas_option=refblas"
-          CIBW_BEFORE_ALL_WINDOWS: |
-            bash {project}/cibw-scripts/before_all_windows.sh
-          CIBW_BEFORE_BUILD_WINDOWS: |
-            pip install delvewheel
+          CIBW_BEFORE_BUILD_WINDOWS: pip install delvewheel
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
             bash ./cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
 
