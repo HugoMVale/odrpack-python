@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-14, macos-15-intel]
+        os: [ubuntu-latest, windows-latest, windows-11-arm, macos-14, macos-15-intel]
 
     steps:
       - name: Checkout code
@@ -35,11 +35,24 @@ jobs:
           echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           # This does not work inside CIBW_BEFORE_ALL_MACOS; Without it, the wheel repair fails.
 
+      - name: Windows ARM64 - Set up LLVM toolchain
+        if: runner.os == 'Windows' && runner.arch == 'ARM64'
+        shell: pwsh
+        run: |
+          $VsVars = 'C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsarm64.bat'
+          cmd /c "`"$VsVars`" && set" > "$env:RUNNER_TEMP\vcvars.txt"
+          Get-Content "$env:RUNNER_TEMP\vcvars.txt" | ForEach-Object {
+              if ($_ -match '^([^=]+)=(.*)$') {
+                  [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+              }
+          }
+          ./cibw-scripts/setup_windows_arm64.ps1
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v4.3.1
         env:
           # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
-          CIBW_SKIP: "*-win32 *i686 cp3??t-*"
+          CIBW_SKIP: "*-win32 *i686 cp3??t-* cp310-win_arm64"
           CIBW_BUILD_FRONTEND: build
           CIBW_BUILD_VERBOSITY: 3
           CIBW_TEST_REQUIRES: pytest scipy
@@ -49,6 +62,11 @@ jobs:
           CIBW_BEFORE_BUILD_WINDOWS: pip install delvewheel
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
             bash ./cibw-scripts/repair_wheel_command_windows.sh {wheel} {dest_dir}
+          CIBW_ENVIRONMENT_PASS_WINDOWS: >
+            CC
+            CXX
+            FC
+            AR
 
       - name: Upload wheels 
         uses: actions/upload-artifact@v6
