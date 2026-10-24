@@ -21,7 +21,6 @@ the explanatory and response variables have significant errors.
 [errors-in-variables regression]: https://en.wikipedia.org/wiki/Errors-in-variables_models
 [odrpack95]: https://github.com/HugoMVale/odrpack95
 
-
 ## Installation
 
 You can install the package via pip:
