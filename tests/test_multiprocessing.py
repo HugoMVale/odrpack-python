@@ -1,7 +1,8 @@
+import multiprocessing
 import time
-from multiprocessing.pool import Pool
 
 import numpy as np
+import pytest
 
 from odrpack import odr_fit
 
@@ -48,7 +49,19 @@ case2 = (f2, x2, y2, np.ones_like(beta2))
 case3 = (f3, x3, y3, np.ones_like(beta3))
 
 
-def test_multiple_processes():
+@pytest.mark.parametrize("method", ["fork", "spawn", "forkserver"])
+def test_multiple_processes(method):
+    """Fits run in worker processes must match the serial ones.
+
+    All start methods available on the platform are tested explicitly, because
+    the default differs between platforms and Python versions (`fork`, `spawn`,
+    `forkserver`) and each one stresses something different: `fork` copies the
+    parent's state, `spawn`/`forkserver` import the extension from scratch in
+    each worker and require everything to be picklable.
+    """
+    if method not in multiprocessing.get_all_start_methods():
+        pytest.skip(f"start method '{method}' not available on this platform")
+    ctx = multiprocessing.get_context(method)
 
     # ref solutions
     sol1 = odr_fit(*case1)
@@ -56,12 +69,14 @@ def test_multiple_processes():
     sol3 = odr_fit(*case3)
 
     # multiple processes
-    pool = Pool()
+    pool = ctx.Pool()
     num_jobs = 10
     cases = [case1, case2, case3]
-    solutions = pool.starmap(odr_fit, cases*num_jobs)
-    pool.close()
-    pool.join()
+    try:
+        solutions = pool.starmap(odr_fit, cases*num_jobs)
+    finally:
+        pool.close()
+        pool.join()
 
     for i in range(0, len(solutions), len(cases)):
         assert np.allclose(solutions[i].beta, sol1.beta)
