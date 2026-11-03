@@ -15,6 +15,15 @@ project(
 python = import('python').find_installation(pure: false)
 python_dep = python.dependency()
 
+# Free-threaded CPython (3.13t, 3.14t, ...): nanobind -- both the static library
+# and the extension -- must be compiled with NB_FREE_THREADED. Otherwise the
+# module does not declare Py_MOD_GIL_NOT_USED (CPython silently re-enables the
+# GIL on import) and nanobind's internals are not thread-safe. Global arguments
+# are used on purpose, because they also reach the nanobind subproject.
+if python.get_variable('Py_GIL_DISABLED', 0) == 1
+  add_global_arguments('-DNB_FREE_THREADED', language: 'cpp')
+endif
+
 # nanobind (from subprojects)
 nanobind_dep = dependency('nanobind', static: true)
 
