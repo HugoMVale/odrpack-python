@@ -658,23 +658,6 @@ def test_OLS(case1):
     assert np.allclose(sol1.delta, np.zeros_like(sol1.delta))
 
 
-def test_exception_odrstop():
-
-    xdata = np.array([1.0, 2.0, 3.0, 4.0])
-    ydata = np.array([1.0, 2.0, 3.0, 4.0])
-    beta0 = np.array([1.0, 1.0])
-
-    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
-        if beta[0] > 0:
-            raise OdrStop("Oops!")
-        return beta[0] * np.exp(beta[1]*x)
-
-    with pytest.raises(OdrStop):
-        sol = odr_fit(f, xdata, ydata, beta0)
-        assert not sol.success
-        assert sol.info == 51000
-
-
 @pytest.mark.xfail(reason="Fails in conda-forge::linux_aarch64")
 def test_compare_scipy(case1, case2, case3):
 
@@ -709,3 +692,44 @@ def test_compare_scipy(case1, case2, case3):
 
             assert np.all(np.max(wd*abs(sol1.delta - sol2[3]['delta']), -1) /
                           (np.max(case['xdata'], -1) - np.min(case['xdata'], -1)) < 1e-4)
+
+
+def _stopping_model(exc, after=5):
+    """Model function that raises `exc` after `after` calls (the first calls are
+    the checks done by `odr_fit` itself, before entering the Fortran code)."""
+    calls = {"n": 0}
+
+    def f(x: np.ndarray, beta: np.ndarray) -> np.ndarray:
+        calls["n"] += 1
+        if calls["n"] > after:
+            raise exc
+        return beta[0] * np.exp(beta[1]*x)
+
+    return f
+
+
+def test_odrstop_inside_iterations_stops_gracefully():
+    xdata = np.linspace(0, 2, 20)
+    ydata = 1.5*np.exp(0.7*xdata)
+    sol = odr_fit(_stopping_model(OdrStop("stop")), xdata, ydata, np.array([1., 1.]))
+    assert not sol.success
+    assert sol.info // 10000 == 5  # stopped by user from the model function
+
+
+def test_odrstop_subclass_stops_gracefully():
+    class MyStop(OdrStop):
+        pass
+
+    xdata = np.linspace(0, 2, 20)
+    ydata = 1.5*np.exp(0.7*xdata)
+    sol = odr_fit(_stopping_model(MyStop("stop")), xdata, ydata, np.array([1., 1.]))
+    assert not sol.success
+
+
+def test_other_exceptions_inside_iterations_propagate():
+    xdata = np.linspace(0, 2, 20)
+    ydata = 1.5*np.exp(0.7*xdata)
+    # The message mentions "OdrStop", but the exception type is not `OdrStop`.
+    with pytest.raises(ValueError, match="OdrStop"):
+        odr_fit(_stopping_model(ValueError("this is not an OdrStop")),
+                xdata, ydata, np.array([1., 1.]))
