@@ -14,9 +14,7 @@ of the original Fortran implementation, while working within the modern Python e
 ODR, also known as [errors-in-variables regression], is designed primarily for instances when both
 the explanatory and response variables have significant errors.
 
-<p align="center">
-  <img src="https://github.com/HugoMVale/odrpack-python/blob/main/docs/odr.png" width="250" alt="Deming regression; special case of ODR." style="margin-right: 10px;">
-</p>
+![Deming regression; special case of ODR.](https://github.com/HugoMVale/odrpack-python/blob/main/docs/odr.png)
 
 [errors-in-variables regression]: https://en.wikipedia.org/wiki/Errors-in-variables_models
 [odrpack95]: https://github.com/HugoMVale/odrpack95
