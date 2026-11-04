@@ -24,7 +24,6 @@ struct Context {
     nb::callable fcn_f;
     nb::callable fcn_fjacb;
     nb::callable fcn_fjacd;
-    nb::object odr_stop;  // the `odrpack.OdrStop` exception class
 };
 
 /*
@@ -77,10 +76,10 @@ void fcn(const int *n_ptr, const int *m_ptr, const int *q_ptr, const int *npar_p
         }
 
     } catch (const nb::python_error &e) {
-        // `OdrStop` (or a subclass) raised by the user: stop gracefully.
-        // Any other exception is propagated.
-        if (e.matches(context->odr_stop)) {
-            std::cerr << e.what() << std::endl;
+        // temporary solution: need to figure out how to do this the right way
+        std::string ewhat = e.what();
+        if (ewhat.find("OdrStop") != std::string::npos) {
+            std::cerr << ewhat << std::endl;
             *istop = 1;
         } else {
             throw;
@@ -177,8 +176,7 @@ int odr_wrapper(
     if (iwork) liwork = iwork.value().size();
 
     // Define the context for the user-supplied model function and its Jacobians.
-    nb::object odr_stop = nb::module_::import_("odrpack.exceptions").attr("OdrStop");
-    Context context = {fcn_f, fcn_fjacb, fcn_fjacd, odr_stop};
+    Context context = {fcn_f, fcn_fjacb, fcn_fjacd};
 
     // Open files
     int lunrpt = 6;
