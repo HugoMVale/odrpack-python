@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <array>
+#include <exception>
 #include <iostream>
 #include <map>
 #include <optional>
@@ -24,13 +25,23 @@ struct Context {
     nb::callable fcn_f;
     nb::callable fcn_fjacb;
     nb::callable fcn_fjacd;
+    nb::object odr_stop;
+    std::exception_ptr error;
 };
 
 /*
 Callback function invoked from `odrpack` to evaluate the model function and, optionally, its
-Jacobians. The actual python functions are stored in the `Context` struct, which is passed through
-the void pointer argument `data`. This is used to call the appropriate functions without
-creating closures.
+Jacobians. The actual python functions are stored in the `Context` struct, which is passed
+through the void pointer argument `data`. This is used to call the appropriate functions
+without creating closures.
+
+Exceptions must never propagate out of this function: it is called from Fortran, and unwinding
+a C++ exception through Fortran frames is not guaranteed to work. Therefore:
+- `OdrStop` (or a subclass): the regression is stopped gracefully (`istop = 1`) and a solution
+  is returned.
+- Any other exception (Python or C++): it is stored in the context, the regression is aborted
+  (`istop = -1`) and the exception is rethrown by the caller after the Fortran routine has
+  returned normally.
  */
 void fcn(const int *n_ptr, const int *m_ptr, const int *q_ptr, const int *npar_ptr, const int *ldifx_ptr,
          const double beta[], const double xplusd[], const int ifixb[], const int ifixx[],
@@ -50,7 +61,13 @@ void fcn(const int *n_ptr, const int *m_ptr, const int *q_ptr, const int *npar_p
         (m == 1) ? std::initializer_list<size_t>{n} : std::initializer_list<size_t>{m, n});
 
     // Retrieve the model context
-    const auto *context = static_cast<const Context *>(data);
+    auto *context = static_cast<Context *>(data);
+
+    // A previous callback already failed: do not call back into Python, just keep aborting.
+    if (context->error) {
+        *istop = -1;
+        return;
+    }
 
     *istop = 0;
     try {
@@ -76,14 +93,18 @@ void fcn(const int *n_ptr, const int *m_ptr, const int *q_ptr, const int *npar_p
         }
 
     } catch (const nb::python_error &e) {
-        // temporary solution: need to figure out how to do this the right way
-        std::string ewhat = e.what();
-        if (ewhat.find("OdrStop") != std::string::npos) {
-            std::cerr << ewhat << std::endl;
+        if (e.matches(context->odr_stop)) {
+            // `OdrStop` (or a subclass) raised by the user: stop gracefully
+            std::cerr << e.what() << std::endl;
             *istop = 1;
         } else {
-            throw;
+            context->error = std::current_exception();
+            *istop = -1;
         }
+    } catch (...) {
+        // Any other exception
+        context->error = std::current_exception();
+        *istop = -1;
     }
 };
 
@@ -175,8 +196,9 @@ int odr_wrapper(
     if (rwork) lrwork = rwork.value().size();
     if (iwork) liwork = iwork.value().size();
 
-    // Define the context for the user-supplied model function and its Jacobians.
-    Context context = {fcn_f, fcn_fjacb, fcn_fjacd};
+    // Define the context for the user-supplied model function and its Jacobians
+    nb::object odr_stop = nb::module_::import_("odrpack.exceptions").attr("OdrStop");
+    Context context = {fcn_f, fcn_fjacb, fcn_fjacd, odr_stop};
 
     // Open files
     int lunrpt = 6;
@@ -220,6 +242,11 @@ int odr_wrapper(
         close_file(&lunerr, &ierr);
         if (ierr != 0) throw std::runtime_error("Error closing error file.");
     }
+
+    // Rethrow the exception (if any) that aborted the regression in a callback. 
+    // This is done only now, after the Fortran routine has returned normally and the files
+    // have been closed.
+    if (context.error) std::rethrow_exception(context.error);
 
     return info;
 }
