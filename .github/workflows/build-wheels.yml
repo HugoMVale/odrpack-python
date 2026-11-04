@@ -52,7 +52,7 @@ jobs:
         uses: pypa/cibuildwheel@v4.3.1
         env:
           # All cibuildwheel options are here (nothing "hidden" in pyproject.toml)
-          CIBW_SKIP: "*-win32 *i686 cp310-win_arm64"
+          CIBW_SKIP: "*-win32 *i686 cp310-win_arm64 cp*t-win_arm64"
           CIBW_BUILD_FRONTEND: build
           CIBW_BUILD_VERBOSITY: 3
           CIBW_TEST_REQUIRES: pytest scipy
