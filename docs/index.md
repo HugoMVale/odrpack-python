@@ -7,7 +7,7 @@ ODR, also known as [errors-in-variables regression], is designed primarily for i
 the explanatory and response variables have significant errors. 
 
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Total_least_squares.svg/220px-Total_least_squares.svg.png" width="200" alt="Deming regression; special case of ODR.">
+  <img src="odr.png" width="200" alt="Deming regression; special case of ODR.">
 </p>
 
 [errors-in-variables regression]: https://en.wikipedia.org/wiki/Errors-in-variables_models
