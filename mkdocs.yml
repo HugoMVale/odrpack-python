@@ -8,7 +8,8 @@ repo_name: HugoMVale/odrpack-python
 repo_url: https://github.com/HugoMVale/odrpack-python
 edit_uri: "" #disables edit button
 
-copyright: Copyright &copy; 2024 Hugo Vale
+hooks:
+  - docs/hooks/copyright.py
 
 theme:
   name: material
